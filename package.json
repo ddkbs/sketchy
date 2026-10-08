@@ -1,0 +1,27 @@
+{
+  "name": "sketchy-mcp",
+  "version": "0.0.0",
+  "description": "MCP server that explains things visually: clean, interactive diagrams rendered right inside the chat.",
+  "type": "module",
+  "license": "MIT",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-apps",
+    "claude",
+    "diagram",
+    "visualization",
+    "arduino",
+    "svg"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
+  }
+}
