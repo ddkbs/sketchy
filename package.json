@@ -1,9 +1,19 @@
 {
-  "name": "sketchy-mcp",
+  "name": "sketchy",
+  "private": true,
   "version": "0.0.0",
   "description": "MCP server that explains things visually: clean, interactive diagrams rendered right inside the chat.",
   "type": "module",
   "license": "MIT",
+  "author": "ddkbs",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ddkbs/sketchy.git"
+  },
+  "homepage": "https://github.com/ddkbs/sketchy#readme",
+  "bugs": {
+    "url": "https://github.com/ddkbs/sketchy/issues"
+  },
   "keywords": [
     "mcp",
     "model-context-protocol",
