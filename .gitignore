@@ -1,0 +1,17 @@
+# Private working notes
+CLAUDE.md
+
+# Dependencies and build output
+node_modules/
+dist/
+*.mcpb
+
+# Logs and local environment
+*.log
+.env
+.env.*
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
