@@ -18,3 +18,28 @@ export type Scene = {
   boxes: Box[];
   arrows: Arrow[];
 };
+
+/**
+ * A scene after layout: every element now carries concrete geometry.
+ * Produced by the server, consumed by the viewer.
+ */
+
+export type Point = { x: number; y: number };
+
+export type PlacedBox = Box & {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+export type PlacedArrow = Arrow & {
+  points: Point[];
+};
+
+export type LaidOutScene = {
+  width: number;
+  height: number;
+  boxes: PlacedBox[];
+  arrows: PlacedArrow[];
+};
