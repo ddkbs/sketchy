@@ -1,0 +1,189 @@
+:root {
+  --ink: #1d1d1f;
+  --ink-soft: #5c5f66;
+  --paper: #fffdf7;
+  --line: #e7e2d6;
+  --accent: #e8452c;
+  --font: Kalam, "Comic Sans MS", cursive;
+  color-scheme: light;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  font-family: var(--font);
+  color: var(--ink);
+}
+
+.frame {
+  position: relative;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.canvas {
+  overflow: auto;
+  max-height: var(--max-height, none);
+}
+
+.canvas > svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  min-width: min(100%, var(--min-width, 0px));
+}
+
+.element,
+.layer-overlay {
+  transition: opacity 0.25s ease;
+}
+
+.element.dim {
+  opacity: 0.14;
+}
+
+.element.clickable,
+.attribution {
+  cursor: pointer;
+}
+
+.element.clickable:hover text {
+  text-decoration: underline;
+}
+
+.toolbar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  z-index: 2;
+}
+
+.frame:hover .toolbar,
+.toolbar:focus-within {
+  opacity: 1;
+}
+
+button {
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px 10px 7px 9px;
+  padding: 1px 10px;
+  cursor: pointer;
+  box-shadow: 1.5px 1.5px 0 var(--ink);
+}
+
+button:hover:not(:disabled) {
+  background: #fff4c2;
+}
+
+button:active:not(:disabled) {
+  transform: translate(1px, 1px);
+  box-shadow: 0.5px 0.5px 0 var(--ink);
+}
+
+button:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.stepper {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px 12px;
+  border-top: 1.5px dashed var(--line);
+}
+
+.stepper > button {
+  font-size: 22px;
+  line-height: 1;
+  padding: 2px 12px 6px;
+}
+
+.step-body {
+  min-height: 46px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.step-body p {
+  margin: 2px 0 0;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+
+.step-title {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.step-count {
+  color: var(--accent);
+  margin-right: 8px;
+}
+
+.step-body .start {
+  align-self: flex-start;
+}
+
+.step-dots {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+.step-dots .dot {
+  width: 9px;
+  height: 9px;
+  padding: 0;
+  border-radius: 50%;
+  border-width: 1.5px;
+  box-shadow: none;
+}
+
+.step-dots .dot.on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 3;
+  max-width: 280px;
+  padding: 7px 10px;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px 8px 11px 9px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
+  font-size: 15px;
+  line-height: 1.3;
+  pointer-events: none;
+}
+
+.tooltip .file {
+  margin-top: 4px;
+  color: var(--ink-soft);
+  font-size: 13px;
+}
+
+.message {
+  padding: 18px;
+  color: var(--ink-soft);
+}
