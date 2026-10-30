@@ -5,7 +5,8 @@ import type { Database } from "sql.js";
 import { loadSqlite } from "./sqlite.js";
 
 export function defaultDataDir(): string {
-  return process.env.SKETCHY_DATA_DIR ?? join(homedir(), ".sketchy");
+  // Empty values arrive from unset bundle settings; treat them as unset.
+  return process.env.SKETCHY_DATA_DIR || join(homedir(), ".sketchy");
 }
 
 /**

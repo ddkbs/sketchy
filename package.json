@@ -37,9 +37,11 @@
     "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json",
     "preview": "tsx scripts/preview-data.ts && vite",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "pack": "node scripts/pack.mjs"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "^2.1.2",
     "@fontsource/caveat": "^5.3.0",
     "@fontsource/kalam": "^5.3.0",
     "@happy-dom/global-registrator": "^21.0.4",
@@ -75,6 +77,8 @@
     "build/parts.json",
     "build/viewer.html",
     "LICENSE",
-    "README.md"
+    "README.md",
+    "assets/icon.png",
+    "THIRD_PARTY_NOTICES.md"
   ]
 }

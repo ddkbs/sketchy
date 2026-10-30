@@ -19,7 +19,7 @@ const { values } = parseArgs({
 const parts = await PartIndex.load();
 const editor = parseEditor(process.env.SKETCHY_EDITOR);
 // Photo grounding needs a local model, so remote deployments leave it off.
-const photosEnabled = (process.env.SKETCHY_PHOTOS ?? (values.http ? "off" : "on")) !== "off";
+const photosEnabled = (process.env.SKETCHY_PHOTOS || (values.http ? "off" : "on")) !== "off";
 const dataDir = defaultDataDir();
 const photos = photosEnabled
   ? createPhotoTools(new PhotoService(await LocalDatabase.open(dataDir), dataDir))
