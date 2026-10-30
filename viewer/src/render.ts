@@ -419,6 +419,19 @@ function drawWire(g: SVGGElement, pen: Pen, wire: LaidOutWire): void {
 
 function drawLabel(g: SVGGElement, pen: Pen, label: LaidOutLabel): void {
   const leftSide = label.leaderStart.x > label.x + label.width / 2;
+  // A light halo keeps the leader readable where it crosses photos or parts.
+  g.appendChild(
+    el("line", {
+      x1: label.leaderStart.x,
+      y1: label.leaderStart.y,
+      x2: label.anchorPoint.x,
+      y2: label.anchorPoint.y,
+      stroke: CARD,
+      "stroke-width": 4,
+      "stroke-linecap": "round",
+      opacity: 0.75,
+    }),
+  );
   g.appendChild(
     pen.rc.line(
       label.leaderStart.x,
@@ -433,7 +446,14 @@ function drawLabel(g: SVGGElement, pen: Pen, label: LaidOutLabel): void {
     ),
   );
   g.appendChild(
-    el("circle", { cx: label.anchorPoint.x, cy: label.anchorPoint.y, r: 3.6, fill: ANNOTATION }),
+    el("circle", {
+      cx: label.anchorPoint.x,
+      cy: label.anchorPoint.y,
+      r: 3.8,
+      fill: ANNOTATION,
+      stroke: CARD,
+      "stroke-width": 1.5,
+    }),
   );
   g.appendChild(
     text({
