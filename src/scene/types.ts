@@ -107,7 +107,8 @@ export type SceneStep = {
 export type Scene = {
   title?: string;
   subtitle?: string;
-  direction: Direction;
+  /** Main flow direction; when unset the layout picks the more readable one. */
+  direction?: Direction;
   nodes: SceneNode[];
   edges: SceneEdge[];
   groups: SceneGroup[];
@@ -120,7 +121,6 @@ export type Scene = {
 
 export function emptyScene(): Scene {
   return {
-    direction: "right",
     nodes: [],
     edges: [],
     groups: [],

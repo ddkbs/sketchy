@@ -18,6 +18,9 @@ export function mountScene(root: HTMLElement, scene: LaidOutScene, host: Host): 
   const tooltip = div("tooltip");
   tooltip.hidden = true;
   const rendered = renderScene(scene, FONT_CSS);
+  // Large scenes scroll sideways rather than shrinking text into illegibility.
+  rendered.svg.style.minWidth = `${Math.round(scene.width * 0.62)}px`;
+  rendered.svg.style.maxWidth = `${scene.width}px`;
   canvas.appendChild(rendered.svg);
   frame.append(toolbar(scene, rendered, host), canvas);
   if (scene.steps.length) frame.appendChild(stepper(scene, rendered));

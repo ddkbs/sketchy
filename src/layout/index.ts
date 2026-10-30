@@ -30,7 +30,11 @@ const elk = new ELK();
 const IMAGE_MAX_WIDTH = 560;
 const IMAGE_MAX_HEIGHT = 420;
 
-export type LayoutOptions = { editor?: Editor };
+export type LayoutOptions = {
+  editor?: Editor;
+  /** Extra ELK options for the root graph, e.g. for tuning experiments. */
+  elk?: Record<string, string>;
+};
 
 /** Geometry of an element framed by callouts and an optional caption. */
 type Frame = {
@@ -136,8 +140,19 @@ export async function layoutScene(
     );
   }
 
-  const graph = buildGraph(scene, parts, frames, nodeSizes);
-  const result = await elk.layout(graph);
+  const run = async (direction: "right" | "down") => {
+    const graph = buildGraph(scene, parts, frames, nodeSizes, direction);
+    Object.assign(graph.layoutOptions!, options.elk);
+    return elk.layout(graph);
+  };
+  let result: ElkNode;
+  if (scene.direction) {
+    result = await run(scene.direction);
+  } else {
+    // Try both flows and keep the one that stays larger in a chat-sized view.
+    const [right, down] = await Promise.all([run("right"), run("down")]);
+    result = readability(down) > readability(right) * 1.1 ? down : right;
+  }
 
   return collect(scene, parts, result, frames, nodeSizes, options);
 }
@@ -202,19 +217,20 @@ function buildGraph(
   parts: PartIndex,
   frames: Map<string, Frame>,
   nodeSizes: Map<string, { width: number; height: number }>,
+  direction: "right" | "down",
 ): ElkNode {
   const containers = new Map<string, ElkNode>();
   const root: ElkNode = {
     id: "__root",
     layoutOptions: {
       "elk.algorithm": "layered",
-      "elk.direction": scene.direction === "down" ? "DOWN" : "RIGHT",
+      "elk.direction": direction === "down" ? "DOWN" : "RIGHT",
       "elk.hierarchyHandling": "INCLUDE_CHILDREN",
       "elk.edgeRouting": "ORTHOGONAL",
       "elk.json.edgeCoords": "ROOT",
       "elk.json.shapeCoords": "ROOT",
       "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
-      "elk.layered.spacing.nodeNodeBetweenLayers": "80",
+      "elk.layered.spacing.nodeNodeBetweenLayers": "56",
       "elk.layered.spacing.edgeNodeBetweenLayers": "24",
       "elk.spacing.nodeNode": "44",
       "elk.spacing.edgeNode": "22",
@@ -556,6 +572,11 @@ function collect(
     images,
     steps: scene.steps,
   };
+}
+
+/** Scale at which a layout fits a typical chat viewport (about 720 × 640). */
+function readability(graph: ElkNode): number {
+  return Math.min(720 / (graph.width ?? 1), 640 / (graph.height ?? 1));
 }
 
 function sectionPoints(edge: ElkExtendedEdge): Point[] {

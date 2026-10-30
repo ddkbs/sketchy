@@ -72,8 +72,6 @@ function applyContext(): void {
     "--max-height",
     fullscreen ? "calc(100vh - 120px)" : dims?.maxHeight ? `${dims.maxHeight - 90}px` : "none",
   );
-  // Small screens scroll sideways rather than shrinking text into illegibility.
-  document.documentElement.style.setProperty("--min-width", fullscreen ? "0px" : "560px");
 }
 
 message("Sketching…");

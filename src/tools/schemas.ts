@@ -75,7 +75,10 @@ export const stepShape = {
 export const sceneMetaShape = {
   title: z.string().optional().describe("Headline of the drawing"),
   subtitle: z.string().optional(),
-  direction: z.enum(["right", "down"]).optional().describe("Main flow direction (default right)"),
+  direction: z
+    .enum(["right", "down"])
+    .optional()
+    .describe("Main flow direction; omit to let Sketchy choose the most readable"),
 };
 
 export const sketchShape = {
