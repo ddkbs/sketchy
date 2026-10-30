@@ -15,3 +15,7 @@ dist/
 .DS_Store
 .vscode/
 .idea/
+build/
+
+# Local tooling
+.claude/

@@ -1,7 +1,7 @@
 {
   "name": "sketchy",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "MCP server that explains things visually: clean, interactive diagrams rendered right inside the chat.",
   "type": "module",
   "license": "MIT",
@@ -28,17 +28,51 @@
     "node": ">=20"
   },
   "scripts": {
-    "build": "tsc",
+    "build": "npm run build:parts && npm run build:server && npm run build:viewer",
+    "build:parts": "node scripts/extract-parts.mjs",
+    "build:server": "tsc",
+    "build:viewer": "tsc -p viewer/tsconfig.json && vite build",
+    "start": "node dist/index.js",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json",
+    "preview": "tsx scripts/preview-data.ts && vite",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
+    "@fontsource/caveat": "^5.3.0",
+    "@fontsource/kalam": "^5.3.0",
+    "@happy-dom/global-registrator": "^21.0.4",
+    "@iconify-json/lucide": "^1.2.149",
+    "@iconify-json/simple-icons": "^1.2.101",
     "@types/node": "^26.6.4",
+    "@types/sql.js": "^1.4.11",
+    "@wokwi/elements": "^1.9.2",
+    "happy-dom": "^21.0.4",
     "prettier": "^3.9.9",
-    "typescript": "^7.0.2"
+    "roughjs": "^4.6.6",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.5",
+    "vite-plugin-singlefile": "^2.3.4",
+    "vitest": "^5.0.5"
   },
   "dependencies": {
+    "@modelcontextprotocol/ext-apps": "^1.7.5",
     "@modelcontextprotocol/sdk": "^1.32.1",
+    "elkjs": "^0.12.1",
+    "sql.js": "^1.15.2",
     "zod": "^4.6.5"
-  }
+  },
+  "bin": {
+    "sketchy": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "files": [
+    "dist",
+    "build/parts.json",
+    "build/viewer.html",
+    "LICENSE",
+    "README.md"
+  ]
 }
