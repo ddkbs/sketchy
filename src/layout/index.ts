@@ -151,7 +151,7 @@ export async function layoutScene(
   } else {
     // Try both flows and keep the one that stays larger in a chat-sized view.
     const [right, down] = await Promise.all([run("right"), run("down")]);
-    result = readability(down) > readability(right) * 1.1 ? down : right;
+    result = readability(down) > readability(right) * 1.15 ? down : right;
   }
 
   return collect(scene, parts, result, frames, nodeSizes, options);
@@ -574,9 +574,9 @@ function collect(
   };
 }
 
-/** Scale at which a layout fits a typical chat viewport (about 720 × 640). */
+/** Scale at which a layout fits a typical chat viewport (about 720 × 480). */
 function readability(graph: ElkNode): number {
-  return Math.min(720 / (graph.width ?? 1), 640 / (graph.height ?? 1));
+  return Math.min(720 / (graph.width ?? 1), 480 / (graph.height ?? 1));
 }
 
 function sectionPoints(edge: ElkExtendedEdge): Point[] {

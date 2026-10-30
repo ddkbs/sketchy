@@ -3,13 +3,16 @@
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 
-const root = new URL("..", import.meta.url).pathname;
+const root = fileURLToPath(new URL("..", import.meta.url));
 const stage = join(root, "build", "bundle");
 const platform = process.env.TARGET_PLATFORM ?? process.platform;
 const arch = process.env.TARGET_ARCH ?? process.arch;
 const { version } = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
-const run = (cmd, args, cwd = root) => execFileSync(cmd, args, { cwd, stdio: "inherit" });
+// npm and npx are .cmd shims on Windows and need a shell to start.
+const run = (cmd, args, cwd = root) =>
+  execFileSync(cmd, args, { cwd, stdio: "inherit", shell: process.platform === "win32" });
 
 run("npm", ["run", "build"]);
 
