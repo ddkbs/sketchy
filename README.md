@@ -1,36 +1,18 @@
-<h1 align="center">Sketchy</h1>
-
-<p align="center"><em>Totally sketchy explanations.</em></p>
-
-<p align="center">
-  <a href="https://github.com/ddkbs/sketchy/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ddkbs/sketchy?style=flat-square&color=1d1d1f"></a>
-  <a href="https://github.com/ddkbs/sketchy/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/ddkbs/sketchy/ci.yml?branch=main&style=flat-square&label=CI"></a>
-  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1a5fb4?style=flat-square"></a>
-</p>
-
-<p align="center">
-  <img alt="macOS" src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white">
-  <img alt="Windows" src="https://img.shields.io/badge/Windows-0078D4?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0zIDNoOC41djguNUgzek0xMi41IDNIMjF2OC41aC04LjV6TTMgMTIuNWg4LjVWMjFIM3pNMTIuNSAxMi41SDIxVjIxaC04LjV6Ii8+PC9zdmc+">
-  <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
-  <img alt="Claude Code" src="https://img.shields.io/badge/Claude_Code-D97757?style=for-the-badge&logo=claude&logoColor=white">
-  <img alt="MCP Apps" src="https://img.shields.io/badge/MCP_Apps-1d1d1f?style=for-the-badge&logo=modelcontextprotocol&logoColor=white">
-  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
-</p>
+# Sketchy
 
 Sketchy is an [MCP](https://modelcontextprotocol.io) server that lets Claude **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer.
 
 Claude decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. Claude never computes coordinates, so drawings come out precise and consistent every time.
 
-> [!NOTE]
-> Sketchy currently draws in **Claude Code** sessions of the Claude desktop app. Support for the regular **Claude chat** (desktop, web and mobile) is planned for an upcoming release.
-
-![The life of a web request, from the browser through CDN, load balancer and services to cache, database and queue](docs/images/request.png)
+![An interactive Sketchy drawing inside a Claude Code chat: what happens when you open a web page](docs/images/chat.png)
 
 ## What it can draw
 
 ### Systems, step by step
 
 Ask _"What happens when I open a web page?"_ and Claude draws the whole path, then walks you through it. Each step circles what matters in red pen and fades the rest. Use the buttons or the arrow keys.
+
+![The life of a web request, from the browser through CDN, load balancer and services to cache, database and queue](docs/images/request.png)
 
 ![Step 5 of the walkthrough: the orders service, cache and database are circled](docs/images/request-step.png)
 
