@@ -1,33 +1,61 @@
-# Sketchy
+<h1 align="center">Sketchy</h1>
 
-> Totally sketchy explanations.
+<p align="center"><em>Totally sketchy explanations.</em></p>
 
-Sketchy is an [MCP](https://modelcontextprotocol.io) server that lets Claude **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right inside the chat.
+<p align="center">
+  <a href="https://github.com/ddkbs/sketchy/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/ddkbs/sketchy?style=flat-square&color=1d1d1f"></a>
+  <a href="https://github.com/ddkbs/sketchy/actions/workflows/ci.yml"><img alt="CI" src="https://img.shields.io/github/actions/workflow/status/ddkbs/sketchy/ci.yml?branch=main&style=flat-square&label=CI"></a>
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/badge/license-MIT-1a5fb4?style=flat-square"></a>
+</p>
+
+<p align="center">
+  <img alt="macOS" src="https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white">
+  <img alt="Windows" src="https://img.shields.io/badge/Windows-0078D4?style=for-the-badge&logo=data:image/svg%2bxml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI+PHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0zIDNoOC41djguNUgzek0xMi41IDNIMjF2OC41aC04LjV6TTMgMTIuNWg4LjVWMjFIM3pNMTIuNSAxMi41SDIxVjIxaC04LjV6Ii8+PC9zdmc+">
+  <img alt="Linux" src="https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black">
+  <img alt="Claude Code" src="https://img.shields.io/badge/Claude_Code-D97757?style=for-the-badge&logo=claude&logoColor=white">
+  <img alt="MCP Apps" src="https://img.shields.io/badge/MCP_Apps-1d1d1f?style=for-the-badge&logo=modelcontextprotocol&logoColor=white">
+  <img alt="TypeScript" src="https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white">
+</p>
+
+Sketchy is an [MCP](https://modelcontextprotocol.io) server that lets Claude **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer.
 
 Claude decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. Claude never computes coordinates, so drawings come out precise and consistent every time.
 
 > [!NOTE]
 > Sketchy currently draws in **Claude Code** sessions of the Claude desktop app. Support for the regular **Claude chat** (desktop, web and mobile) is planned for an upcoming release.
 
-![A step of a walkthrough: the layout engine is circled, everything else fades](docs/images/steps.png)
+![The life of a web request, from the browser through CDN, load balancer and services to cache, database and queue](docs/images/request.png)
 
-## What it does
+## What it can draw
 
-### Architecture diagrams from your code
+### Systems, step by step
+
+Ask _"What happens when I open a web page?"_ and Claude draws the whole path, then walks you through it. Each step circles what matters in red pen and fades the rest. Use the buttons or the arrow keys.
+
+![Step 5 of the walkthrough: the orders service, cache and database are circled](docs/images/request-step.png)
+
+### Concepts from computer science and machine learning
+
+Sketchy is not limited to hardware. Structure, flow, comparison and metaphor patterns cover any topic, from transformers to TCP.
+
+![How an LLM picks the next word: tokenizer, embeddings, a transformer block with self-attention and MLP, and sampling](docs/images/transformer.png)
+
+### Your own code
 
 Ask _"Explain my repo"_. Claude reads the code and draws modules, folders and data flow. **Click a box to open the file** in VS Code, Cursor, Windsurf or Zed; hover to see what it does.
 
 ![Architecture of a repository with nested folders](docs/images/repo.png)
 
-### Step-by-step walkthroughs
+### Circuits from Arduino and ESP32 sketches
 
-Every drawing can carry steps. Click through them: the parts that matter are circled in red pen, everything else fades back. Arrow keys work too.
+Ask _"How is my sketch wired?"_. Claude reads `pinMode`, `digitalWrite` and friends, places real parts (50 boards, sensors, displays and modules from [wokwi-elements](https://github.com/wokwi/wokwi-elements)) and connects pins by name. Sketchy routes the wires and places the callouts.
 
-### Wiring diagrams for Arduino sketches
-
-Ask _"How is my sketch wired?"_. Claude reads `pinMode`, `digitalWrite` and friends, places real parts (50 boards, sensors, displays and modules from [wokwi-elements](https://github.com/wokwi/wokwi-elements)) and connects pins. Sketchy routes the wires and places the callouts.
-
-![Arduino Uno driving an LED through a resistor](docs/images/circuit.png)
+<table>
+  <tr>
+    <td width="58%"><img alt="ESP32 with PIR sensor, DHT22, buzzer and status LED" src="docs/images/esp32.png"></td>
+    <td width="42%"><img alt="Arduino Uno driving an LED through a resistor" src="docs/images/circuit.png"></td>
+  </tr>
+</table>
 
 ### Labeled photos
 
@@ -35,15 +63,21 @@ Claude finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 
 ![Photo of an Arduino Uno with labeled parts](docs/images/photo.jpg)
 
-### Comparisons, flows and metaphors
+### Comparisons and metaphors
 
-Sketchy ships explanation patterns (structure, flow, comparison, metaphor) so Claude picks the right kind of drawing for any topic, not just hardware.
+<table>
+  <tr>
+    <td width="50%"><img alt="SQL vs. NoSQL side by side" src="docs/images/comparison.png"></td>
+    <td width="50%"><img alt="CPU caches explained as a kitchen" src="docs/images/metaphor.png"></td>
+  </tr>
+</table>
 
-![SQL vs. NoSQL side by side](docs/images/comparison.png)
+### Interactive, exportable
 
-### Export
-
-Download any drawing as **SVG** or **PNG**, fonts included.
+- **Hover** any box, pin or wire for details.
+- **Click** a code node to open the file, or a photo credit to open its source.
+- **Export** as **SVG** or **PNG**, fonts included.
+- **Fullscreen** where the host supports it.
 
 ## Install
 
@@ -92,11 +126,13 @@ The endpoint is `http://<host>:3000/mcp` (Streamable HTTP, one scene per session
 
 ## Try it
 
-- _"Explain the Arduino Uno with Sketchy."_
+- _"What happens when I open a web page? Walk me through it."_
+- _"How does an LLM pick the next word?"_
 - _"Explain the architecture of /path/to/my/repo, then walk me through one request."_
 - _"How is this sketch wired?"_ followed by your `.ino` file
+- _"Show me a photo of a Raspberry Pi and label the ports."_
 - _"Compare TCP and UDP."_
-- _"Explain a CPU cache with an everyday metaphor."_
+- _"Explain CPU caches with an everyday metaphor."_
 
 The same patterns are available as prompts: `explain-structure`, `explain-flow`, `compare`, `metaphor`, `explain-repo` and `explain-circuit`.
 
