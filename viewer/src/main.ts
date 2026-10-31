@@ -29,9 +29,22 @@ const host: Host = {
   },
 };
 
-function show(result: CallToolResult): void {
-  const meta = result._meta?.[SCENE_META_KEY] as LaidOutScene | ModelPickerData | undefined;
-  const data = meta ?? (result.structuredContent as LaidOutScene | ModelPickerData | undefined);
+type ViewData = LaidOutScene | ModelPickerData;
+
+async function show(result: CallToolResult): Promise<void> {
+  let data = result._meta?.[SCENE_META_KEY] as ViewData | undefined;
+  const view = (result.structuredContent as { view?: unknown } | undefined)?.view;
+  // Some hosts strip custom _meta; fetch the payload by its id instead.
+  if (!data && typeof view === "string") {
+    const fetched = await app
+      .callServerTool({ name: "get_view", arguments: { view } })
+      .catch(() => undefined);
+    data = fetched?.isError ? undefined : (fetched?.structuredContent as ViewData | undefined);
+    if (!data) {
+      message("Sketchy could not load this drawing.");
+      return;
+    }
+  }
   if (data?.kind === "scene") {
     mountScene(root, data, {
       ...host,
@@ -75,7 +88,7 @@ function applyContext(): void {
 }
 
 message("Sketching…");
-app.ontoolresult = (result) => show(result as CallToolResult);
+app.ontoolresult = (result) => void show(result as CallToolResult);
 app.onhostcontextchanged = () => applyContext();
 await app.connect();
 applyContext();

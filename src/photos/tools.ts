@@ -4,21 +4,22 @@ import { registerAppTool } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
 import type { SceneBuilder } from "../scene/builder.js";
 import type { SceneImage } from "../scene/types.js";
-import { SCENE_META_KEY, VIEWER_URI, failFrom, tool } from "../server.js";
+import { VIEWER_URI, failFrom, tool } from "../server.js";
+import type { ViewStore } from "../views.js";
 import { MODELS, type ModelTier } from "./models.js";
 import { USER_AGENT } from "./search.js";
 import type { PhotoService } from "./service.js";
 
 /** Photo features plug into the server through this seam. */
 export interface PhotoTools {
-  register(server: McpServer, builder: SceneBuilder): void;
+  register(server: McpServer, builder: SceneBuilder, views: ViewStore): void;
   sceneImage(imageId: string): Promise<SceneImage>;
 }
 
 export function createPhotoTools(service: PhotoService): PhotoTools {
   return {
     sceneImage: (id) => service.sceneImage(id),
-    register(server, builder) {
+    register(server, builder, views) {
       server.registerTool(
         "find_image",
         {
@@ -150,7 +151,7 @@ export function createPhotoTools(service: PhotoService): PhotoTools {
               text: "The model picker is shown to the user. Once they have downloaded a model, call locate again.",
             },
           ],
-          _meta: { [SCENE_META_KEY]: pickerData(service) },
+          ...views.attach(pickerData(service)),
         }),
       );
 

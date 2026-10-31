@@ -55,6 +55,14 @@ describe("server", () => {
     expect((result._meta![SCENE_META_KEY] as LaidOutScene).wires).toHaveLength(1);
   });
 
+  it("serves the scene by view id for hosts that strip _meta", async () => {
+    const result = await call("sketch", { nodes: [{ id: "a", label: "A", icon: "database" }] });
+    const { view } = result.structuredContent as { view: string };
+    const fetched = await call("get_view", { view });
+    expect((fetched.structuredContent as unknown as LaidOutScene).kind).toBe("scene");
+    expect((await call("get_view", { view: "gone" })).isError).toBe(true);
+  });
+
   it("reports helpful errors", async () => {
     await call("new_scene");
     const unknownPart = await call("place_part", { id: "x", type: "arduino uno" });

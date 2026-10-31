@@ -25,12 +25,12 @@ import {
   wireShape,
 } from "./tools/schemas.js";
 import type { PhotoTools } from "./photos/tools.js";
+import { ViewStore } from "./views.js";
 
 export const VERSION = "0.1.0";
 export const VIEWER_URI = "ui://sketchy/viewer.html";
 export const VIEWER_URL = new URL("../build/viewer.html", import.meta.url);
-/** Result `_meta` key carrying data for the viewer only, not the model. */
-export const SCENE_META_KEY = "sketchy/scene";
+export { SCENE_META_KEY } from "./views.js";
 
 export type ServerOptions = {
   parts: PartIndex;
@@ -43,6 +43,7 @@ export type ServerOptions = {
 export function createServer(options: ServerOptions): McpServer {
   const { parts } = options;
   const builder = new SceneBuilder(parts);
+  const views = new ViewStore();
   const server = new McpServer(
     { name: "sketchy", version: VERSION },
     { instructions: INSTRUCTIONS },
@@ -84,8 +85,7 @@ export function createServer(options: ServerOptions): McpServer {
           text: `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`,
         },
       ],
-      structuredContent: { rendered: true, width: laidOut.width, height: laidOut.height },
-      _meta: { [SCENE_META_KEY]: laidOut },
+      ...views.attach(laidOut),
     };
   };
 
@@ -265,7 +265,26 @@ export function createServer(options: ServerOptions): McpServer {
     ({ query }) => suggestIcons(query, 15).join("\n") || `No icons match "${query}".`,
   );
 
-  options.photos?.register(server, builder);
+  options.photos?.register(server, builder, views);
+
+  registerAppTool(
+    server,
+    "get_view",
+    {
+      title: "Get viewer data",
+      description: "Returns the data behind a Sketchy view. Used by the viewer.",
+      inputSchema: { view: z.string() },
+      _meta: { ui: { visibility: ["app"] } },
+    },
+    async ({ view }): Promise<CallToolResult> => {
+      const payload = views.get(view);
+      if (!payload) return fail("This drawing has expired. Ask Claude to draw it again.");
+      return {
+        content: [{ type: "text", text: "Viewer data." }],
+        structuredContent: payload as Record<string, unknown>,
+      };
+    },
+  );
 
   for (const pattern of PATTERNS) {
     server.registerPrompt(
