@@ -50,6 +50,8 @@ Download any drawing as **SVG** or **PNG**, fonts included.
 2. Double-click it (or drag it into **Settings → Extensions**) and confirm.
 3. Optional: in the extension settings choose your editor and where Sketchy stores its data.
 
+Drawings appear inline in **Code** sessions of the desktop app. The **Chat** tab currently does not display views from locally installed extensions; there the tools run, but no drawing is shown. To use Sketchy in Chat, host it [remotely](#remote) and add it as a custom connector.
+
 The photo-labeling model is **not** part of the download. The first time Claude labels a photo, Sketchy asks you to pick a model size:
 
 | Model  | Download | Memory  | Notes                                     |

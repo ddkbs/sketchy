@@ -51,8 +51,8 @@ export function createServer(options: ServerOptions): McpServer {
   );
   const viewerHtml = options.viewerHtml ?? (() => readFileSync(VIEWER_URL, "utf8"));
 
-  // Clients that cannot embed the viewer still get the tool results, so Claude
-  // must not claim the user sees a drawing there.
+  // Hosts differ in whether they embed MCP App views; logging it makes a
+  // missing viewer easy to diagnose.
   const showsViewer = () =>
     getUiCapability(server.server.getClientCapabilities())?.mimeTypes?.includes(
       RESOURCE_MIME_TYPE,
@@ -97,9 +97,7 @@ export function createServer(options: ServerOptions): McpServer {
       content: [
         {
           type: "text",
-          text: showsViewer()
-            ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
-            : `Laid out${s.title ? ` "${s.title}"` : ""}: ${summary}. This client cannot display the Sketchy viewer, so the user does not see the drawing. Tell them it appears in clients with MCP Apps support (such as the Claude chat), and explain in text meanwhile.`,
+          text: `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`,
         },
       ],
       ...views.attach(laidOut),
