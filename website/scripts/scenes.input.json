@@ -1,0 +1,341 @@
+{
+  "web": {
+    "title": "What happens when you open a web page",
+    "subtitle": "From typing a URL to a rendered page, in about 200 ms",
+    "direction": "right",
+    "groups": [
+      {
+        "id": "device",
+        "label": "Your device"
+      },
+      {
+        "id": "cloud",
+        "label": "Cloud"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "browser",
+        "label": "Browser",
+        "icon": "lucide:globe",
+        "group": "device"
+      },
+      {
+        "id": "dns",
+        "label": "DNS",
+        "icon": "lucide:book-open"
+      },
+      {
+        "id": "cdn",
+        "label": "CDN",
+        "icon": "simple-icons:cloudflare"
+      },
+      {
+        "id": "server",
+        "label": "App server",
+        "icon": "simple-icons:nodedotjs",
+        "group": "cloud",
+        "tone": "accent"
+      },
+      {
+        "id": "cache",
+        "label": "Cache",
+        "icon": "simple-icons:redis",
+        "group": "cloud"
+      },
+      {
+        "id": "db",
+        "label": "Database",
+        "shape": "cylinder",
+        "icon": "simple-icons:postgresql",
+        "group": "cloud"
+      },
+      {
+        "id": "queue",
+        "label": "Queue",
+        "icon": "simple-icons:apachekafka",
+        "group": "cloud"
+      }
+    ],
+    "edges": [
+      {
+        "from": "browser",
+        "to": "dns",
+        "label": "lookup",
+        "style": "dashed"
+      },
+      {
+        "from": "browser",
+        "to": "cdn",
+        "label": "HTTPS"
+      },
+      {
+        "from": "cdn",
+        "to": "server",
+        "label": "cache miss"
+      },
+      {
+        "from": "server",
+        "to": "cache"
+      },
+      {
+        "from": "server",
+        "to": "db"
+      },
+      {
+        "from": "server",
+        "to": "queue",
+        "style": "dashed"
+      }
+    ],
+    "steps": [
+      {
+        "title": "Find the address",
+        "text": "The browser asks DNS which IP address belongs to the domain.",
+        "highlight": ["browser", "dns"]
+      },
+      {
+        "title": "Nearest edge",
+        "text": "A CDN close to you terminates TLS and answers static files from its cache.",
+        "highlight": ["browser", "cdn"]
+      },
+      {
+        "title": "Your code runs",
+        "text": "Only cache misses reach the app server, which builds the page.",
+        "highlight": ["cdn", "server"]
+      },
+      {
+        "title": "Fetch the data",
+        "text": "Hot data comes from the cache; the database answers the rest.",
+        "highlight": ["server", "cache", "db"]
+      },
+      {
+        "title": "Defer slow work",
+        "text": "Emails and other slow jobs wait in a queue, so the page does not.",
+        "highlight": ["server", "queue"]
+      }
+    ]
+  },
+  "circuit": {
+    "title": "ESP32 room monitor",
+    "subtitle": "Motion alarm with temperature and humidity sensing",
+    "parts": [
+      {
+        "id": "esp",
+        "type": "esp32-devkit-v1",
+        "label": "ESP32 DevKit"
+      },
+      {
+        "id": "dht",
+        "type": "dht22",
+        "label": "DHT22"
+      },
+      {
+        "id": "pir",
+        "type": "pir-motion-sensor",
+        "label": "PIR sensor"
+      },
+      {
+        "id": "bz",
+        "type": "buzzer",
+        "label": "Buzzer"
+      },
+      {
+        "id": "led",
+        "type": "led",
+        "label": "Status LED",
+        "props": {
+          "color": "green"
+        }
+      },
+      {
+        "id": "r1",
+        "type": "resistor",
+        "label": "220 \u03a9",
+        "props": {
+          "value": "220"
+        }
+      }
+    ],
+    "wires": [
+      {
+        "from": "esp.D4",
+        "to": "dht.SDA",
+        "color": "green"
+      },
+      {
+        "from": "esp.3V3",
+        "to": "dht.VCC",
+        "color": "red"
+      },
+      {
+        "from": "esp.GND.1",
+        "to": "dht.GND",
+        "color": "black"
+      },
+      {
+        "from": "esp.D27",
+        "to": "pir.OUT",
+        "color": "yellow"
+      },
+      {
+        "from": "esp.VIN",
+        "to": "pir.VCC",
+        "color": "red"
+      },
+      {
+        "from": "esp.GND.2",
+        "to": "pir.GND",
+        "color": "black"
+      },
+      {
+        "from": "esp.D25",
+        "to": "bz.2",
+        "color": "green"
+      },
+      {
+        "from": "esp.GND.2",
+        "to": "bz.1",
+        "color": "black"
+      },
+      {
+        "from": "esp.D2",
+        "to": "r1.1",
+        "color": "orange"
+      },
+      {
+        "from": "r1.2",
+        "to": "led.A",
+        "color": "orange"
+      },
+      {
+        "from": "led.C",
+        "to": "esp.GND.1",
+        "color": "black"
+      }
+    ],
+    "labels": [
+      {
+        "target": "pir",
+        "anchor": "OUT",
+        "text": "HIGH on motion \u2192 interrupt on D27"
+      },
+      {
+        "target": "dht",
+        "anchor": "SDA",
+        "text": "one-wire data, read every 2 s"
+      },
+      {
+        "target": "bz",
+        "anchor": "2",
+        "text": "PWM tone from D25"
+      }
+    ]
+  },
+  "metaphor": {
+    "title": "CPU caches, explained as a kitchen",
+    "direction": "right",
+    "groups": [
+      {
+        "id": "real",
+        "label": "Computer"
+      },
+      {
+        "id": "kitchen",
+        "label": "Kitchen"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "reg",
+        "label": "Registers",
+        "description": "< 1 ns",
+        "group": "real",
+        "icon": "lucide:cpu"
+      },
+      {
+        "id": "l1",
+        "label": "L1 cache",
+        "description": "~1 ns",
+        "group": "real"
+      },
+      {
+        "id": "l3",
+        "label": "L3 cache",
+        "description": "~10 ns",
+        "group": "real"
+      },
+      {
+        "id": "ram",
+        "label": "RAM",
+        "description": "~100 ns",
+        "group": "real",
+        "icon": "lucide:memory-stick"
+      },
+      {
+        "id": "ssd",
+        "label": "SSD",
+        "description": "~100 \u00b5s",
+        "group": "real",
+        "shape": "cylinder"
+      },
+      {
+        "id": "hands",
+        "label": "In your hands",
+        "group": "kitchen",
+        "icon": "lucide:hand"
+      },
+      {
+        "id": "counter",
+        "label": "Countertop",
+        "group": "kitchen"
+      },
+      {
+        "id": "fridge",
+        "label": "Fridge",
+        "group": "kitchen",
+        "icon": "lucide:refrigerator"
+      },
+      {
+        "id": "pantry",
+        "label": "Pantry",
+        "group": "kitchen"
+      },
+      {
+        "id": "store",
+        "label": "Supermarket",
+        "group": "kitchen",
+        "icon": "lucide:store",
+        "tone": "accent"
+      }
+    ],
+    "edges": [
+      {
+        "from": "reg",
+        "to": "hands",
+        "style": "dashed"
+      },
+      {
+        "from": "l1",
+        "to": "counter",
+        "style": "dashed"
+      },
+      {
+        "from": "l3",
+        "to": "fridge",
+        "style": "dashed"
+      },
+      {
+        "from": "ram",
+        "to": "pantry",
+        "style": "dashed"
+      },
+      {
+        "from": "ssd",
+        "to": "store",
+        "style": "dashed",
+        "label": "a trip!"
+      }
+    ]
+  }
+}
