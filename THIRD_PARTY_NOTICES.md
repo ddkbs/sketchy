@@ -29,6 +29,12 @@ Brand logos from Simple Icons are trademarks of their respective owners.
 | --------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------- | ------- |
 | [Florence-2](https://huggingface.co/microsoft/Florence-2-base-ft) by Microsoft ([ONNX exports](https://huggingface.co/onnx-community/Florence-2-base-ft)) | Locating parts and text in photos | MIT     |
 
+## Website
+
+The project website in `website/` adapts components (Topography, Target Cursor, Decrypted
+Text, Shiny Text, Magnet) from [React Bits](https://reactbits.dev), licensed under MIT with
+the Commons Clause.
+
 ## Photos
 
 Photos come from [Wikimedia Commons](https://commons.wikimedia.org) and
