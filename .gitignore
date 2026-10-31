@@ -1,9 +1,7 @@
-# Local agent notes
-CLAUDE.md
-
 # Dependencies and build output
 node_modules/
 dist/
+build/
 *.mcpb
 
 # Logs and local environment
@@ -15,7 +13,7 @@ dist/
 .DS_Store
 .vscode/
 .idea/
-build/
 
 # Local tooling
 .claude/
+CLAUDE.md
