@@ -21,9 +21,17 @@ const editor = parseEditor(process.env.SKETCHY_EDITOR);
 // Photo grounding needs a local model, so remote deployments leave it off.
 const photosEnabled = (process.env.SKETCHY_PHOTOS || (values.http ? "off" : "on")) !== "off";
 const dataDir = defaultDataDir();
-const photos = photosEnabled
-  ? createPhotoTools(new PhotoService(await LocalDatabase.open(dataDir), dataDir))
-  : undefined;
+const photos = photosEnabled ? await openPhotos(dataDir) : undefined;
+
+// A broken data folder must not take the drawing tools down with it.
+async function openPhotos(dir: string) {
+  try {
+    return createPhotoTools(new PhotoService(await LocalDatabase.open(dir), dir));
+  } catch (error) {
+    console.error(`sketchy: photo labeling disabled, cannot use data folder ${dir}:`, error);
+    return undefined;
+  }
+}
 
 if (values.http) {
   serveHttp(Number(values.port), () => createServer({ parts, photos, editor }));

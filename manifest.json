@@ -107,8 +107,7 @@
     "data_dir": {
       "type": "directory",
       "title": "Data folder",
-      "description": "Where Sketchy keeps downloaded models and cached photos.",
-      "default": "${HOME}/.sketchy",
+      "description": "Where Sketchy keeps downloaded models and cached photos. Leave empty for ~/.sketchy.",
       "required": false
     }
   },

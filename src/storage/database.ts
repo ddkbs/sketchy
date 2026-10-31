@@ -6,7 +6,10 @@ import { loadSqlite } from "./sqlite.js";
 
 export function defaultDataDir(): string {
   // Empty values arrive from unset bundle settings; treat them as unset.
-  return process.env.SKETCHY_DATA_DIR || join(homedir(), ".sketchy");
+  const configured = process.env.SKETCHY_DATA_DIR?.trim();
+  if (!configured) return join(homedir(), ".sketchy");
+  // Hosts do not always substitute variables in settings, so expand the common forms here.
+  return configured.replace(/^(~|\$\{HOME\}|\$HOME)(?=$|[\\/])/, homedir());
 }
 
 /**
