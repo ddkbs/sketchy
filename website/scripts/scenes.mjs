@@ -26,4 +26,4 @@ for (const [name, args] of Object.entries(input)) {
   console.log(`${name}: ${Math.round(scene.width)}×${Math.round(scene.height)}`);
 }
 await client.close();
-writeFileSync(new URL("../src/demo/scenes.json", import.meta.url), JSON.stringify(out));
+writeFileSync(new URL("../src/shared/demo/scenes.json", import.meta.url), JSON.stringify(out));

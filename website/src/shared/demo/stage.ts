@@ -1,7 +1,7 @@
-import type { LaidOutScene } from "../../../src/scene/laid-out.js";
-import { FONT_CSS } from "../../../viewer/src/fonts.js";
-import { fitText, renderScene, type RenderedScene } from "../../../viewer/src/render.js";
-import { applyStep } from "../../../viewer/src/steps.js";
+import type { LaidOutScene } from "../../../../src/scene/laid-out.js";
+import { FONT_CSS } from "../../../../viewer/src/fonts.js";
+import { fitText, renderScene, type RenderedScene } from "../../../../viewer/src/render.js";
+import { applyStep } from "../../../../viewer/src/steps.js";
 
 /** Draw order for the build animation: frames first, then boxes, then what connects them. */
 const ORDER = ["group", "node", "part", "image", "edge", "wire", "label"];

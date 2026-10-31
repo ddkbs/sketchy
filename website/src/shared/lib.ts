@@ -59,8 +59,17 @@ export function detectPlatform(): Platform {
   return "darwin-arm64";
 }
 
+/** Download link and label for the visitor's platform; the release page until assets load. */
+export function useDownload(): { href: string; label: string; version?: string } {
+  const { assets, version } = useRepoInfo();
+  const platform = detectPlatform();
+  return {
+    href: assets[platform] ?? RELEASES_URL,
+    label: PLATFORMS.find((p) => p.id === platform)!.label,
+    version,
+  };
+}
+
 export function formatStars(n: number): string {
   return n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n);
 }
-
-export const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
