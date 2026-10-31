@@ -3,6 +3,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import {
   RESOURCE_MIME_TYPE,
+  getUiCapability,
   registerAppResource,
   registerAppTool,
 } from "@modelcontextprotocol/ext-apps/server";
@@ -50,6 +51,20 @@ export function createServer(options: ServerOptions): McpServer {
   );
   const viewerHtml = options.viewerHtml ?? (() => readFileSync(VIEWER_URL, "utf8"));
 
+  // Clients that cannot embed the viewer still get the tool results, so Claude
+  // must not claim the user sees a drawing there.
+  const showsViewer = () =>
+    getUiCapability(server.server.getClientCapabilities())?.mimeTypes?.includes(
+      RESOURCE_MIME_TYPE,
+    ) ?? false;
+  server.server.oninitialized = () => {
+    const client = server.server.getClientVersion();
+    console.error(
+      `sketchy: connected to ${client?.name ?? "unknown client"} ${client?.version ?? ""}, ` +
+        `inline viewer ${showsViewer() ? "supported" : "not supported"}`,
+    );
+  };
+
   registerAppResource(
     server,
     "Sketchy viewer",
@@ -82,7 +97,9 @@ export function createServer(options: ServerOptions): McpServer {
       content: [
         {
           type: "text",
-          text: `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`,
+          text: showsViewer()
+            ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
+            : `Laid out${s.title ? ` "${s.title}"` : ""}: ${summary}. This client cannot display the Sketchy viewer, so the user does not see the drawing. Tell them it appears in clients with MCP Apps support (such as the Claude chat), and explain in text meanwhile.`,
         },
       ],
       ...views.attach(laidOut),
