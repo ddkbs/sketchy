@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-First release, planned as 0.1.0.
+## [0.1.0] - 2026-10-31
 
 ### Added
 
@@ -22,4 +22,10 @@ First release, planned as 0.1.0.
 - MCP Bundle packaging for Claude Desktop, robust against unset extension settings.
 - Viewer fallback that fetches the drawing by view id when a host does not forward result metadata.
 
-[Unreleased]: https://github.com/ddkbs/sketchy/commits/main
+### Known limitations
+
+- Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
+- Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
+
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/ddkbs/sketchy/releases/tag/v0.1.0

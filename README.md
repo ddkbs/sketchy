@@ -6,6 +6,9 @@ Sketchy is an [MCP](https://modelcontextprotocol.io) server that lets Claude **d
 
 Claude decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. Claude never computes coordinates, so drawings come out precise and consistent every time.
 
+> [!NOTE]
+> Sketchy currently draws in **Claude Code** sessions of the Claude desktop app. Support for the regular **Claude chat** (desktop, web and mobile) is planned for an upcoming release.
+
 ![A step of a walkthrough: the layout engine is circled, everything else fades](docs/images/steps.png)
 
 ## What it does
@@ -44,13 +47,14 @@ Download any drawing as **SVG** or **PNG**, fonts included.
 
 ## Install
 
-### Claude Desktop
+### Claude desktop app
 
-1. Download the `.mcpb` file for your platform from the [latest release](https://github.com/ddkbs/sketchy/releases/latest).
+1. Download the `.mcpb` file for your platform from the [latest release](https://github.com/ddkbs/sketchy/releases/latest) (macOS on Apple Silicon, Windows or Linux).
 2. Double-click it (or drag it into **Settings → Extensions**) and confirm.
 3. Optional: in the extension settings choose your editor and where Sketchy stores its data.
+4. Open the **Code** tab and start a session. Drawings appear inline next to Claude's answer.
 
-Drawings appear inline in **Code** sessions of the desktop app. The **Chat** tab currently does not display views from locally installed extensions; there the tools run, but no drawing is shown. To use Sketchy in Chat, host it [remotely](#remote) and add it as a custom connector.
+In the **Chat** tab the tools run, but the drawing is not shown yet: the chat does not display views from locally installed extensions. Chat support is planned.
 
 The photo-labeling model is **not** part of the download. The first time Claude labels a photo, Sketchy asks you to pick a model size:
 
@@ -76,9 +80,9 @@ Sketchy is a standard MCP server and works in any client that supports [MCP Apps
 }
 ```
 
-### Remote
+### Remote (experimental)
 
-The drawing core has no local dependencies and can be hosted for Claude on the web and on mobile:
+The drawing core has no local dependencies and can run as a hosted server. This is the groundwork for Claude chat support and not yet a supported setup:
 
 ```bash
 node dist/index.js --http --port 3000
