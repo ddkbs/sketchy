@@ -25,7 +25,6 @@ import {
   GROUP_FILL,
   INK,
   INK_SOFT,
-  MARKER,
   MUTED,
   PAPER,
   WIRE,
@@ -76,7 +75,7 @@ export function renderScene(scene: LaidOutScene, fontCss: string): RenderedScene
     elements.set(id, g);
   };
 
-  if (scene.title) drawTitle(svg, pen, scene);
+  if (scene.title) drawTitle(svg, scene);
 
   for (const group of scene.groups)
     add(groupsLayer, group.id, "group", (g) => drawGroup(g, pen, group));
@@ -92,24 +91,9 @@ export function renderScene(scene: LaidOutScene, fontCss: string): RenderedScene
   return { svg, elements, overlay, pen };
 }
 
-function drawTitle(svg: SVGSVGElement, pen: Pen, scene: LaidOutScene): void {
+function drawTitle(svg: SVGSVGElement, scene: LaidOutScene): void {
   const title = scene.title!;
   const g = el("g", { class: "title" });
-  // Marker stroke under the headline, drawn first so the text sits on it.
-  const y = title.y + title.height - 9;
-  g.appendChild(
-    pen.rc.line(
-      title.x - 4,
-      y,
-      title.x + Math.min(title.width, 520) + 6,
-      y + 2,
-      opts(pen, "title", {
-        stroke: MARKER,
-        strokeWidth: 11,
-        roughness: 1.6,
-      }),
-    ),
-  );
   g.appendChild(
     text({ x: title.x, y: title.y, lines: title.lines, size: FONT.title, weight: 700 }),
   );
