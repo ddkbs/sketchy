@@ -27,3 +27,14 @@ describe("defaultDataDir", () => {
     expect(defaultDataDir()).toBe("/data/sketchy");
   });
 });
+
+describe("setting", () => {
+  it("treats unsubstituted bundle placeholders as unset", async () => {
+    const { setting } = await import("../src/env.js");
+    process.env.SKETCHY_TEST_SETTING = "${user_config.editor}";
+    expect(setting("SKETCHY_TEST_SETTING")).toBeUndefined();
+    process.env.SKETCHY_TEST_SETTING = "cursor";
+    expect(setting("SKETCHY_TEST_SETTING")).toBe("cursor");
+    delete process.env.SKETCHY_TEST_SETTING;
+  });
+});

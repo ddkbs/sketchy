@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 import { parseArgs } from "node:util";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { setting } from "./env.js";
 import { serveHttp } from "./http.js";
 import { parseEditor } from "./layout/links.js";
 import { PartIndex } from "./parts/index.js";
@@ -17,9 +18,9 @@ const { values } = parseArgs({
 });
 
 const parts = await PartIndex.load();
-const editor = parseEditor(process.env.SKETCHY_EDITOR);
+const editor = parseEditor(setting("SKETCHY_EDITOR"));
 // Photo grounding needs a local model, so remote deployments leave it off.
-const photosEnabled = (process.env.SKETCHY_PHOTOS || (values.http ? "off" : "on")) !== "off";
+const photosEnabled = (setting("SKETCHY_PHOTOS") ?? (values.http ? "off" : "on")) !== "off";
 const dataDir = defaultDataDir();
 const photos = photosEnabled ? await openPhotos(dataDir) : undefined;
 

@@ -2,11 +2,11 @@ import { mkdirSync, readFileSync, renameSync, writeFileSync, existsSync } from "
 import { homedir } from "node:os";
 import { join } from "node:path";
 import type { Database } from "sql.js";
+import { setting } from "../env.js";
 import { loadSqlite } from "./sqlite.js";
 
 export function defaultDataDir(): string {
-  // Empty values arrive from unset bundle settings; treat them as unset.
-  const configured = process.env.SKETCHY_DATA_DIR?.trim();
+  const configured = setting("SKETCHY_DATA_DIR");
   if (!configured) return join(homedir(), ".sketchy");
   // Hosts do not always substitute variables in settings, so expand the common forms here.
   return configured.replace(/^(~|\$\{HOME\}|\$HOME)(?=$|[\\/])/, homedir());
