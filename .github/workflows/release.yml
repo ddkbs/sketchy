@@ -26,7 +26,12 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run pack
+      # The skill is platform independent, so one runner builds it.
+      - if: matrix.os == 'ubuntu-latest'
+        run: npm run build:skill
       - uses: softprops/action-gh-release@v2
         with:
-          files: "*.mcpb"
+          files: |
+            *.mcpb
+            sketchy-skill-*.zip
           draft: true

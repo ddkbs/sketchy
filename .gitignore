@@ -3,6 +3,7 @@ node_modules/
 dist/
 build/
 *.mcpb
+sketchy-skill-*.zip
 
 # Logs and local environment
 *.log
