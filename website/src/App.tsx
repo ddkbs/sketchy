@@ -213,7 +213,10 @@ function Footer() {
         <a href="https://davidkubus.dev/impressum" className="cursor-target hover:text-foreground">
           Impressum
         </a>
-        <a href="https://davidkubus.dev/datenschutz" className="cursor-target hover:text-foreground">
+        <a
+          href="https://davidkubus.dev/datenschutz"
+          className="cursor-target hover:text-foreground"
+        >
           Datenschutz
         </a>
       </span>
