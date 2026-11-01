@@ -80,6 +80,18 @@ The photo-labeling model is **not** part of the download. The first time Claude 
 | Medium | ~830 MB  | ~2.5 GB | Better grounding of small parts           |
 | Large  | ~3.1 GB  | ~4.5 GB | Most precise                              |
 
+### Claude Code in the terminal
+
+The terminal `claude` does not use desktop extensions, so register Sketchy once for all your projects:
+
+```bash
+git clone https://github.com/ddkbs/sketchy.git
+cd sketchy && npm install && npm run build
+claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"
+```
+
+Run `claude mcp list` to check that it is connected.
+
 ### Other MCP clients
 
 Sketchy is a standard MCP server and works in any client that supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps):
@@ -95,16 +107,6 @@ Sketchy is a standard MCP server and works in any client that supports [MCP Apps
   }
 }
 ```
-
-### Remote (experimental)
-
-The drawing core has no local dependencies and can run as a hosted server. This is the groundwork for Claude chat support and not yet a supported setup:
-
-```bash
-node dist/index.js --http --port 3000
-```
-
-The endpoint is `http://<host>:3000/mcp` (Streamable HTTP, one scene per session). Photo labeling stays off in this mode unless `SKETCHY_PHOTOS=on`.
 
 ## Try it
 

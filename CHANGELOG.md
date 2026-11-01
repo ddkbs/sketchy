@@ -6,6 +6,14 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Install steps for Claude Code in the terminal.
+
+### Fixed
+
+- The SVG and PNG buttons now work in hosts without file downloads: the export opens as an image to save, drag out or copy.
+
 ## [0.1.0] - 2026-10-31
 
 ### Added
