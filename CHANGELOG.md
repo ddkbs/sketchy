@@ -6,6 +6,13 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.4] - 2026-11-02
+
+### Changed
+
+- The chat skill loads the browser bundle of the current minor version, which every patch release refreshes, so installed skills pick up fixes without a new upload.
+- The install guide starts with one question, where you use Claude: the skill for the chat, the extension for coding.
+
 ## [0.1.3] - 2026-11-02
 
 ### Added
@@ -54,7 +61,8 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.3...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.4...HEAD
+[0.1.4]: https://github.com/ddkbs/sketchy/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ddkbs/sketchy/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ddkbs/sketchy/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ddkbs/sketchy/compare/v0.1.0...v0.1.1
