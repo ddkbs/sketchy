@@ -3,6 +3,7 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { LaidOutScene } from "../../src/scene/laid-out.js";
 import { mountScene, type Host } from "./scene-view.js";
 import { mountModelPicker, type ModelPickerData } from "./model-picker.js";
+import { showSaveSheet } from "./save-sheet.js";
 import "./styles.css";
 
 const SCENE_META_KEY = "sketchy/scene";
@@ -13,15 +14,19 @@ const host: Host = {
   openLink(url) {
     void app.openLink({ url });
   },
-  async download({ name, mimeType, text, base64 }) {
+  async download(file) {
+    const { name, mimeType, text, base64 } = file;
+    const frame = root.querySelector<HTMLElement>(".frame") ?? root;
+    // Hosts without downloadFile run the view in a sandbox that also blocks <a download>.
+    if (!app.getHostCapabilities()?.downloadFile) return showSaveSheet(frame, file);
     const resource =
       text !== undefined
         ? { uri: `file:///${name}`, mimeType, text }
         : { uri: `file:///${name}`, mimeType, blob: base64! };
-    const result = await app
+    // isError means the user declined or cancelled; only a failed request needs the fallback.
+    await app
       .downloadFile({ contents: [{ type: "resource", resource }] })
-      .catch(() => ({ isError: true }));
-    if (result.isError) fallbackDownload(name, mimeType, text, base64);
+      .catch(() => showSaveSheet(frame, file));
   },
   toggleFullscreen() {
     const mode = app.getHostContext()?.displayMode === "fullscreen" ? "inline" : "fullscreen";
@@ -64,17 +69,6 @@ function message(text: string): void {
   p.className = "message";
   p.textContent = text;
   root.replaceChildren(p);
-}
-
-function fallbackDownload(name: string, mimeType: string, text?: string, base64?: string): void {
-  const href =
-    text !== undefined
-      ? `data:${mimeType};charset=utf-8,${encodeURIComponent(text)}`
-      : `data:${mimeType};base64,${base64}`;
-  const a = document.createElement("a");
-  a.href = href;
-  a.download = name;
-  a.click();
 }
 
 function applyContext(): void {

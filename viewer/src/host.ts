@@ -7,12 +7,14 @@ const select = document.getElementById("sample") as HTMLSelectElement;
 const frame = document.getElementById("view") as HTMLIFrameElement;
 const log = (line: string) => (document.getElementById("log")!.textContent += `${line}\n`);
 for (const name of Object.keys(samples)) select.add(new Option(name, name));
-select.value = new URLSearchParams(location.search).get("sample") ?? select.value;
+const params = new URLSearchParams(location.search);
+select.value = params.get("sample") ?? select.value;
 
+// `?nodownload` mimics hosts that do not offer file downloads.
 const bridge = new AppBridge(
   null,
   { name: "sketchy-dev-host", version: "0.0.0" },
-  { openLinks: {}, downloadFile: {} },
+  params.has("nodownload") ? { openLinks: {} } : { openLinks: {}, downloadFile: {} },
 );
 bridge.onsizechange = ({ height }) => {
   if (height) frame.style.height = `${height}px`;

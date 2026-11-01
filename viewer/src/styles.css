@@ -183,6 +183,38 @@ button:disabled {
   font-size: 13px;
 }
 
+.save-sheet {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  background: var(--paper);
+}
+
+.save-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+}
+
+.save-head span {
+  flex: 1;
+}
+
+.save-sheet img {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  object-fit: contain;
+  border: 1.5px dashed var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+
 .message {
   padding: 18px;
   color: var(--ink-soft);
