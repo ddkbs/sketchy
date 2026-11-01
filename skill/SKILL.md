@@ -1,6 +1,6 @@
 ---
 name: sketchy
-description: Draws hand-sketched, interactive diagrams (architecture, flows with step-by-step walkthroughs, comparisons, metaphors, Arduino circuits) as an HTML page the user can open in the chat. Use whenever a concept, system, process or comparison is easier to understand as a drawing, or when the user asks for a sketch, diagram or visual explanation. In the regular Claude chat, use this skill even if Sketchy MCP tools are connected, because the chat does not display their drawings.
+description: Draws hand-sketched, interactive diagrams (architecture, flows with step-by-step walkthroughs, comparisons, metaphors, Arduino circuits) right in the chat. Use whenever a concept, system, process or comparison is easier to understand as a drawing, or when the user asks for a sketch, diagram or visual explanation. In the regular Claude chat, use this skill even if Sketchy MCP tools are connected, because the chat does not display their drawings.
 ---
 
 # Sketchy
@@ -11,17 +11,24 @@ You describe **what** to draw as JSON; Sketchy computes every position and rende
 
 ## Workflow
 
-1. Write the scene as JSON to a file, e.g. `/tmp/scene.json`.
-2. Render it with the script in this skill's folder (Node.js, no network needed):
+Draw inline with your visualization tool (the one that renders HTML widgets in the conversation). Pass this HTML as the widget code, with the scene JSON in the `draw` call:
 
-   ```bash
-   node <skill-folder>/scripts/render.mjs /tmp/scene.json /mnt/user-data/outputs/<short-name>.html
-   ```
+```html
+<h2 class="sr-only">One-sentence summary of the drawing</h2>
+<div id="sketchy" style="min-height: 320px"></div>
+<script src="{{CDN}}/sketchy.js"></script>
+<script>
+  Sketchy.draw("#sketchy", {/* scene JSON, see below */});
+</script>
+```
 
-   Write to the folder whose files the user can open (in claude.ai: `/mnt/user-data/outputs`).
+Keep the widget code exactly like this: no other markup, styles or text. Sketchy brings its own hand-drawn style, and the drawing appears in the chat with hover details and step navigation. Then explain the drawing in 2–4 sentences in your reply instead of describing it again. If the widget shows "Sketchy could not draw this", fix the field the message names and draw again.
 
-3. If the script prints an error, fix the field it names and run it again.
-4. Share the HTML file with the user so it opens in the chat, then explain the drawing in 2–4 sentences instead of describing it again.
+Without a visualization tool, render a standalone page with the script in this skill's folder (Node.js, no network needed) and share the file:
+
+```bash
+node <skill-folder>/scripts/render.mjs /tmp/scene.json /mnt/user-data/outputs/<short-name>.html
+```
 
 ## Scene JSON
 
@@ -76,7 +83,7 @@ Quality rules: 3–12 nodes; short labels with details in `description`; icons s
 
 ## Circuits
 
-Find part types and pin names first:
+Find part types and pin names first (needs code execution):
 
 ```bash
 node <skill-folder>/scripts/render.mjs --parts "distance sensor"

@@ -1,7 +1,7 @@
 // Builds the Claude skill: SKILL.md, one bundled render script, the part
 // catalog and a standalone viewer, zipped as sketchy-skill-<version>.zip. The skill draws in the Claude chat without a server.
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, readFileSync, rmSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
 
@@ -80,7 +80,12 @@ await viteBuild({
 cpSync(`${root}build/skill/viewer/standalone.html`, `${scripts}/viewer.html`);
 rmSync(`${root}build/skill/viewer`, { recursive: true });
 cpSync(`${root}build/parts.json`, `${scripts}/parts.json`);
-cpSync(`${root}skill/SKILL.md`, `${out}/SKILL.md`);
+// Widgets load the browser bundle of this exact version from jsDelivr.
+const cdn = `https://cdn.jsdelivr.net/gh/ddkbs/sketchy@cdn/${pkg.version}`;
+writeFileSync(
+  `${out}/SKILL.md`,
+  readFileSync(`${root}skill/SKILL.md`, "utf8").replaceAll("{{CDN}}", cdn),
+);
 cpSync(`${root}LICENSE`, `${out}/LICENSE`);
 
 const zip = `${root}sketchy-skill-${pkg.version}.zip`;
