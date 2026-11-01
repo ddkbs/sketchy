@@ -1,5 +1,6 @@
 import { Analytics } from "@vercel/analytics/react";
 import { motion } from "motion/react";
+import { useState, type ReactNode } from "react";
 import { CAPABILITIES, TAGLINE } from "./shared/content";
 import { ChatDemo } from "./shared/demo/ChatDemo";
 import { Docs } from "./shared/Docs";
@@ -7,6 +8,10 @@ import { useDownload } from "./shared/lib";
 import { LogoMark } from "./shared/Logo";
 import { GithubIcon, Nav, Stars } from "./shared/Nav";
 import { REPO_URL } from "./shared/lib";
+
+const TERMINAL_INSTALL = `git clone https://github.com/ddkbs/sketchy.git
+cd sketchy && npm install && npm run build
+claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"`;
 import DecryptedText from "./vendor/DecryptedText";
 import Magnet from "./vendor/Magnet";
 import ShinyText from "./vendor/ShinyText";
@@ -23,9 +28,16 @@ const up = (delay: number) => ({
 const HOME = "/";
 const DOCS = "/docs/";
 
-/** Download: solid white, magnetic, with a red glow and a corner-bracket frame on hover. */
-function DownloadButton({ size = "lg" }: { size?: "lg" | "sm" }) {
-  const { href, label } = useDownload();
+/** Primary action: solid white, magnetic, with a red glow on hover. */
+function DownloadButton({
+  href,
+  children,
+  size = "lg",
+}: {
+  href: string;
+  children: ReactNode;
+  size?: "lg" | "sm";
+}) {
   const lg = size === "lg";
   return (
     <Magnet padding={lg ? 70 : 30} magnetStrength={lg ? 5 : 8}>
@@ -50,7 +62,7 @@ function DownloadButton({ size = "lg" }: { size?: "lg" | "sm" }) {
             strokeLinejoin="round"
           />
         </svg>
-        {lg ? `Download for ${label}` : "Download"}
+        {children}
       </a>
     </Magnet>
   );
@@ -92,7 +104,7 @@ function Landing() {
               v{version ?? "0.1.0"}
             </span>
             <DecryptedText
-              text="open-source MCP server for Claude"
+              text="open-source drawing for Claude"
               animateOn="view"
               sequential
               speed={35}
@@ -121,11 +133,11 @@ function Landing() {
             {...up(0.3)}
             className="mt-10 flex flex-wrap items-center justify-center gap-3"
           >
-            <DownloadButton />
+            <DownloadButton href="#install">Get Sketchy</DownloadButton>
             <GithubButton />
           </motion.div>
           <motion.p {...up(0.4)} className="mt-6 font-mono text-[11.5px] tracking-wide text-faint">
-            MIT · macOS · Windows · Linux · runs locally
+            MIT · in the Claude chat on web, desktop and mobile · in Claude Code
           </motion.p>
         </div>
       </section>
@@ -164,30 +176,92 @@ function Landing() {
         </div>
       </section>
 
-      <section className="mx-auto mt-24 max-w-[1000px] px-4 pb-10">
-        <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-white/[0.04] to-transparent px-6 py-14 text-center">
-          <div className="pointer-events-none absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-accent to-transparent" />
-          <h2 className="text-[clamp(28px,4vw,44px)] font-semibold tracking-[-0.04em]">
-            Ready in a minute.
-          </h2>
-          <p className="mx-auto mt-3 max-w-[46ch] text-muted-foreground">
-            One-click install for the Claude desktop app. Everything else is in the docs.
-          </p>
-          <div className="mt-8 flex flex-wrap justify-center gap-3">
-            <DownloadButton />
-            <Magnet padding={70} magnetStrength={5}>
-              <a
-                href={DOCS}
-                className="cursor-target inline-flex h-12 items-center gap-2 rounded-lg border border-white/15 px-5 text-[15px] font-medium transition-colors hover:border-white/30"
-              >
-                Read the docs <span className="text-muted-foreground">→</span>
-              </a>
-            </Magnet>
-          </div>
-        </div>
-      </section>
+      <Install />
       <Footer />
     </>
+  );
+}
+
+/** Two ways in: the skill for the chat, the extension for coding. */
+function Install() {
+  const { href, label, skillHref } = useDownload();
+  const [mode, setMode] = useState<"chat" | "code">("chat");
+  const tab = (id: "chat" | "code", text: string) => (
+    <button
+      type="button"
+      onClick={() => setMode(id)}
+      aria-pressed={mode === id}
+      className={`cursor-target rounded-md px-4 py-1.5 text-[14px] font-medium transition-colors ${
+        mode === id ? "bg-white text-black" : "text-muted-foreground hover:text-foreground"
+      }`}
+    >
+      {text}
+    </button>
+  );
+  return (
+    <section id="install" className="mx-auto mt-24 max-w-[1000px] scroll-mt-24 px-4 pb-10">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-white/[0.04] to-transparent px-6 py-14 text-center">
+        <div className="pointer-events-none absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-accent to-transparent" />
+        <h2 className="text-[clamp(28px,4vw,44px)] font-semibold tracking-[-0.04em]">
+          Ready in a minute.
+        </h2>
+        <p className="mx-auto mt-3 max-w-[46ch] text-muted-foreground">Where do you use Claude?</p>
+        <div
+          role="group"
+          aria-label="Where you use Claude"
+          className="mx-auto mt-6 inline-flex gap-1 rounded-lg border border-white/15 bg-white/[0.04] p-1"
+        >
+          {tab("chat", "In the chat")}
+          {tab("code", "While coding")}
+        </div>
+
+        {mode === "chat" ? (
+          <div className="mx-auto mt-8 max-w-[520px]">
+            <ol className="space-y-2 text-left text-[15px] text-muted-foreground">
+              <li>
+                <span className="mr-2 font-mono text-accent">1</span>Download the Sketchy skill.
+              </li>
+              <li>
+                <span className="mr-2 font-mono text-accent">2</span>In Claude, open{" "}
+                <span className="text-foreground">Settings → Capabilities → Skills</span> and upload
+                it.
+              </li>
+              <li>
+                <span className="mr-2 font-mono text-accent">3</span>Ask Claude to explain
+                something. The drawing appears right in the chat.
+              </li>
+            </ol>
+            <div className="mt-8 flex justify-center">
+              <DownloadButton href={skillHref}>Download the skill</DownloadButton>
+            </div>
+            <p className="mt-4 font-mono text-[11.5px] text-faint">
+              Web, desktop and mobile · no server · updates itself
+            </p>
+          </div>
+        ) : (
+          <div className="mx-auto mt-8 max-w-[620px]">
+            <p className="text-[15px] text-muted-foreground">
+              The extension runs on your computer and adds photo labeling, SVG and PNG export and
+              click-to-open files. Install it, then start a session in the{" "}
+              <span className="text-foreground">Code</span> tab.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <DownloadButton href={href}>Download for {label}</DownloadButton>
+            </div>
+            <p className="mt-8 text-[13.5px] text-muted-foreground">Claude Code in the terminal:</p>
+            <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-black/40 p-4 text-left font-mono text-[12.5px] leading-relaxed text-muted-foreground">
+              {TERMINAL_INSTALL}
+            </pre>
+          </div>
+        )}
+        <a
+          href={DOCS}
+          className="cursor-target mt-8 inline-block text-[14px] text-muted-foreground transition-colors hover:text-foreground"
+        >
+          Read the docs →
+        </a>
+      </div>
+    </section>
   );
 }
 
@@ -229,7 +303,15 @@ export default function App({ page }: { page: "home" | "docs" }) {
     <>
       <Analytics />
       <TargetCursor targetSelector=".cursor-target" spinDuration={2.4} hideDefaultCursor />
-      <Nav home={HOME} docs={DOCS} cta={<DownloadButton size="sm" />} />
+      <Nav
+        home={HOME}
+        docs={DOCS}
+        cta={
+          <DownloadButton href={`${HOME}#install`} size="sm">
+            Install
+          </DownloadButton>
+        }
+      />
       {page === "home" ? (
         <Landing />
       ) : (

@@ -15,6 +15,8 @@ export type RepoInfo = {
   stars?: number;
   version?: string;
   assets: Partial<Record<Platform, string>>;
+  /** The chat skill (sketchy-skill-<version>.zip). */
+  skill?: string;
 };
 
 /** One shared fetch per page load: release assets and star count from the public GitHub API. */
@@ -34,6 +36,7 @@ function loadRepoInfo(): Promise<RepoInfo> {
       stars: typeof repo?.stargazers_count === "number" ? repo.stargazers_count : undefined,
       version: release?.tag_name ? String(release.tag_name).replace(/^v/, "") : undefined,
       assets,
+      skill: files.find((f) => /^sketchy-skill-.*\.zip$/.test(f.name))?.browser_download_url,
     };
   });
   return repoInfo;
@@ -59,13 +62,19 @@ export function detectPlatform(): Platform {
   return "darwin-arm64";
 }
 
-/** Download link and label for the visitor's platform; the release page until assets load. */
-export function useDownload(): { href: string; label: string; version?: string } {
-  const { assets, version } = useRepoInfo();
+/** Download links for the visitor's platform; the release page until assets load. */
+export function useDownload(): {
+  href: string;
+  label: string;
+  skillHref: string;
+  version?: string;
+} {
+  const { assets, skill, version } = useRepoInfo();
   const platform = detectPlatform();
   return {
     href: assets[platform] ?? RELEASES_URL,
     label: PLATFORMS.find((p) => p.id === platform)!.label,
+    skillHref: skill ?? RELEASES_URL,
     version,
   };
 }

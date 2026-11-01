@@ -79,7 +79,30 @@ export function Docs({ header }: { header?: ReactNode }) {
         <img src="/gallery/chat.png" alt="A Sketchy drawing inside a Claude Code session" />
 
         <h2 id="install">Installation</h2>
-        <h3>Claude desktop app</h3>
+        <p>
+          Sketchy comes two ways. Use the <strong>skill</strong> to draw in the Claude chat, and the{" "}
+          <strong>extension</strong> when you work in Claude Code. Both can be installed side by
+          side.
+        </p>
+        <h3>Claude chat (web, desktop and mobile)</h3>
+        <ol>
+          <li>
+            Download <code>sketchy-skill-&lt;version&gt;.zip</code> from the{" "}
+            <a href={RELEASES_URL}>latest release</a>.
+          </li>
+          <li>
+            In Claude, open <strong>Settings → Capabilities → Skills</strong> and upload the zip.
+          </li>
+          <li>Ask for a drawing in any chat. It appears inline, right in the conversation.</li>
+        </ol>
+        <p>
+          Claude writes the scene, and the chat's inline visualization loads Sketchy's browser
+          bundle from <a href="https://www.jsdelivr.com">jsDelivr</a>, which serves it from this
+          repository. There is no Sketchy server, and the skill picks up fixes on its own. Photo
+          labeling and opening files from a drawing need your computer, so they come with the
+          extension.
+        </p>
+        <h3>Claude desktop app (Code tab)</h3>
         <ol>
           <li>
             Download the <code>.mcpb</code> bundle for your platform from the{" "}
@@ -95,10 +118,15 @@ export function Docs({ header }: { header?: ReactNode }) {
           </li>
         </ol>
         <p>
-          In the regular <strong>Chat</strong> tab the tools run, but the drawing is not shown yet:
-          the chat does not display views from locally installed extensions. Chat support is
-          planned.
+          The regular <strong>Chat</strong> tab does not display views from locally installed
+          extensions; use the skill there.
         </p>
+        <h3>Claude Code in the terminal</h3>
+        <pre>
+          <code>{`git clone https://github.com/ddkbs/sketchy.git
+cd sketchy && npm install && npm run build
+claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"`}</code>
+        </pre>
         <h3>Photo-labeling model</h3>
         <p>
           The vision model is not part of the download. The first time Claude labels a photo,
@@ -164,8 +192,8 @@ Viewer (MCP App): hand-drawn rendering with rough.js, hover, steps, export`}</co
         <p>
           Every feature fills the same scene, and a single viewer renders it. The visual style lives
           in the renderer only, so every drawing looks consistent no matter what Claude asks for.
-          Layout runs locally inside the server process; the drawing core has no other local
-          dependencies and can run as a hosted server.
+          Layout runs locally inside the server process. The drawing core has no other local
+          dependencies, so the same code also runs in the browser for the chat skill.
         </p>
         <p>
           The viewer is an <strong>MCP App</strong>: the host loads it into a sandboxed iframe and

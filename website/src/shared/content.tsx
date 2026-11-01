@@ -40,4 +40,4 @@ export const CAPABILITIES: { title: string; body: string; icon: ReactNode }[] = 
 ];
 
 export const TAGLINE =
-  "An open-source MCP server that turns Claude's answers into interactive diagrams, right inside the chat. Claude decides what to draw. Sketchy decides where.";
+  "Open source and free: Sketchy turns Claude's answers into interactive diagrams, right inside the chat. Claude decides what to draw. Sketchy decides where.";
