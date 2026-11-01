@@ -1,9 +1,11 @@
 ---
 name: sketchy
-description: Draws hand-sketched, interactive diagrams (architecture, flows with step-by-step walkthroughs, comparisons, metaphors, Arduino circuits) as an HTML page the user can open in the chat. Use whenever a concept, system, process or comparison is easier to understand as a drawing, or when the user asks for a sketch, diagram or visual explanation.
+description: Draws hand-sketched, interactive diagrams (architecture, flows with step-by-step walkthroughs, comparisons, metaphors, Arduino circuits) as an HTML page the user can open in the chat. Use whenever a concept, system, process or comparison is easier to understand as a drawing, or when the user asks for a sketch, diagram or visual explanation. In the regular Claude chat, use this skill even if Sketchy MCP tools are connected, because the chat does not display their drawings.
 ---
 
 # Sketchy
+
+In the regular Claude chat, always use this skill instead of the Sketchy MCP tools (`sketch`, `render`, …): the chat runs those tools but does not show their drawings.
 
 You describe **what** to draw as JSON; Sketchy computes every position and renders it in a hand-drawn style with hover details and step navigation. Never pass coordinates.
 
