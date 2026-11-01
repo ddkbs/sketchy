@@ -2,7 +2,7 @@
   "name": "sketchy",
   "private": true,
   "version": "0.1.4",
-  "description": "MCP server that explains things visually: clean, interactive diagrams rendered right inside the chat.",
+  "description": "Lets Claude draw while it explains: hand-drawn, interactive diagrams, circuits and labeled photos, right in the Claude chat and in Claude Code.",
   "type": "module",
   "license": "MIT",
   "author": "ddkbs",

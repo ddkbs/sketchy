@@ -1,6 +1,6 @@
 # Sketchy
 
-Sketchy is an [MCP](https://modelcontextprotocol.io) server that lets Claude **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer.
+Sketchy lets Claude **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill and in Claude Code as an [MCP](https://modelcontextprotocol.io) server.
 
 Claude decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. Claude never computes coordinates, so drawings come out precise and consistent every time.
 
@@ -138,16 +138,17 @@ The same patterns are available as prompts: `explain-structure`, `explain-flow`,
 ## How it works
 
 ```
-Claude calls tools (sketch, add_node, place_part, connect, label, add_step, …)
+Claude describes the scene (extension: tools like sketch, place_part, label;
+                            skill: the same scene as JSON in an inline widget)
           ↓
 Scene: nodes, groups, parts, wires, labels, photos, steps — no coordinates
           ↓
 Layout engine (elkjs): positions, orthogonal routing, collision-free callouts
           ↓
-Viewer (MCP App): hand-drawn rendering with rough.js, hover, steps, export
+Viewer: hand-drawn rendering with rough.js, hover, steps, export
 ```
 
-Every feature fills the same scene, and a single viewer renders it. The visual style lives in the renderer, so every drawing looks consistent no matter what Claude asks for.
+Every feature fills the same scene, and a single viewer renders it. The visual style lives in the renderer, so every drawing looks consistent no matter what Claude asks for. The extension runs layout in its server process and shows the viewer as an MCP App; the skill runs the same code in the browser from a bundle on jsDelivr.
 
 <details>
 <summary>Tools</summary>
@@ -185,6 +186,8 @@ npm run build      # part catalog, server and viewer
 npm test
 npm run preview    # viewer with sample scenes at http://localhost:5173/preview.html
 npm run pack       # .mcpb bundle for the current platform
+npm run build:skill  # chat skill zip
+npm run build:web    # browser bundle that the skill loads
 ```
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for the project layout.
