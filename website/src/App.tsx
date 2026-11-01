@@ -159,6 +159,8 @@ function Landing() {
         <ChatDemo />
       </section>
 
+      <PhotoLabeling />
+
       <section className="mx-auto mt-24 max-w-[1000px] px-4">
         <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-4">
           {CAPABILITIES.map((c) => (
@@ -179,6 +181,41 @@ function Landing() {
       <Install />
       <Footer />
     </>
+  );
+}
+
+/** Core feature: real photos, labeled by a vision model on the user's computer. */
+function PhotoLabeling() {
+  return (
+    <section className="mx-auto mt-24 max-w-[1000px] px-4">
+      <div className="mb-6 grid gap-6 px-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-end">
+        <div>
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
+            Labeled photos
+          </div>
+          <h2 className="mt-1 text-[clamp(26px,3.4vw,36px)] font-semibold leading-tight tracking-[-0.035em]">
+            Point at the real thing.
+          </h2>
+        </div>
+        <p className="text-[15px] leading-relaxed text-muted-foreground">
+          Ask <span className="text-foreground">“Show me an Arduino Uno and label the pins.”</span>{" "}
+          Claude finds an openly licensed photo, a vision model running on your computer
+          (Florence-2) locates the parts and printed text, and Sketchy draws the callouts. Your
+          images never leave your machine, and the credit is always shown.
+        </p>
+      </div>
+      <figure className="overflow-hidden rounded-2xl border border-border bg-[#fffdf7]">
+        <img
+          src="/gallery/photo.jpg"
+          alt="Photo of an Arduino Uno with hand-drawn labels for the reset button, digital pins, power pins and analog inputs"
+          className="block w-full"
+          loading="lazy"
+        />
+      </figure>
+      <p className="mt-3 px-1 font-mono text-[11.5px] text-faint">
+        real Sketchy output · comes with the extension for Claude Code
+      </p>
+    </section>
   );
 }
 
