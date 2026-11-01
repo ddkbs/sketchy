@@ -58,7 +58,7 @@ Claude finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 
 - **Hover** any box, pin or wire for details.
 - **Click** a code node to open the file, or a photo credit to open its source.
-- **Export** as **SVG** or **PNG**, fonts included.
+- **Export** as **SVG** or **PNG**, fonts included: your system's save dialog asks where to put the file.
 - **Fullscreen** where the host supports it.
 
 ## Install
@@ -153,11 +153,12 @@ Every feature fills the same scene, and a single viewer renders it. The visual s
 
 ## Configuration
 
-| Variable           | Default      | Description                                                                     |
-| ------------------ | ------------ | ------------------------------------------------------------------------------- |
-| `SKETCHY_EDITOR`   | `vscode`     | Editor for file links: `vscode`, `cursor`, `windsurf`, `vscode-insiders`, `zed` |
-| `SKETCHY_PHOTOS`   | `on`         | `off` disables photo search and labeling                                        |
-| `SKETCHY_DATA_DIR` | `~/.sketchy` | Models, cached photos and the local SQLite database                             |
+| Variable             | Default       | Description                                                                       |
+| -------------------- | ------------- | --------------------------------------------------------------------------------- |
+| `SKETCHY_EDITOR`     | `vscode`      | Editor for file links: `vscode`, `cursor`, `windsurf`, `vscode-insiders`, `zed`   |
+| `SKETCHY_PHOTOS`     | `on`          | `off` disables photo search and labeling                                          |
+| `SKETCHY_DATA_DIR`   | `~/.sketchy`  | Models, cached photos and the local SQLite database                               |
+| `SKETCHY_EXPORT_DIR` | `~/Downloads` | Folder the save dialog opens in, and where exports go when no dialog is available |
 
 ## Development
 

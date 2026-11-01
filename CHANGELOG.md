@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-01
+
+### Fixed
+
+- SVG and PNG export now saves real files in hosts without file downloads, such as Claude: the local server opens the system's save dialog (macOS, Windows, Linux with zenity) and falls back to the Downloads folder. This replaces the save sheet from 0.1.1. After updating the extension, quit and reopen Claude so it loads the new viewer.
+
 ## [0.1.1] - 2026-11-01
 
 ### Added
@@ -37,6 +43,7 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/ddkbs/sketchy/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ddkbs/sketchy/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ddkbs/sketchy/releases/tag/v0.1.0
