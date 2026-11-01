@@ -29,6 +29,22 @@ jobs:
       # The skill is platform independent, so one runner builds it.
       - if: matrix.os == 'ubuntu-latest'
         run: npm run build:skill
+      # jsDelivr serves the cdn branch; chat widgets load the bundle from there.
+      - if: matrix.os == 'ubuntu-latest'
+        name: Publish the browser bundle to the cdn branch
+        run: |
+          npm run build:web
+          version="${GITHUB_REF_NAME#v}"
+          git fetch --depth 1 origin cdn
+          git worktree add ../cdn FETCH_HEAD
+          mkdir -p "../cdn/$version"
+          cp build/web/sketchy.js build/parts.json "../cdn/$version/"
+          cd ../cdn
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore(cdn): publish $version"
+          git push origin HEAD:cdn
       - uses: softprops/action-gh-release@v2
         with:
           files: |
