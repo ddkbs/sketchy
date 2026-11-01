@@ -65,10 +65,9 @@ export function Docs({ header }: { header?: ReactNode }) {
           Sketchy documentation
         </h1>
         <p>
-          Sketchy is an open-source <a href="https://modelcontextprotocol.io">MCP</a> server that
-          lets Claude draw while it explains. Answers come with interactive diagrams rendered right
-          next to the text: systems and flows, your own code, Arduino and ESP32 circuits, labeled
-          photos, comparisons and metaphors.
+          Sketchy is open source and lets Claude draw while it explains. Answers come with
+          interactive diagrams rendered right next to the text: systems and flows, your own code,
+          Arduino and ESP32 circuits, labeled photos, comparisons and metaphors.
         </p>
         <p>
           The idea behind it is a split of responsibilities. Claude decides <strong>what</strong> to
@@ -84,6 +83,35 @@ export function Docs({ header }: { header?: ReactNode }) {
           <strong>extension</strong> when you work in Claude Code. Both can be installed side by
           side.
         </p>
+        <table>
+          <thead>
+            <tr>
+              <th></th>
+              <th>Skill (chat)</th>
+              <th>Extension (coding)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              [
+                "Where",
+                "Claude chat on web, desktop and mobile",
+                "Code tab, terminal, MCP clients",
+              ],
+              ["Diagrams, steps, circuits", "Yes", "Yes"],
+              ["Labeled photos", "No", "Yes, on your computer"],
+              ["SVG and PNG export", "No", "Yes, with a save dialog"],
+              ["Click a box to open the file", "No", "Yes"],
+              ["Needs", "Internet (jsDelivr)", "Nothing else; runs on your computer"],
+            ].map(([what, skill, ext]) => (
+              <tr key={what}>
+                <td>{what}</td>
+                <td>{skill}</td>
+                <td>{ext}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
         <h3>Claude chat (web, desktop and mobile)</h3>
         <ol>
           <li>
@@ -181,13 +209,14 @@ claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"`}</code>
 
         <h2 id="how-it-works">How it works</h2>
         <pre>
-          <code>{`Claude calls tools (sketch, add_node, place_part, connect, label, add_step, …)
+          <code>{`Claude describes the scene (extension: tools like sketch, place_part, label;
+                            skill: the same scene as JSON in an inline widget)
           ↓
 Scene: nodes, groups, parts, wires, labels, photos, steps — no coordinates
           ↓
 Layout engine (elkjs): positions, orthogonal routing, collision-free callouts
           ↓
-Viewer (MCP App): hand-drawn rendering with rough.js, hover, steps, export`}</code>
+Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
         </pre>
         <p>
           Every feature fills the same scene, and a single viewer renders it. The visual style lives
@@ -196,9 +225,10 @@ Viewer (MCP App): hand-drawn rendering with rough.js, hover, steps, export`}</co
           dependencies, so the same code also runs in the browser for the chat skill.
         </p>
         <p>
-          The viewer is an <strong>MCP App</strong>: the host loads it into a sandboxed iframe and
-          hands it the laid-out scene. It has no network access, which is why fonts and icons are
-          embedded.
+          With the extension, the viewer is an <strong>MCP App</strong>: the host loads it into a
+          sandboxed iframe and hands it the laid-out scene. It has no network access, which is why
+          fonts and icons are embedded. With the skill, the chat's inline widget loads the browser
+          bundle from jsDelivr and lays out and draws the scene on your device.
         </p>
 
         <h2 id="patterns">Explanation patterns</h2>
@@ -236,7 +266,8 @@ Viewer (MCP App): hand-drawn rendering with rough.js, hover, steps, export`}</co
             <strong>Hover</strong> any element for its description.
           </li>
           <li>
-            <strong>Export</strong> as SVG or PNG, with the handwriting embedded.
+            <strong>Export</strong> as SVG or PNG, with the handwriting embedded. Your system's save
+            dialog asks where to put the file (extension only).
           </li>
           <li>
             <strong>Fullscreen</strong> for large scenes; wide drawings scroll instead of shrinking
@@ -266,9 +297,11 @@ Viewer (MCP App): hand-drawn rendering with rough.js, hover, steps, export`}</co
 
         <h2 id="photos">Labeled photos</h2>
         <p>
-          Claude searches openly licensed photos, picks one and asks Sketchy to locate parts in it.
-          Grounding runs on your machine with Florence-2 through ONNX Runtime; your images never
-          leave it. The attribution is always shown.
+          Ask <em>“Show me an Arduino Uno and label the pins.”</em> Claude searches openly licensed
+          photos (Wikimedia Commons, Openverse), picks one and asks Sketchy to locate the parts and
+          printed text in it. Grounding runs on your machine with Florence-2 through ONNX Runtime;
+          your images never leave it. Sketchy then draws the callouts, and the attribution is always
+          shown. Photo labeling comes with the extension.
         </p>
         <img src="/gallery/photo.jpg" alt="A labeled Arduino board" />
 
@@ -344,14 +377,25 @@ Viewer (MCP App): hand-drawn rendering with rough.js, hover, steps, export`}</co
               </td>
               <td>Models, cached photos and the local SQLite database</td>
             </tr>
+            <tr>
+              <td>
+                <code>SKETCHY_EXPORT_DIR</code>
+              </td>
+              <td>
+                <code>~/Downloads</code>
+              </td>
+              <td>Folder the save dialog opens in for SVG and PNG exports</td>
+            </tr>
           </tbody>
         </table>
 
         <h2 id="limitations">Limitations</h2>
         <ul>
           <li>
-            Drawings currently appear in Claude Code sessions; regular chat support is planned.
+            The regular chat tab of the desktop app does not display drawings from the extension;
+            use the skill there.
           </li>
+          <li>The skill has no photo labeling, export or file links.</li>
           <li>Photo labeling is not available on Intel Macs.</li>
           <li>In very dense circuits, a callout can still land on a wire.</li>
         </ul>
