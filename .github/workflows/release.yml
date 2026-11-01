@@ -35,16 +35,24 @@ jobs:
         run: |
           npm run build:web
           version="${GITHUB_REF_NAME#v}"
+          minor="${version%.*}"
           git fetch --depth 1 origin cdn
           git worktree add ../cdn FETCH_HEAD
-          mkdir -p "../cdn/$version"
-          cp build/web/sketchy.js build/parts.json "../cdn/$version/"
+          # The exact version stays put; the minor folder is what skills load.
+          for dir in "$version" "$minor"; do
+            mkdir -p "../cdn/$dir"
+            cp build/web/sketchy.js build/parts.json "../cdn/$dir/"
+          done
           cd ../cdn
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "chore(cdn): publish $version"
           git push origin HEAD:cdn
+          # jsDelivr caches files for days; refresh the overwritten ones.
+          for file in sketchy.js parts.json; do
+            curl -fsS "https://purge.jsdelivr.net/gh/ddkbs/sketchy@cdn/$minor/$file" > /dev/null || true
+          done
       - uses: softprops/action-gh-release@v2
         with:
           files: |

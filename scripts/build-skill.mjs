@@ -80,8 +80,11 @@ await viteBuild({
 cpSync(`${root}build/skill/viewer/standalone.html`, `${scripts}/viewer.html`);
 rmSync(`${root}build/skill/viewer`, { recursive: true });
 cpSync(`${root}build/parts.json`, `${scripts}/parts.json`);
-// Widgets load the browser bundle of this exact version from jsDelivr.
-const cdn = `https://cdn.jsdelivr.net/gh/ddkbs/sketchy@cdn/${pkg.version}`;
+// Widgets load the browser bundle from jsDelivr. The folder follows the minor
+// version, which every patch release overwrites, so skills get fixes without
+// being uploaded again.
+const minor = pkg.version.split(".").slice(0, 2).join(".");
+const cdn = `https://cdn.jsdelivr.net/gh/ddkbs/sketchy@cdn/${minor}`;
 writeFileSync(
   `${out}/SKILL.md`,
   readFileSync(`${root}skill/SKILL.md`, "utf8").replaceAll("{{CDN}}", cdn),
