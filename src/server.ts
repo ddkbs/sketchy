@@ -29,7 +29,7 @@ import type { ExportSink } from "./exports.js";
 import type { PhotoTools } from "./photos/tools.js";
 import { ViewStore } from "./views.js";
 
-export const VERSION = "0.1.3";
+export const VERSION = "0.1.4";
 export const VIEWER_URI = "ui://sketchy/viewer.html";
 export const VIEWER_URL = new URL("../build/viewer.html", import.meta.url);
 export { SCENE_META_KEY } from "./views.js";
