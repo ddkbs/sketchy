@@ -210,6 +210,12 @@ function Footer() {
         <a href={REPO_URL} className="cursor-target hover:text-foreground">
           GitHub
         </a>
+        <a href="https://davidkubus.dev/impressum" className="cursor-target hover:text-foreground">
+          Impressum
+        </a>
+        <a href="https://davidkubus.dev/datenschutz" className="cursor-target hover:text-foreground">
+          Datenschutz
+        </a>
       </span>
     </footer>
   );
