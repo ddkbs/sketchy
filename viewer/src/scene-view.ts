@@ -7,7 +7,13 @@ import { applyStep } from "./steps.js";
 /** What the view needs from its surroundings (the MCP host or a dev page). */
 export interface Host {
   openLink(url: string): void;
-  download(file: { name: string; mimeType: string; text?: string; base64?: string }): Promise<void>;
+  /** Omitted where files cannot be saved; the export buttons are hidden then. */
+  download?(file: {
+    name: string;
+    mimeType: string;
+    text?: string;
+    base64?: string;
+  }): Promise<void>;
   toggleFullscreen?(): void;
 }
 
@@ -34,22 +40,24 @@ export function mountScene(root: HTMLElement, scene: LaidOutScene, host: Host): 
 function toolbar(scene: LaidOutScene, rendered: RenderedScene, host: Host): HTMLElement {
   const bar = div("toolbar");
   const name = slug(scene.title?.lines.join(" "));
-  bar.append(
-    button("SVG", "Download as SVG", async () => {
-      await host.download({
-        name: `${name}.svg`,
-        mimeType: "image/svg+xml",
-        text: toSvgString(rendered.svg),
-      });
-    }),
-    button("PNG", "Download as PNG", async () => {
-      await host.download({
-        name: `${name}.png`,
-        mimeType: "image/png",
-        base64: await toPngBase64(rendered.svg),
-      });
-    }),
-  );
+  const download = host.download?.bind(host);
+  if (download)
+    bar.append(
+      button("SVG", "Download as SVG", async () => {
+        await download({
+          name: `${name}.svg`,
+          mimeType: "image/svg+xml",
+          text: toSvgString(rendered.svg),
+        });
+      }),
+      button("PNG", "Download as PNG", async () => {
+        await download({
+          name: `${name}.png`,
+          mimeType: "image/png",
+          base64: await toPngBase64(rendered.svg),
+        });
+      }),
+    );
   if (host.toggleFullscreen) {
     bar.append(button("⤢", "Toggle fullscreen", () => host.toggleFullscreen!()));
   }
