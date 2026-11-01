@@ -25,6 +25,7 @@ import {
   stepShape,
   wireShape,
 } from "./tools/schemas.js";
+import type { ExportSink } from "./exports.js";
 import type { PhotoTools } from "./photos/tools.js";
 import { ViewStore } from "./views.js";
 
@@ -39,6 +40,8 @@ export type ServerOptions = {
   /** Photo search and grounding; omitted where only the drawing core runs. */
   photos?: PhotoTools;
   viewerHtml?: () => string;
+  /** Where the viewer's SVG/PNG exports go; omitted where there is no local disk. */
+  exports?: ExportSink;
 };
 
 export function createServer(options: ServerOptions): McpServer {
@@ -300,6 +303,42 @@ export function createServer(options: ServerOptions): McpServer {
       };
     },
   );
+
+  if (options.exports) {
+    const sink = options.exports;
+    registerAppTool(
+      server,
+      "save_export",
+      {
+        title: "Save export",
+        description: "Saves an SVG or PNG export of the drawing. Used by the viewer.",
+        inputSchema: {
+          name: z.string().max(120),
+          text: z.string().optional(),
+          base64: z.string().optional(),
+        },
+        _meta: { ui: { visibility: ["app"] } },
+      },
+      async (file): Promise<CallToolResult> => {
+        if ((file.text === undefined) === (file.base64 === undefined))
+          return fail("Pass either text or base64.");
+        try {
+          const path = await sink.save(file);
+          if (path === null)
+            return {
+              content: [{ type: "text", text: "Cancelled." }],
+              structuredContent: { cancelled: true },
+            };
+          return {
+            content: [{ type: "text", text: `Saved ${path}` }],
+            structuredContent: { path },
+          };
+        } catch (error) {
+          return failFrom(error);
+        }
+      },
+    );
+  }
 
   for (const pattern of PATTERNS) {
     server.registerPrompt(

@@ -2,6 +2,7 @@
 import { parseArgs } from "node:util";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { setting } from "./env.js";
+import { dialogSink } from "./exports.js";
 import { serveHttp } from "./http.js";
 import { parseEditor } from "./layout/links.js";
 import { PartIndex } from "./parts/index.js";
@@ -37,7 +38,9 @@ async function openPhotos(dir: string) {
 if (values.http) {
   serveHttp(Number(values.port), () => createServer({ parts, photos, editor }));
 } else {
-  await createServer({ parts, photos, editor }).connect(new StdioServerTransport());
+  await createServer({ parts, photos, editor, exports: dialogSink() }).connect(
+    new StdioServerTransport(),
+  );
   // stdout is reserved for MCP messages, so diagnostics go to stderr.
   console.error(`sketchy: MCP server running on stdio${photos ? ` (data in ${dataDir})` : ""}`);
 }

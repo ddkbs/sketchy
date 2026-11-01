@@ -3,7 +3,6 @@ import type { CallToolResult } from "@modelcontextprotocol/sdk/types.js";
 import type { LaidOutScene } from "../../src/scene/laid-out.js";
 import { mountScene, type Host } from "./scene-view.js";
 import { mountModelPicker, type ModelPickerData } from "./model-picker.js";
-import { showSaveSheet } from "./save-sheet.js";
 import "./styles.css";
 
 const SCENE_META_KEY = "sketchy/scene";
@@ -17,16 +16,34 @@ const host: Host = {
   async download(file) {
     const { name, mimeType, text, base64 } = file;
     const frame = root.querySelector<HTMLElement>(".frame") ?? root;
-    // Hosts without downloadFile run the view in a sandbox that also blocks <a download>.
-    if (!app.getHostCapabilities()?.downloadFile) return showSaveSheet(frame, file);
-    const resource =
-      text !== undefined
-        ? { uri: `file:///${name}`, mimeType, text }
-        : { uri: `file:///${name}`, mimeType, blob: base64! };
-    // isError means the user declined or cancelled; only a failed request needs the fallback.
-    await app
-      .downloadFile({ contents: [{ type: "resource", resource }] })
-      .catch(() => showSaveSheet(frame, file));
+    if (app.getHostCapabilities()?.downloadFile) {
+      const resource =
+        text !== undefined
+          ? { uri: `file:///${name}`, mimeType, text }
+          : { uri: `file:///${name}`, mimeType, blob: base64! };
+      // isError means the user declined or cancelled the download.
+      const done = await app
+        .downloadFile({ contents: [{ type: "resource", resource }] })
+        .then(() => true)
+        .catch(() => false);
+      if (done) return;
+    }
+    // Hosts like Claude offer no downloads, and their sandbox blocks <a download>;
+    // a local server writes the file to disk instead.
+    // The server may wait for the user in a save dialog.
+    const saved = await app
+      .callServerTool(
+        { name: "save_export", arguments: { name, text, base64 } },
+        { timeout: 10 * 60 * 1000 },
+      )
+      .catch(() => undefined);
+    const result = saved?.structuredContent as { path?: string; cancelled?: boolean } | undefined;
+    if (result?.cancelled) return;
+    const path = result?.path;
+    notice(
+      frame,
+      saved && !saved.isError && path ? `Saved to ${path}` : "Export is not available here.",
+    );
   },
   toggleFullscreen() {
     const mode = app.getHostContext()?.displayMode === "fullscreen" ? "inline" : "fullscreen";
@@ -62,6 +79,15 @@ async function show(result: CallToolResult): Promise<void> {
   } else if (result.isError) {
     message("Sketchy could not draw this.");
   }
+}
+
+function notice(container: HTMLElement, text: string): void {
+  container.querySelector(".notice")?.remove();
+  const n = document.createElement("div");
+  n.className = "notice";
+  n.textContent = text;
+  container.appendChild(n);
+  setTimeout(() => n.remove(), 5000);
 }
 
 function message(text: string): void {

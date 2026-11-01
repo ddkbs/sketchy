@@ -183,36 +183,19 @@ button:disabled {
   font-size: 13px;
 }
 
-.save-sheet {
+.notice {
   position: absolute;
-  inset: 0;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
   z-index: 4;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  padding: 10px 12px 12px;
-  background: var(--paper);
-}
-
-.save-head {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink-soft);
-}
-
-.save-head span {
-  flex: 1;
-}
-
-.save-sheet img {
-  flex: 1;
-  min-height: 0;
-  width: 100%;
-  object-fit: contain;
-  border: 1.5px dashed var(--line);
-  border-radius: 10px;
+  max-width: calc(100% - 24px);
+  padding: 6px 12px;
   background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 10px 8px 11px 9px;
+  box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.12);
+  overflow-wrap: anywhere;
 }
 
 .message {
