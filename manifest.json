@@ -2,7 +2,7 @@
   "manifest_version": "0.3",
   "name": "sketchy",
   "display_name": "Sketchy",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Explains things visually: hand-drawn, interactive diagrams, circuits and labeled photos right in the chat.",
   "long_description": "Sketchy lets Claude draw while it explains. Claude decides what to show; Sketchy lays it out and renders it in a consistent hand-drawn style inside the chat.\n\nDrawings currently appear in Claude Code sessions (Code tab); support for the regular chat is planned.\n\n- Architecture diagrams of your code; click a box to open the file\n- Step-by-step walkthroughs that highlight one part at a time\n- Wiring diagrams for Arduino sketches with real part drawings\n- Freely licensed photos labeled by a local vision model, with attribution\n- Export as SVG or PNG",
   "author": {

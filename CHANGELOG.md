@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-01
+
 ### Added
 
 - Install steps for Claude Code in the terminal.
@@ -35,5 +37,6 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/ddkbs/sketchy/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ddkbs/sketchy/releases/tag/v0.1.0
