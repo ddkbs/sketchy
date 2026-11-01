@@ -70,7 +70,7 @@ Claude finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 3. Optional: in the extension settings choose your editor and where Sketchy stores its data.
 4. Open the **Code** tab and start a session. Drawings appear inline next to Claude's answer.
 
-In the **Chat** tab the tools run, but the drawing is not shown yet: the chat does not display views from locally installed extensions. Chat support is planned.
+The **Chat** tab does not display views from locally installed extensions; for the chat, add the skill below.
 
 The photo-labeling model is **not** part of the download. The first time Claude labels a photo, Sketchy asks you to pick a model size:
 
@@ -79,6 +79,16 @@ The photo-labeling model is **not** part of the download. The first time Claude 
 | Small  | ~280 MB  | ~1 GB   | Recommended. Printed text, distinct parts |
 | Medium | ~830 MB  | ~2.5 GB | Better grounding of small parts           |
 | Large  | ~3.1 GB  | ~4.5 GB | Most precise                              |
+
+### Claude chat (web, desktop and mobile)
+
+Sketchy also comes as a skill that draws right in the chat, with no server and nothing to install locally:
+
+1. Download `sketchy-skill-<version>.zip` from the [latest release](https://github.com/ddkbs/sketchy/releases/latest).
+2. In Claude, open **Settings → Capabilities → Skills** and upload the zip.
+3. Ask for a drawing in any chat.
+
+Claude writes the scene, and the chat's inline visualization loads Sketchy's browser bundle from [jsDelivr](https://www.jsdelivr.com), which serves it from this repository's `cdn` branch. Nothing about your chat is sent anywhere else. Photo labeling and opening files from a drawing need your computer, so they stay in the desktop extension.
 
 ### Claude Code in the terminal
 

@@ -6,6 +6,17 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-11-02
+
+### Added
+
+- Skill for the Claude chat (`sketchy-skill-<version>.zip` on each release): Claude draws inline with its visualization tool, which loads Sketchy's browser bundle from jsDelivr. A bundled render script writes a standalone HTML page where no inline visualization is available.
+- Browser bundle (`npm run build:web`) that lays out and draws a scene on any page; releases publish it to the `cdn` branch.
+
+### Changed
+
+- Hosts that cannot save files no longer show the SVG and PNG buttons.
+
 ## [0.1.2] - 2026-11-01
 
 ### Fixed
@@ -43,7 +54,8 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.2...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.3...HEAD
+[0.1.3]: https://github.com/ddkbs/sketchy/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ddkbs/sketchy/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/ddkbs/sketchy/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/ddkbs/sketchy/releases/tag/v0.1.0
