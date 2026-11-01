@@ -1,8 +1,7 @@
-// Builds the Claude skill: SKILL.md, a render script with its runtime
-// packages, the part catalog and a standalone viewer, zipped as
-// sketchy-skill.zip. The skill draws in the Claude chat without a server.
+// Builds the Claude skill: SKILL.md, one bundled render script, the part
+// catalog and a standalone viewer, zipped as sketchy-skill-<version>.zip. The skill draws in the Claude chat without a server.
 import { execFileSync } from "node:child_process";
-import { cpSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, mkdirSync, readFileSync, rmSync } from "node:fs";
 import { build as esbuild } from "esbuild";
 import { build as viteBuild } from "vite";
 
@@ -14,58 +13,60 @@ const pkg = JSON.parse(readFileSync(`${root}package.json`, "utf8"));
 rmSync(`${root}build/skill`, { recursive: true, force: true });
 mkdirSync(scripts, { recursive: true });
 
-// Code goes into one file; packages that load data files at runtime (icons,
-// WebAssembly, the layout engine) stay imports and ship pruned below.
-const RUNTIME = ["elkjs", "sql.js", "@iconify-json/lucide", "@iconify-json/simple-icons"];
-const result = await esbuild({
+// Everything goes into one file: skill uploads reject paths such as
+// node_modules/@iconify-json, so no package folders ship. The modules our
+// code loads through createRequire are swapped for static imports.
+const shim = `
+import lucide from "@iconify-json/lucide/icons.json";
+import simpleIcons from "@iconify-json/simple-icons/icons.json";
+import elk from "elkjs/lib/elk.bundled.js";
+const modules = {
+  "@iconify-json/lucide/icons.json": lucide,
+  "@iconify-json/simple-icons/icons.json": simpleIcons,
+  "elkjs/lib/elk.bundled.js": elk,
+};
+export function createRequire() {
+  const require = (id) => {
+    if (!(id in modules)) throw new Error("Not bundled: " + id);
+    return modules[id];
+  };
+  // sql.js loads its WebAssembly from next to the bundle.
+  require.resolve = () => new URL("./sql-wasm.wasm", import.meta.url).pathname;
+  return require;
+}`;
+await esbuild({
   entryPoints: [`${root}skill/render.ts`],
   outfile: `${scripts}/render.mjs`,
   bundle: true,
   platform: "node",
   format: "esm",
   target: "node20",
-  external: RUNTIME.flatMap((name) => [name, `${name}/*`]),
-  metafile: true,
+  // Bundled CommonJS (sql.js) still uses require and __dirname.
+  banner: {
+    js: [
+      'import { createRequire as __createRequire } from "node:module";',
+      "const require = __createRequire(import.meta.url);",
+      'const __dirname = new URL(".", import.meta.url).pathname;',
+    ].join(" "),
+  },
+  plugins: [
+    {
+      name: "bundle-runtime-requires",
+      setup(build) {
+        build.onResolve({ filter: /^node:module$/ }, (args) =>
+          args.importer.startsWith(`${root}src/`) ? { path: "shim", namespace: "shim" } : undefined,
+        );
+        build.onLoad({ filter: /.*/, namespace: "shim" }, () => ({
+          contents: shim,
+          resolveDir: root,
+          loader: "js",
+        }));
+      },
+    },
+  ],
   logLevel: "warning",
 });
-const external = new Set(
-  Object.values(result.metafile.outputs)
-    .flatMap((o) => o.imports)
-    .filter((i) => i.external && !i.path.startsWith("node:"))
-    .map((i) =>
-      i.path
-        .split("/")
-        .slice(0, i.path.startsWith("@") ? 2 : 1)
-        .join("/"),
-    ),
-);
-// Loaded through createRequire, which esbuild cannot see.
-for (const name of RUNTIME) external.add(name);
-
-const version = (name) =>
-  JSON.parse(readFileSync(`${root}node_modules/${name}/package.json`, "utf8")).version;
-const dependencies = Object.fromEntries([...external].sort().map((n) => [n, version(n)]));
-writeFileSync(
-  `${scripts}/package.json`,
-  JSON.stringify({ name: "sketchy-skill", private: true, type: "module", dependencies }, null, 2),
-);
-execFileSync("npm", ["install", "--omit=dev", "--ignore-scripts", "--no-audit", "--no-fund"], {
-  cwd: scripts,
-  stdio: "ignore",
-});
-// Keep only the files the render script loads.
-const keep = {
-  elkjs: ["package.json", "lib/elk.bundled.js"],
-  "sql.js": ["package.json", "dist/sql-wasm.js", "dist/sql-wasm.wasm"],
-};
-for (const [name, files] of Object.entries(keep)) {
-  const dir = `${scripts}/node_modules/${name}`;
-  const tmp = `${dir}.keep`;
-  for (const f of files) cpSync(`${dir}/${f}`, `${tmp}/${f}`);
-  rmSync(dir, { recursive: true });
-  cpSync(tmp, dir, { recursive: true });
-  rmSync(tmp, { recursive: true });
-}
+cpSync(`${root}node_modules/sql.js/dist/sql-wasm.wasm`, `${scripts}/sql-wasm.wasm`);
 
 await viteBuild({
   configFile: `${root}vite.config.ts`,
