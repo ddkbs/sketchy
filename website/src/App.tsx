@@ -1,3 +1,4 @@
+import { Analytics } from "@vercel/analytics/react";
 import { motion } from "motion/react";
 import { CAPABILITIES, TAGLINE } from "./shared/content";
 import { ChatDemo } from "./shared/demo/ChatDemo";
@@ -217,6 +218,7 @@ function Footer() {
 export default function App({ page }: { page: "home" | "docs" }) {
   return (
     <>
+      <Analytics />
       <TargetCursor targetSelector=".cursor-target" spinDuration={2.4} hideDefaultCursor />
       <Nav home={HOME} docs={DOCS} cta={<DownloadButton size="sm" />} />
       {page === "home" ? (
