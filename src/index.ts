@@ -38,9 +38,14 @@ async function openPhotos(dir: string) {
 if (values.http) {
   serveHttp(Number(values.port), () => createServer({ parts, photos, editor }));
 } else {
-  await createServer({ parts, photos, editor, exports: dialogSink() }).connect(
-    new StdioServerTransport(),
-  );
+  await createServer({
+    parts,
+    photos,
+    editor,
+    exports: dialogSink(),
+    // "json" restores the JSON scene tools of earlier versions.
+    compact: setting("SKETCHY_FORMAT") !== "json",
+  }).connect(new StdioServerTransport());
   // stdout is reserved for MCP messages, so diagnostics go to stderr.
   console.error(`sketchy: MCP server running on stdio${photos ? ` (data in ${dataDir})` : ""}`);
 }

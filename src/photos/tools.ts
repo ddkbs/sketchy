@@ -12,14 +12,19 @@ import type { PhotoService } from "./service.js";
 
 /** Photo features plug into the server through this seam. */
 export interface PhotoTools {
-  register(server: McpServer, builder: SceneBuilder, views: ViewStore): void;
+  register(
+    server: McpServer,
+    builder: SceneBuilder,
+    views: ViewStore,
+    options?: { compact?: boolean },
+  ): void;
   sceneImage(imageId: string): Promise<SceneImage>;
 }
 
 export function createPhotoTools(service: PhotoService): PhotoTools {
   return {
     sceneImage: (id) => service.sceneImage(id),
-    register(server, builder, views) {
+    register(server, builder, views, { compact = false } = {}) {
       server.registerTool(
         "find_image",
         {
@@ -114,25 +119,27 @@ export function createPhotoTools(service: PhotoService): PhotoTools {
         },
       );
 
-      tool(
-        server,
-        "add_image",
-        "Add a photo from find_image to the scene. Its id is the image id; label its regions with label(target: imageId, anchor: regionName). The attribution is always shown.",
-        {
-          image: z.string().describe("Image id from find_image"),
-          caption: z.string().optional(),
-        },
-        async ({ image, caption }) => {
-          builder.addImage(await service.sceneImage(image, caption));
-          const regions = Object.keys(service.regions(image));
-          return (
-            `Added image "${image}".` +
-            (regions.length
-              ? ` Known regions: ${regions.join(", ")}.`
-              : " Run locate to find regions to label.")
-          );
-        },
-      );
+      // In compact scenes a line `image <id>` adds the photo.
+      if (!compact)
+        tool(
+          server,
+          "add_image",
+          "Add a photo from find_image to the scene. Its id is the image id; label its regions with label(target: imageId, anchor: regionName). The attribution is always shown.",
+          {
+            image: z.string().describe("Image id from find_image"),
+            caption: z.string().optional(),
+          },
+          async ({ image, caption }) => {
+            builder.addImage(await service.sceneImage(image, caption));
+            const regions = Object.keys(service.regions(image));
+            return (
+              `Added image "${image}".` +
+              (regions.length
+                ? ` Known regions: ${regions.join(", ")}.`
+                : " Run locate to find regions to label.")
+            );
+          },
+        );
 
       registerAppTool(
         server,

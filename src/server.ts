@@ -8,10 +8,11 @@ import {
   registerAppTool,
 } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
-import { layoutScene } from "./layout/index.js";
+import { layoutScene, previousLayout, type PreviousLayout } from "./layout/index.js";
 import type { Editor } from "./layout/links.js";
 import type { PartIndex } from "./parts/index.js";
-import { INSTRUCTIONS, PATTERNS } from "./patterns.js";
+import { COMPACT_INSTRUCTIONS, COMPACT_SYNTAX, INSTRUCTIONS, PATTERNS } from "./patterns.js";
+import { parseCompact } from "./scene/compact.js";
 import { SceneBuilder, SceneError } from "./scene/builder.js";
 import { suggestIcons } from "./icons.js";
 import {
@@ -42,6 +43,11 @@ export type ServerOptions = {
   viewerHtml?: () => string;
   /** Where the viewer's SVG/PNG exports go; omitted where there is no local disk. */
   exports?: ExportSink;
+  /**
+   * One `sketch` tool taking the compact line syntax and short instructions;
+   * about half the tokens of the JSON tools. Off restores every tool.
+   */
+  compact?: boolean;
 };
 
 export function createServer(options: ServerOptions): McpServer {
@@ -50,7 +56,7 @@ export function createServer(options: ServerOptions): McpServer {
   const views = new ViewStore();
   const server = new McpServer(
     { name: "sketchy", version: VERSION },
-    { instructions: INSTRUCTIONS },
+    { instructions: options.compact ? COMPACT_INSTRUCTIONS : INSTRUCTIONS },
   );
   const viewerHtml = options.viewerHtml ?? (() => readFileSync(VIEWER_URL, "utf8"));
 
@@ -78,9 +84,15 @@ export function createServer(options: ServerOptions): McpServer {
     }),
   );
 
+  // Follow-ups keep the places of what the last drawing already showed.
+  let lastLayout: PreviousLayout | undefined;
   const render = async (): Promise<CallToolResult> => {
     if (builder.isEmpty()) return fail("The scene is empty. Add nodes, parts or images first.");
-    const laidOut = await layoutScene(builder.scene, parts, { editor: options.editor });
+    const laidOut = await layoutScene(builder.scene, parts, {
+      editor: options.editor,
+      previous: lastLayout,
+    });
+    lastLayout = previousLayout(laidOut);
     const s = builder.scene;
     const counts = [
       [s.nodes.length, "node"],
@@ -109,147 +121,186 @@ export function createServer(options: ServerOptions): McpServer {
 
   const uiMeta = { ui: { resourceUri: VIEWER_URI } };
 
-  registerAppTool(
-    server,
-    "sketch",
-    {
-      title: "Sketch a complete scene",
-      description:
-        "Draw a whole scene in one call and show it to the user. Replaces the current scene. Ids must be unique across all elements; edges, wires, labels and steps may only reference ids defined in the same call.",
-      inputSchema: sketchShape,
-      _meta: uiMeta,
-    },
-    async (input) => {
-      try {
-        builder.reset({ title: input.title, subtitle: input.subtitle, direction: input.direction });
-        for (const g of input.groups ?? []) builder.addGroup(g);
-        for (const n of input.nodes ?? []) builder.addNode(n);
-        for (const p of input.parts ?? []) builder.addPart(p);
-        for (const imageId of input.images ?? []) {
-          if (!options.photos)
-            throw new SceneError("Photo features are not available on this server.");
-          builder.addImage(await options.photos.sceneImage(imageId));
-        }
-        for (const e of input.edges ?? []) builder.addEdge(e);
-        for (const w of input.wires ?? []) builder.connect(w);
-        for (const l of input.labels ?? []) builder.addLabel(l);
-        for (const s of input.steps ?? []) builder.addStep(s);
-      } catch (error) {
-        return failFrom(error);
+  type SketchInput = {
+    title?: string;
+    subtitle?: string;
+    direction?: "right" | "down";
+    groups?: Parameters<SceneBuilder["addGroup"]>[0][];
+    nodes?: Parameters<SceneBuilder["addNode"]>[0][];
+    parts?: Parameters<SceneBuilder["addPart"]>[0][];
+    images?: string[];
+    edges?: Parameters<SceneBuilder["addEdge"]>[0][];
+    wires?: Parameters<SceneBuilder["connect"]>[0][];
+    labels?: Parameters<SceneBuilder["addLabel"]>[0][];
+    steps?: Parameters<SceneBuilder["addStep"]>[0][];
+  };
+  const draw = async (input: SketchInput): Promise<CallToolResult> => {
+    try {
+      builder.reset({ title: input.title, subtitle: input.subtitle, direction: input.direction });
+      for (const g of input.groups ?? []) builder.addGroup(g);
+      for (const n of input.nodes ?? []) builder.addNode(n);
+      for (const p of input.parts ?? []) builder.addPart(p);
+      for (const imageId of input.images ?? []) {
+        if (!options.photos)
+          throw new SceneError("Photo features are not available on this server.");
+        builder.addImage(await options.photos.sceneImage(imageId));
       }
-      return render();
-    },
-  );
+      for (const e of input.edges ?? []) builder.addEdge(e);
+      for (const w of input.wires ?? []) builder.connect(w);
+      for (const l of input.labels ?? []) builder.addLabel(l);
+      for (const s of input.steps ?? []) builder.addStep(s);
+    } catch (error) {
+      return failFrom(error);
+    }
+    return render();
+  };
 
-  registerAppTool(
-    server,
-    "render",
-    {
-      title: "Render scene",
-      description: "Lay out the current scene and show it to the user in the Sketchy viewer.",
-      inputSchema: {},
-      _meta: uiMeta,
-    },
-    render,
-  );
-
-  tool(server, "new_scene", "Start a new, empty scene.", sceneMetaShape, (input) => {
-    builder.reset(input);
-    return "Started a new scene.";
-  });
-
-  tool(
-    server,
-    "add_box",
-    "Add a labeled box. Positions are computed automatically.",
-    nodeShape,
-    (input) => {
-      builder.addNode(input);
-      return `Added box "${input.id}".`;
-    },
-  );
-
-  tool(
-    server,
-    "add_node",
-    "Add a node for code diagrams (module, service, file). Pass the absolute file path so clicking the node opens it.",
-    nodeShape,
-    (input) => {
-      builder.addNode(input);
-      return `Added node "${input.id}".`;
-    },
-  );
-
-  tool(
-    server,
-    "add_text",
-    "Add a free text note to the scene.",
-    { id: nodeShape.id, text: z.string(), group: nodeShape.group },
-    ({ id, text, group }) => {
-      builder.addNode({ id, label: text, group, shape: "text" });
-      return `Added text "${id}".`;
-    },
-  );
-
-  tool(
-    server,
-    "add_group",
-    "Add a group (folder, layer, area) that encloses nodes or parts.",
-    groupShape,
-    (input) => {
-      builder.addGroup(input);
-      return `Added group "${input.id}".`;
-    },
-  );
-
-  for (const name of ["add_arrow", "add_edge"]) {
-    tool(server, name, "Add an arrow between two elements.", edgeShape, (input) => {
-      const edgeId = builder.addEdge(input);
-      return `Added edge "${edgeId}".`;
-    });
+  if (options.compact) {
+    registerAppTool(
+      server,
+      "sketch",
+      {
+        title: "Sketch a scene",
+        description: COMPACT_SYNTAX,
+        inputSchema: { scene: z.string().describe("The scene, one element per line") },
+        _meta: uiMeta,
+      },
+      async ({ scene }) => {
+        try {
+          return await draw(parseCompact(scene));
+        } catch (error) {
+          return failFrom(error);
+        }
+      },
+    );
+  } else {
+    registerAppTool(
+      server,
+      "sketch",
+      {
+        title: "Sketch a complete scene",
+        description:
+          "Draw a whole scene in one call and show it to the user. Replaces the current scene. Ids must be unique across all elements; edges, wires, labels and steps may only reference ids defined in the same call.",
+        inputSchema: sketchShape,
+        _meta: uiMeta,
+      },
+      draw,
+    );
   }
 
-  tool(
-    server,
-    "place_part",
-    "Place an electronic part (board, sensor, LED, …) from the part library. Use search_parts to find types and pin names.",
-    partShape,
-    (input) => {
-      builder.addPart(input);
-      const pins = parts.pins(input.type).map((p) => p.name);
-      return `Placed ${input.type} "${input.id}". Pins: ${pins.join(", ") || "none"}.`;
-    },
-  );
+  // The compact format draws a whole scene per call; the incremental tools
+  // and their long schemas would only cost tokens there.
+  if (!options.compact) {
+    registerAppTool(
+      server,
+      "render",
+      {
+        title: "Render scene",
+        description: "Lay out the current scene and show it to the user in the Sketchy viewer.",
+        inputSchema: {},
+        _meta: uiMeta,
+      },
+      render,
+    );
 
-  tool(
-    server,
-    "connect",
-    "Connect two part pins with a wire, routed automatically.",
-    wireShape,
-    (input) => {
-      const wireId = builder.connect(input);
-      return `Connected "${wireId}".`;
-    },
-  );
+    tool(server, "new_scene", "Start a new, empty scene.", sceneMetaShape, (input) => {
+      builder.reset(input);
+      return "Started a new scene.";
+    });
 
-  tool(
-    server,
-    "label",
-    "Annotate a part pin, an image region or a node with a callout label. The label position is computed automatically.",
-    labelShape,
-    (input) => {
-      const labelId = builder.addLabel(input);
-      return `Added label "${labelId}".`;
-    },
-  );
+    tool(
+      server,
+      "add_box",
+      "Add a labeled box. Positions are computed automatically.",
+      nodeShape,
+      (input) => {
+        builder.addNode(input);
+        return `Added box "${input.id}".`;
+      },
+    );
 
-  tool(
-    server,
-    "add_step",
-    "Add a walkthrough step. In the viewer the user clicks through steps; each one emphasizes its highlighted elements and dims the rest.",
-    stepShape,
-    (input) => `Added step ${builder.addStep(input)}.`,
-  );
+    tool(
+      server,
+      "add_node",
+      "Add a node for code diagrams (module, service, file). Pass the absolute file path so clicking the node opens it.",
+      nodeShape,
+      (input) => {
+        builder.addNode(input);
+        return `Added node "${input.id}".`;
+      },
+    );
+
+    tool(
+      server,
+      "add_text",
+      "Add a free text note to the scene.",
+      { id: nodeShape.id, text: z.string(), group: nodeShape.group },
+      ({ id, text, group }) => {
+        builder.addNode({ id, label: text, group, shape: "text" });
+        return `Added text "${id}".`;
+      },
+    );
+
+    tool(
+      server,
+      "add_group",
+      "Add a group (folder, layer, area) that encloses nodes or parts.",
+      groupShape,
+      (input) => {
+        builder.addGroup(input);
+        return `Added group "${input.id}".`;
+      },
+    );
+
+    for (const name of ["add_arrow", "add_edge"]) {
+      tool(server, name, "Add an arrow between two elements.", edgeShape, (input) => {
+        const edgeId = builder.addEdge(input);
+        return `Added edge "${edgeId}".`;
+      });
+    }
+
+    tool(
+      server,
+      "place_part",
+      "Place an electronic part (board, sensor, LED, …) from the part library. Use search_parts to find types and pin names.",
+      partShape,
+      (input) => {
+        builder.addPart(input);
+        const pins = parts.pins(input.type).map((p) => p.name);
+        return `Placed ${input.type} "${input.id}". Pins: ${pins.join(", ") || "none"}.`;
+      },
+    );
+
+    tool(
+      server,
+      "connect",
+      "Connect two part pins with a wire, routed automatically.",
+      wireShape,
+      (input) => {
+        const wireId = builder.connect(input);
+        return `Connected "${wireId}".`;
+      },
+    );
+
+    tool(
+      server,
+      "label",
+      "Annotate a part pin, an image region or a node with a callout label. The label position is computed automatically.",
+      labelShape,
+      (input) => {
+        const labelId = builder.addLabel(input);
+        return `Added label "${labelId}".`;
+      },
+    );
+
+    tool(
+      server,
+      "add_step",
+      "Add a walkthrough step. In the viewer the user clicks through steps; each one emphasizes its highlighted elements and dims the rest.",
+      stepShape,
+      (input) => `Added step ${builder.addStep(input)}.`,
+    );
+  }
 
   tool(
     server,
@@ -275,15 +326,17 @@ export function createServer(options: ServerOptions): McpServer {
     },
   );
 
-  tool(
-    server,
-    "search_icons",
-    "Find icon names for nodes.",
-    { query: z.string().describe("Keyword, e.g. 'database', 'react', 'user'") },
-    ({ query }) => suggestIcons(query, 15).join("\n") || `No icons match "${query}".`,
-  );
+  if (!options.compact) {
+    tool(
+      server,
+      "search_icons",
+      "Find icon names for nodes.",
+      { query: z.string().describe("Keyword, e.g. 'database', 'react', 'user'") },
+      ({ query }) => suggestIcons(query, 15).join("\n") || `No icons match "${query}".`,
+    );
+  }
 
-  options.photos?.register(server, builder, views);
+  options.photos?.register(server, builder, views, { compact: options.compact });
 
   registerAppTool(
     server,

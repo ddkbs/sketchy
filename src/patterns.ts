@@ -84,3 +84,24 @@ export const PATTERNS: Pattern[] = [
       `Read this Arduino sketch and draw its wiring with Sketchy: ${sketch}\nUse search_parts to find parts and pins, place_part for every component, connect for every wire (red = power, black = GND) and label the pins that matter. Explain the circuit briefly.`,
   },
 ];
+
+/** Compact mode: short instructions; the syntax lives in the sketch tool's description. */
+export const COMPACT_INSTRUCTIONS = `Sketchy draws hand-sketched, interactive diagrams in the chat. Call sketch once with the whole scene; Sketchy computes all positions. Then explain in 2-4 sentences instead of describing the drawing.
+
+Patterns: flow (left-to-right chain + one step per stage), structure (groups for areas, dir down for hierarchies), comparison (one group per option, parallel nodes, !accent on the key difference), metaphor (real vs everyday group, dashed links). 3-12 nodes, labels 1-4 words, details after ~. Icons sparingly; !accent on 1-2 elements. 3-7 steps.
+
+Follow-ups: to change an earlier drawing, send the whole scene again with the same ids; elements that stay keep their places.
+Circuits: search_parts for types and pins, then part and wire lines (red power, black GND, a resistor with every LED).
+Photos: find_image, locate the regions, then sketch with an image line and label lines for the regions. Keep the attribution.`;
+
+export const COMPACT_SYNTAX = `Draw a whole scene and show it. One element per line:
+title <text> | subtitle <text> | dir right|down
+group <id> <label> [in <parent>]
+<id> <label> [@icon] [(cylinder|person|note|circle|rounded|text)] [in <group>] [!accent|!muted] [~ hover text]
+<a> -> <b> [label] [!accent|!muted]   (--> dashed, <-> both ends)
+label <id>[.<pin>] <text>      (photo region with spaces: label <image>.<region>: <text>)
+image <id from find_image>
+step <title>: <text> | <ids to highlight; edges as a->b>
+part <id> <type> [key=value] [caption]   (types and pins: search_parts)
+wire <part.pin> -> <part.pin> [red|black|blue|green|yellow|orange|purple|gray|white]
+Icons: @globe, @database, @server (Lucide) or @simple-icons:react. Ids: letters, digits, _ or -.`;
