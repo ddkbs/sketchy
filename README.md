@@ -4,6 +4,8 @@ Sketchy lets Claude **draw while it explains**: clean, hand-drawn, interactive d
 
 Claude decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. Claude never computes coordinates, so drawings come out precise and consistent every time.
 
+![sketchy — Claude answers with hand-drawn, interactive diagrams](./sketchy-demo.gif)
+
 ![An interactive Sketchy drawing inside a Claude Code chat: what happens when you open a web page](docs/images/chat.png)
 
 ## What it can draw
