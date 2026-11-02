@@ -34,6 +34,14 @@ export type LayoutOptions = {
   editor?: Editor;
   /** Extra ELK options for the root graph, e.g. for tuning experiments. */
   elk?: Record<string, string>;
+  /** The previous drawing of a follow-up; elements it shares keep their order and places. */
+  previous?: PreviousLayout;
+};
+
+/** Where the elements of an earlier drawing ended up, by id. */
+export type PreviousLayout = {
+  direction: "right" | "down";
+  positions: Record<string, Point>;
 };
 
 /** Geometry of an element framed by callouts and an optional caption. */
@@ -140,13 +148,19 @@ export async function layoutScene(
     );
   }
 
+  // A drawing that asks for another flow is not laid out from the old one.
+  const sameFlow = !scene.direction || scene.direction === options.previous?.direction;
+  const hints = options.previous && sameFlow ? followUpHints(scene, options.previous) : undefined;
   const run = async (direction: "right" | "down") => {
-    const graph = buildGraph(scene, parts, frames, nodeSizes, direction);
+    const graph = buildGraph(scene, parts, frames, nodeSizes, direction, hints);
     Object.assign(graph.layoutOptions!, options.elk);
     return elk.layout(graph);
   };
   let result: ElkNode;
-  if (scene.direction) {
+  if (hints) {
+    // A follow-up keeps the earlier flow so nothing turns around.
+    result = await run(scene.direction ?? options.previous!.direction);
+  } else if (scene.direction) {
     result = await run(scene.direction);
   } else {
     // Try both flows and keep the one that stays larger in a chat-sized view.
@@ -155,6 +169,77 @@ export async function layoutScene(
   }
 
   return collect(scene, parts, result, frames, nodeSizes, options);
+}
+
+/** Elements shared with the previous drawing must make up at least this share. */
+const FOLLOW_UP_SHARE = 0.5;
+
+/**
+ * Positions for every node and part of a follow-up drawing: shared elements
+ * where they were, new ones one step past a known neighbour along the flow.
+ * Undefined when the scene is a different drawing rather than a follow-up.
+ */
+function followUpHints(scene: Scene, previous: PreviousLayout): Map<string, Point> | undefined {
+  const ids = [...scene.nodes.map((n) => n.id), ...scene.parts.map((p) => p.id)];
+  const known = ids.filter((id) => previous.positions[id]);
+  if (!ids.length || known.length / ids.length < FOLLOW_UP_SHARE) return undefined;
+  const hints = new Map<string, Point>(known.map((id) => [id, previous.positions[id]!]));
+  for (const g of scene.groups)
+    if (previous.positions[g.id]) hints.set(g.id, previous.positions[g.id]!);
+  const step = 220;
+  const along = (p: Point, d: number): Point =>
+    previous.direction === "down" ? { x: p.x, y: p.y + d * step } : { x: p.x + d * step, y: p.y };
+  const links = [
+    ...scene.edges.map((e) => [e.from, e.to] as const),
+    ...scene.wires.map((w) => [w.from.part, w.to.part] as const),
+  ];
+  // New elements chained to each other resolve over a few passes.
+  for (let pass = 0; pass < ids.length; pass++) {
+    let placed = false;
+    for (const id of ids) {
+      if (hints.has(id)) continue;
+      const from = links.find(([a, b]) => b === id && hints.has(a));
+      const to = links.find(([a, b]) => a === id && hints.has(b));
+      if (from) hints.set(id, along(hints.get(from[0])!, 1));
+      else if (to) hints.set(id, along(hints.get(to[1])!, -1));
+      else continue;
+      placed = true;
+    }
+    if (!placed) break;
+  }
+  // Unconnected new elements go after everything else.
+  const far = Math.max(
+    ...[...hints.values()].map((p) => (previous.direction === "down" ? p.y : p.x)),
+  );
+  for (const id of ids)
+    if (!hints.has(id))
+      hints.set(id, along(previous.direction === "down" ? { x: 0, y: far } : { x: far, y: 0 }, 1));
+  return hints;
+}
+
+/**
+ * Orders each container's children across the flow by their earlier position,
+ * so ELK's model order keeps them in the same sequence within a layer.
+ */
+function sortByHints(
+  containers: Iterable<ElkNode>,
+  hints: Map<string, Point>,
+  direction: "right" | "down",
+): void {
+  const across = (id: string) => {
+    const p = hints.get(id);
+    return p ? (direction === "down" ? p.x : p.y) : Number.POSITIVE_INFINITY;
+  };
+  for (const c of containers) c.children?.sort((a, b) => across(a.id) - across(b.id));
+}
+
+/** Positions of a drawing's nodes and parts, for laying out a follow-up. */
+export function previousLayout(laidOut: LaidOutScene): PreviousLayout {
+  const positions: Record<string, Point> = {};
+  for (const n of laidOut.nodes) positions[n.id] = { x: n.x, y: n.y };
+  for (const p of laidOut.parts) positions[p.id] = { x: p.x, y: p.y };
+  for (const g of laidOut.groups) positions[g.id] = { x: g.x, y: g.y };
+  return { direction: laidOut.direction ?? "right", positions };
 }
 
 function measureNode(node: SceneNode): { width: number; height: number; lines: string[] } {
@@ -218,6 +303,7 @@ function buildGraph(
   frames: Map<string, Frame>,
   nodeSizes: Map<string, { width: number; height: number }>,
   direction: "right" | "down",
+  hints?: Map<string, Point>,
 ): ElkNode {
   const containers = new Map<string, ElkNode>();
   const root: ElkNode = {
@@ -245,12 +331,30 @@ function buildGraph(
     edges: [],
   };
   containers.set("__root", root);
+  if (hints) {
+    // Interactive strategies read layers and order from the given positions.
+    // Interactive crossing minimization rejects groups, so the order within a
+    // layer comes from the model order instead (see sortByHints), kept by
+    // turning crossing minimization off below.
+    Object.assign(root.layoutOptions!, {
+      "elk.layered.cycleBreaking.strategy": "INTERACTIVE",
+      "elk.layered.layering.strategy": "INTERACTIVE",
+    });
+  }
+  // ELK reads child positions relative to their group.
+  const at = (id: string, group?: string) => {
+    const p = hints?.get(id);
+    if (!p) return {};
+    const g = group ? hints?.get(group) : undefined;
+    return g ? { x: p.x - g.x, y: p.y - g.y } : { x: p.x, y: p.y };
+  };
 
   // Groups may reference parents declared later, so create them first.
   for (const group of scene.groups) {
     const label = measureText(group.label, FONT.group, 260);
     containers.set(group.id, {
       id: group.id,
+      ...at(group.id, group.parent),
       children: [],
       layoutOptions: {
         "elk.padding": `[top=${SPACING.groupHeader + (label.lines.length - 1) * lineHeight(FONT.group)},left=${SPACING.groupPadding},bottom=${SPACING.groupPadding},right=${SPACING.groupPadding}]`,
@@ -271,6 +375,7 @@ function buildGraph(
       id: node.id,
       width: f?.outerWidth ?? size.width,
       height: f?.outerHeight ?? size.height,
+      ...at(node.id, node.group),
     });
   }
 
@@ -281,6 +386,7 @@ function buildGraph(
       id: part.id,
       width: f.outerWidth,
       height: f.outerHeight,
+      ...at(part.id, part.group),
       ports: [...ports.values()]
         .filter((p) => p.part === part.id)
         .map<ElkPort>((p) => ({
@@ -298,6 +404,18 @@ function buildGraph(
   for (const image of scene.images) {
     const f = frames.get(image.id)!;
     root.children!.push({ id: image.id, width: f.outerWidth, height: f.outerHeight });
+  }
+  if (hints) {
+    sortByHints(containers.values(), hints, direction);
+    // Each group lays out its own children; it needs the strategies too.
+    for (const c of containers.values())
+      Object.assign((c.layoutOptions ??= {}), {
+        "elk.layered.cycleBreaking.strategy": "INTERACTIVE",
+        "elk.layered.layering.strategy": "INTERACTIVE",
+        // New edges, a back-edge most of all, must not reshuffle a layer the
+        // reader already knows; the earlier drawing settled its crossings.
+        "elk.layered.crossingMinimization.strategy": "NONE",
+      });
   }
 
   for (const edge of scene.edges) {
@@ -559,6 +677,7 @@ function collect(
   );
   return {
     kind: "scene",
+    direction: result.layoutOptions?.["elk.direction"] === "DOWN" ? "down" : "right",
     width: Math.ceil(right + margin),
     height: Math.ceil((result.height ?? 0) + dy + margin),
     ...(title ? { title } : {}),

@@ -67,6 +67,8 @@ export type LaidOutImage = SceneImage &
 
 export type LaidOutScene = {
   kind: "scene";
+  /** The flow the layout used; a follow-up keeps it. */
+  direction?: "right" | "down";
   width: number;
   height: number;
   title?: TextBox;
