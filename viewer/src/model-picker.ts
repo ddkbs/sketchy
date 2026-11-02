@@ -18,6 +18,8 @@ export type ModelPickerData = {
     ramGb: number;
     speed: string;
     quality: string;
+    /** Set when this model cannot run in the current host. */
+    unavailable?: string;
   }[];
   state: ModelState;
 };
@@ -54,11 +56,12 @@ export function mountModelPicker(root: HTMLElement, data: ModelPickerData, app: 
             <dt>Memory</dt><dd>${m.ramGb} GB</dd>
             <dt>Speed</dt><dd>${esc(m.speed)}</dd>
           </dl>
-          <p>${esc(m.quality)}</p>`;
+          <p>${esc(m.unavailable ?? m.quality)}</p>`;
+        if (m.unavailable) card.classList.add("unavailable");
         const button = document.createElement("button");
         const ready = state.state === "ready" && state.tier === m.tier;
         button.textContent = ready ? "Installed ✓" : active && busy ? "Downloading…" : "Use this";
-        button.disabled = busy || ready;
+        button.disabled = busy || ready || Boolean(m.unavailable);
         button.onclick = () => void choose(m.tier);
         card.appendChild(button);
         return card;

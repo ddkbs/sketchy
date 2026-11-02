@@ -233,6 +233,10 @@ button:disabled {
   border-radius: 12px 10px 13px 9px;
 }
 
+.card.unavailable {
+  opacity: 0.55;
+}
+
 .card.active {
   box-shadow: 3px 3px 0 #ffe58a;
 }
