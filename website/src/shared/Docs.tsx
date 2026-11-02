@@ -132,6 +132,12 @@ export function Docs({ header }: { header?: ReactNode }) {
           labeling and opening files from a drawing need your computer, so they come with the
           extension.
         </p>
+        <p>
+          To run exactly the code you reviewed, upload{" "}
+          <code>sketchy-skill-&lt;version&gt;-pinned.zip</code> instead. It loads the bundle from a
+          fixed commit and checks it with a Subresource Integrity hash, so the browser refuses any
+          other file. It does not update itself; upload the next pinned zip to get fixes.
+        </p>
         <h3>Claude desktop app (Code tab)</h3>
         <ol>
           <li>

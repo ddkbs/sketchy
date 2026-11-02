@@ -76,7 +76,7 @@ The skill draws right in the chat, with no server:
 2. In Claude, open **Settings → Capabilities → Skills** and upload the zip.
 3. Ask for a drawing in any chat.
 
-Claude writes the scene, and the chat's inline visualization loads Sketchy's browser bundle from [jsDelivr](https://www.jsdelivr.com), which serves it from this repository's `cdn` branch. The skill follows the current minor version, so it picks up fixes without being uploaded again. Photo labeling and opening files from a drawing need your computer, so they stay in the desktop extension.
+Claude writes the scene, and the chat's inline visualization loads Sketchy's browser bundle from [jsDelivr](https://www.jsdelivr.com), which serves it from this repository's `cdn` branch. The skill follows the current minor version, so it picks up fixes without being uploaded again. To run exactly the code you reviewed, use `sketchy-skill-<version>-pinned.zip` instead: it loads the bundle from a fixed commit of the `cdn` branch and checks it with a [Subresource Integrity](https://developer.mozilla.org/docs/Web/Security/Subresource_Integrity) hash, so the browser refuses any other file. It does not pick up fixes; upload the next pinned zip to update. Photo labeling and opening files from a drawing need your computer, so they stay in the desktop extension.
 
 ### Claude desktop app (Code tab)
 

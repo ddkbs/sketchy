@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Each release also ships `sketchy-skill-<version>-pinned.zip`, a chat skill that loads the browser bundle from a fixed commit and verifies it with a Subresource Integrity hash ([#1](https://github.com/ddkbs/sketchy/issues/1)).
+
 ## [0.1.6] - 2026-11-02
 
 **Efficiency update.** Claude now describes scenes in a compact line syntax and sees one short tool instead of fifteen. Measured with Claude Sonnet on five topics:
