@@ -2,6 +2,7 @@ import { z } from "zod";
 import { layoutScene } from "../src/layout/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { SceneBuilder } from "../src/scene/builder.js";
+import { parseCompact } from "../src/scene/compact.js";
 import { sketchShape } from "../src/tools/schemas.js";
 import { FONT_CSS } from "../viewer/src/fonts.js";
 import { mountScene } from "../viewer/src/scene-view.js";
@@ -73,13 +74,15 @@ function injectStyles(): void {
   document.head.appendChild(style);
 }
 
-/** Draws a scene (same shape as the `sketch` tool) into `target`. */
+/** Draws a scene, in the compact line syntax or as JSON, into `target`. */
 export async function draw(target: HTMLElement | string, scene: unknown): Promise<void> {
   const root = typeof target === "string" ? document.querySelector<HTMLElement>(target)! : target;
   injectStyles();
   root.classList.add("sketchy");
   try {
-    const input = z.object(sketchShape).parse(scene);
+    const input = z
+      .object(sketchShape)
+      .parse(typeof scene === "string" ? parseCompact(scene) : scene);
     const icons = (input.nodes ?? []).flatMap((n) => (n.icon ? [n.icon] : []));
     // Parts need the catalog and SQLite; plain diagrams skip both.
     const [parts] = await Promise.all([

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { layoutScene } from "../src/layout/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { SceneBuilder } from "../src/scene/builder.js";
+import { parseCompact } from "../src/scene/compact.js";
 import { sketchShape } from "../src/tools/schemas.js";
 
 // Skill entry: the same scene description as the `sketch` tool in, one
@@ -24,7 +25,11 @@ if (!scenePath || !outPath) {
 }
 
 try {
-  const input = z.object(sketchShape).parse(JSON.parse(readFileSync(scenePath, "utf8")));
+  // A .json file holds the JSON form; anything else is the compact line syntax.
+  const source = readFileSync(scenePath, "utf8");
+  const input = z
+    .object(sketchShape)
+    .parse(scenePath.endsWith(".json") ? JSON.parse(source) : parseCompact(source));
   const builder = new SceneBuilder(parts);
   builder.reset({ title: input.title, subtitle: input.subtitle, direction: input.direction });
   for (const g of input.groups ?? []) builder.addGroup(g);
