@@ -16,7 +16,7 @@ Draw inline with your visualization tool (the one that renders HTML widgets in t
 ```html
 <h2 class="sr-only">One-sentence summary of the drawing</h2>
 <div id="sketchy" style="min-height: 320px"></div>
-<script src="{{CDN}}/sketchy.js"></script>
+<script src="{{CDN}}/sketchy.js" {{SRI}}></script>
 <script>
   Sketchy.draw(
     "#sketchy",

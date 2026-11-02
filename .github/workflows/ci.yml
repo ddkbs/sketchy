@@ -19,5 +19,8 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run format:check
-      - run: npm run build:skill
       - run: npm run build:web
+      # A placeholder commit exercises the pinned skill build.
+      - run: npm run build:skill
+        env:
+          SKETCHY_PIN_REF: "0000000000000000000000000000000000000000"

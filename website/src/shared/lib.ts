@@ -15,7 +15,7 @@ export type RepoInfo = {
   stars?: number;
   version?: string;
   assets: Partial<Record<Platform, string>>;
-  /** The chat skill (sketchy-skill-<version>.zip). */
+  /** The chat skill (sketchy-skill-<version>.zip), not the pinned variant. */
   skill?: string;
 };
 
@@ -36,7 +36,7 @@ function loadRepoInfo(): Promise<RepoInfo> {
       stars: typeof repo?.stargazers_count === "number" ? repo.stargazers_count : undefined,
       version: release?.tag_name ? String(release.tag_name).replace(/^v/, "") : undefined,
       assets,
-      skill: files.find((f) => /^sketchy-skill-.*\.zip$/.test(f.name))?.browser_download_url,
+      skill: files.find((f) => /^sketchy-skill-[\d.]+\.zip$/.test(f.name))?.browser_download_url,
     };
   });
   return repoInfo;
