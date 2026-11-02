@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-11-02
+
+### Fixed
+
+- Photo labeling no longer crashes the Claude desktop app: its built-in Node exits during inference with the medium and large models, so the app offers only the small model and falls back to it when a larger one was chosen elsewhere. Claude Code in the terminal keeps all three.
+
+### Changed
+
+- The project description, README, manifest and website describe Sketchy as a chat skill plus an extension for coding; the website showcases labeled photos.
+
 ## [0.1.4] - 2026-11-02
 
 ### Changed
@@ -61,7 +71,8 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.5...HEAD
+[0.1.5]: https://github.com/ddkbs/sketchy/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ddkbs/sketchy/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ddkbs/sketchy/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/ddkbs/sketchy/compare/v0.1.1...v0.1.2

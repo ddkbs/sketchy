@@ -1,7 +1,7 @@
 {
   "name": "sketchy",
   "private": true,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Lets Claude draw while it explains: hand-drawn, interactive diagrams, circuits and labeled photos, right in the Claude chat and in Claude Code.",
   "type": "module",
   "license": "MIT",
