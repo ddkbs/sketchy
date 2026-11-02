@@ -167,6 +167,23 @@ Every feature fills the same scene, and a single viewer renders it. The visual s
 
 </details>
 
+## Token usage
+
+Does a drawing cost more than a text answer? We asked Claude Sonnet to explain five topics (DNS, git branches, transformers, the TLS handshake, an Arduino button circuit), twice each, once in plain text and once with Sketchy, and read the exact usage that Claude Code reports.
+
+| Average per answer                 | Plain text | With Sketchy   |
+| ---------------------------------- | ---------- | -------------- |
+| Output tokens (what Claude writes) | 972        | 1,114 (+15%)   |
+| New input tokens                   | 5,522      | 9,438 (+3,916) |
+| Cached input tokens (1/10 price)   | 23,610     | 92,797         |
+| Cost on Sonnet list prices         | ~$0.042    | ~$0.080        |
+
+- **Claude writes about as much for a diagram as for text.** The scene replaces most of the prose; layout and drawing happen in Sketchy and cost no tokens.
+- **The tool definitions add about 4k input tokens** once per conversation, not per drawing.
+- **A tool call adds turns.** Each turn re-sends the context, mostly from the cache at a tenth of the price; that is the large cached number.
+
+So the first drawing in a fresh conversation costs roughly twice a text answer; later drawings in the same conversation add only the output and the extra turns. Measured on November 2, 2026 in Claude Code with an empty project. Run it yourself with `npm run build && node scripts/token-benchmark.mjs`.
+
 ## Configuration
 
 | Variable             | Default       | Description                                                                       |

@@ -12,6 +12,7 @@ const SECTIONS = [
   ["photos", "Labeled photos"],
   ["tools", "Tools"],
   ["configuration", "Configuration"],
+  ["tokens", "Token usage"],
   ["limitations", "Limitations"],
 ] as const;
 
@@ -388,6 +389,57 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
             </tr>
           </tbody>
         </table>
+
+        <h2 id="tokens">Token usage</h2>
+        <p>
+          Does a drawing cost more than a text answer? We asked Claude Sonnet to explain five topics
+          (DNS, git branches, transformers, the TLS handshake, an Arduino button circuit), twice
+          each, once in plain text and once with Sketchy, and read the exact usage Claude Code
+          reports.
+        </p>
+        <table>
+          <thead>
+            <tr>
+              <th>Average per answer</th>
+              <th>Plain text</th>
+              <th>With Sketchy</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["Output tokens (what Claude writes)", "972", "1,114 (+15%)"],
+              ["New input tokens", "5,522", "9,438 (+3,916)"],
+              ["Cached input tokens (1/10 price)", "23,610", "92,797"],
+              ["Cost on Sonnet list prices", "~$0.042", "~$0.080"],
+            ].map(([what, text, sketch]) => (
+              <tr key={what}>
+                <td>{what}</td>
+                <td>{text}</td>
+                <td>{sketch}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <ul>
+          <li>
+            <strong>Claude writes about as much for a diagram as for text.</strong> The scene
+            replaces most of the prose; layout and drawing happen in Sketchy and cost no tokens.
+          </li>
+          <li>
+            <strong>The tool definitions add about 4k input tokens</strong> once per conversation,
+            not per drawing.
+          </li>
+          <li>
+            <strong>A tool call adds turns.</strong> Each turn re-sends the context, mostly from the
+            cache at a tenth of the price.
+          </li>
+        </ul>
+        <p>
+          So the first drawing in a fresh conversation costs roughly twice a text answer; later
+          drawings in the same conversation add only the output and the extra turns. Measured on
+          November 2, 2026 in Claude Code with an empty project; the script is{" "}
+          <code>scripts/token-benchmark.mjs</code>.
+        </p>
 
         <h2 id="limitations">Limitations</h2>
         <ul>
