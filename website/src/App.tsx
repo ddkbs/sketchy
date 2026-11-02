@@ -1,12 +1,12 @@
 import { Analytics } from "@vercel/analytics/react";
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
 import { CAPABILITIES, TAGLINE } from "./shared/content";
 import { ChatDemo } from "./shared/demo/ChatDemo";
 import { Docs } from "./shared/Docs";
 import { useDownload } from "./shared/lib";
 import { LogoMark } from "./shared/Logo";
-import { GithubIcon, Nav, Stars } from "./shared/Nav";
+import { GithubButton, Nav } from "./shared/Nav";
 import { REPO_URL } from "./shared/lib";
 
 const TERMINAL_INSTALL = `git clone https://github.com/ddkbs/sketchy.git
@@ -14,7 +14,6 @@ cd sketchy && npm install && npm run build
 claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"`;
 import DecryptedText from "./vendor/DecryptedText";
 import Magnet from "./vendor/Magnet";
-import ShinyText from "./vendor/ShinyText";
 import TargetCursor from "./vendor/TargetCursor";
 import Topography from "./vendor/Topography";
 
@@ -68,19 +67,10 @@ function DownloadButton({
   );
 }
 
-function GithubButton() {
+function HeroGithubButton() {
   return (
     <Magnet padding={70} magnetStrength={5}>
-      <a
-        href={REPO_URL}
-        target="_blank"
-        rel="noreferrer"
-        className="cursor-target group inline-flex h-12 items-center gap-2.5 rounded-lg border border-white/15 bg-white/[0.04] px-5 text-[15px] font-medium backdrop-blur-md transition-colors hover:border-white/30 hover:bg-white/[0.08]"
-      >
-        <GithubIcon size={17} />
-        <ShinyText text="Star on GitHub" color="#d4d4d8" shineColor="#ffffff" speed={3} />
-        <Stars className="rounded bg-white/10 px-1.5 py-0.5 text-[12px] text-muted-foreground" />
-      </a>
+      <GithubButton className="h-12 px-5 text-[15px]" />
     </Magnet>
   );
 }
@@ -134,7 +124,7 @@ function Landing() {
             className="mt-10 flex flex-wrap items-center justify-center gap-3"
           >
             <DownloadButton href="#install">Get Sketchy</DownloadButton>
-            <GithubButton />
+            <HeroGithubButton />
           </motion.div>
           <motion.p {...up(0.4)} className="mt-6 font-mono text-[11.5px] tracking-wide text-faint">
             MIT · in the Claude chat on web, desktop and mobile · in Claude Code
@@ -219,22 +209,105 @@ function PhotoLabeling() {
   );
 }
 
+type Mode = "chat" | "code";
+
+const MODES: { id: Mode; title: string; hint: string; icon: ReactNode }[] = [
+  {
+    id: "chat",
+    title: "In the chat",
+    hint: "web · desktop · mobile",
+    icon: (
+      <path
+        d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5Z"
+        strokeLinejoin="round"
+      />
+    ),
+  },
+  {
+    id: "code",
+    title: "While coding",
+    hint: "Claude Code",
+    icon: <path d="m5 7 5 5-5 5M12.5 17H19" strokeLinecap="round" strokeLinejoin="round" />,
+  },
+];
+
+const swap = {
+  initial: { opacity: 0, y: 10, filter: "blur(6px)" },
+  animate: { opacity: 1, y: 0, filter: "blur(0px)" },
+  exit: { opacity: 0, y: -8, filter: "blur(6px)" },
+  transition: { duration: 0.35, ease },
+};
+
+/** Two cards; the active one gets a sliding highlight and a rotating accent border. */
+function ModePicker({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => void }) {
+  return (
+    <div
+      role="group"
+      aria-label="Where you use Claude"
+      className="mx-auto mt-7 grid max-w-[520px] grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 sm:gap-3"
+    >
+      {MODES.map((m) => {
+        const active = mode === m.id;
+        return (
+          <button
+            key={m.id}
+            type="button"
+            onClick={() => onChange(m.id)}
+            aria-pressed={active}
+            className="cursor-target group relative rounded-xl p-px text-left"
+          >
+            {active && (
+              <motion.span
+                layoutId="mode-highlight"
+                transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                className="mode-beam absolute inset-0 rounded-xl"
+              />
+            )}
+            <span
+              className={`relative flex h-full items-center gap-3 rounded-[11px] px-3 py-3 transition-colors duration-300 sm:px-4 ${
+                active ? "bg-[#111114]" : "group-hover:bg-white/[0.04]"
+              }`}
+            >
+              <span
+                className={`hidden size-9 shrink-0 sm:grid place-items-center rounded-lg border transition-all duration-300 ${
+                  active
+                    ? "border-accent/40 bg-accent/15 text-accent shadow-[0_0_24px_-4px_var(--accent)]"
+                    : "border-white/10 text-muted-foreground group-hover:-rotate-6 group-hover:text-foreground"
+                }`}
+              >
+                <svg
+                  viewBox="0 0 24 24"
+                  className="size-[18px]"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={1.8}
+                  aria-hidden
+                >
+                  {m.icon}
+                </svg>
+              </span>
+              <span className="min-w-0">
+                <span
+                  className={`block text-[14.5px] font-medium transition-colors ${
+                    active ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
+                  }`}
+                >
+                  {m.title}
+                </span>
+                <span className="block truncate font-mono text-[11px] text-faint">{m.hint}</span>
+              </span>
+            </span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 /** Two ways in: the skill for the chat, the extension for coding. */
 function Install() {
   const { href, label, skillHref } = useDownload();
-  const [mode, setMode] = useState<"chat" | "code">("chat");
-  const tab = (id: "chat" | "code", text: string) => (
-    <button
-      type="button"
-      onClick={() => setMode(id)}
-      aria-pressed={mode === id}
-      className={`cursor-target rounded-md px-4 py-1.5 text-[14px] font-medium transition-colors ${
-        mode === id ? "bg-white text-black" : "text-muted-foreground hover:text-foreground"
-      }`}
-    >
-      {text}
-    </button>
-  );
+  const [mode, setMode] = useState<Mode>("chat");
   return (
     <section id="install" className="mx-auto mt-24 max-w-[1000px] scroll-mt-24 px-4 pb-10">
       <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-white/[0.04] to-transparent px-6 py-14 text-center">
@@ -243,54 +316,51 @@ function Install() {
           Ready in a minute.
         </h2>
         <p className="mx-auto mt-3 max-w-[46ch] text-muted-foreground">Where do you use Claude?</p>
-        <div
-          role="group"
-          aria-label="Where you use Claude"
-          className="mx-auto mt-6 inline-flex gap-1 rounded-lg border border-white/15 bg-white/[0.04] p-1"
-        >
-          {tab("chat", "In the chat")}
-          {tab("code", "While coding")}
-        </div>
+        <ModePicker mode={mode} onChange={setMode} />
 
-        {mode === "chat" ? (
-          <div className="mx-auto mt-8 max-w-[520px]">
-            <ol className="space-y-2 text-left text-[15px] text-muted-foreground">
-              <li>
-                <span className="mr-2 font-mono text-accent">1</span>Download the Sketchy skill.
-              </li>
-              <li>
-                <span className="mr-2 font-mono text-accent">2</span>In Claude, open{" "}
-                <span className="text-foreground">Settings → Capabilities → Skills</span> and upload
-                it.
-              </li>
-              <li>
-                <span className="mr-2 font-mono text-accent">3</span>Ask Claude to explain
-                something. The drawing appears right in the chat.
-              </li>
-            </ol>
-            <div className="mt-8 flex justify-center">
-              <DownloadButton href={skillHref}>Download the skill</DownloadButton>
-            </div>
-            <p className="mt-4 font-mono text-[11.5px] text-faint">
-              Web, desktop and mobile · no server · updates itself
-            </p>
-          </div>
-        ) : (
-          <div className="mx-auto mt-8 max-w-[620px]">
-            <p className="text-[15px] text-muted-foreground">
-              The extension runs on your computer and adds photo labeling, SVG and PNG export and
-              click-to-open files. Install it, then start a session in the{" "}
-              <span className="text-foreground">Code</span> tab.
-            </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <DownloadButton href={href}>Download for {label}</DownloadButton>
-            </div>
-            <p className="mt-8 text-[13.5px] text-muted-foreground">Claude Code in the terminal:</p>
-            <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-black/40 p-4 text-left font-mono text-[12.5px] leading-relaxed text-muted-foreground">
-              {TERMINAL_INSTALL}
-            </pre>
-          </div>
-        )}
+        <AnimatePresence mode="wait" initial={false}>
+          {mode === "chat" ? (
+            <motion.div key="chat" {...swap} className="mx-auto mt-8 max-w-[520px]">
+              <ol className="space-y-2 text-left text-[15px] text-muted-foreground">
+                <li>
+                  <span className="mr-2 font-mono text-accent">1</span>Download the Sketchy skill.
+                </li>
+                <li>
+                  <span className="mr-2 font-mono text-accent">2</span>In Claude, open{" "}
+                  <span className="text-foreground">Settings → Capabilities → Skills</span> and
+                  upload it.
+                </li>
+                <li>
+                  <span className="mr-2 font-mono text-accent">3</span>Ask Claude to explain
+                  something. The drawing appears right in the chat.
+                </li>
+              </ol>
+              <div className="mt-8 flex justify-center">
+                <DownloadButton href={skillHref}>Download the skill</DownloadButton>
+              </div>
+              <p className="mt-4 font-mono text-[11.5px] text-faint">
+                Web, desktop and mobile · no server · updates itself
+              </p>
+            </motion.div>
+          ) : (
+            <motion.div key="code" {...swap} className="mx-auto mt-8 max-w-[620px]">
+              <p className="text-[15px] text-muted-foreground">
+                The extension runs on your computer and adds photo labeling, SVG and PNG export and
+                click-to-open files. Install it, then start a session in the{" "}
+                <span className="text-foreground">Code</span> tab.
+              </p>
+              <div className="mt-8 flex flex-wrap justify-center gap-3">
+                <DownloadButton href={href}>Download for {label}</DownloadButton>
+              </div>
+              <p className="mt-8 text-[13.5px] text-muted-foreground">
+                Claude Code in the terminal:
+              </p>
+              <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-black/40 p-4 text-left font-mono text-[12.5px] leading-relaxed text-muted-foreground">
+                {TERMINAL_INSTALL}
+              </pre>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <a
           href={DOCS}
           className="cursor-target mt-8 inline-block text-[14px] text-muted-foreground transition-colors hover:text-foreground"

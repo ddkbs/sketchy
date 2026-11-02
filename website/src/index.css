@@ -206,3 +206,30 @@ body {
     scroll-behavior: auto;
   }
 }
+
+/* Rotating accent border for the active install mode. */
+@property --beam-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+@keyframes beam-spin {
+  to {
+    --beam-angle: 360deg;
+  }
+}
+.mode-beam {
+  background: conic-gradient(
+    from var(--beam-angle),
+    rgb(255 255 255 / 12%) 0deg,
+    var(--accent) 60deg,
+    rgb(255 255 255 / 12%) 120deg,
+    rgb(255 255 255 / 12%) 360deg
+  );
+  animation: beam-spin 3.2s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mode-beam {
+    animation: none;
+  }
+}
