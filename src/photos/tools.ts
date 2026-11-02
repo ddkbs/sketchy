@@ -6,7 +6,7 @@ import type { SceneBuilder } from "../scene/builder.js";
 import type { SceneImage } from "../scene/types.js";
 import { VIEWER_URI, failFrom, tool } from "../server.js";
 import type { ViewStore } from "../views.js";
-import { MODELS, type ModelTier } from "./models.js";
+import { MODELS, unavailableReason, type ModelTier } from "./models.js";
 import { USER_AGENT } from "./search.js";
 import type { PhotoService } from "./service.js";
 
@@ -204,6 +204,7 @@ function pickerData(service: PhotoService) {
       ramGb,
       speed,
       quality,
+      unavailable: unavailableReason(tier),
     })),
     state: service.modelState(),
   };

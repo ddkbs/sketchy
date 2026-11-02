@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { matchText, parseLocBoxes } from "../src/photos/grounding.js";
+import { unavailableReason } from "../src/photos/models.js";
 import { normalizeLicense, stripHtml } from "../src/photos/search.js";
 import { LocalDatabase } from "../src/storage/database.js";
 
@@ -58,5 +59,16 @@ describe("LocalDatabase", () => {
     const second = await LocalDatabase.open(dir);
     expect(second.getSetting("photo.model")).toBe("small");
     expect(second.getSetting("missing")).toBeUndefined();
+  });
+});
+
+describe("model availability", () => {
+  it("offers only the small model inside Electron", () => {
+    const electron = { ...process.versions, electron: "41.0.0" };
+    const node = { ...process.versions, electron: undefined } as NodeJS.ProcessVersions;
+    expect(unavailableReason("small", electron)).toBeUndefined();
+    expect(unavailableReason("medium", electron)).toMatch(/Claude app/);
+    expect(unavailableReason("large", electron)).toMatch(/Claude app/);
+    expect(unavailableReason("large", node)).toBeUndefined();
   });
 });

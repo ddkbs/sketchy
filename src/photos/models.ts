@@ -45,6 +45,20 @@ export const MODELS: Record<ModelTier, ModelInfo> = {
   },
 };
 
+/**
+ * Why a tier cannot run here, if it cannot. Inside the Claude desktop app the
+ * server runs in Electron's built-in Node, whose process exits during
+ * inference with the larger Florence-2 models; only Small works there.
+ */
+export function unavailableReason(
+  tier: ModelTier,
+  versions: NodeJS.ProcessVersions = process.versions,
+): string | undefined {
+  if (tier !== "small" && versions.electron)
+    return "Not available inside the Claude app. Use Claude Code in the terminal for larger models.";
+  return undefined;
+}
+
 export function isModelTier(value: unknown): value is ModelTier {
   return typeof value === "string" && value in MODELS;
 }

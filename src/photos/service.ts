@@ -5,7 +5,7 @@ import { all, get, run, transaction } from "../storage/sqlite.js";
 import type { Region, SceneImage } from "../scene/types.js";
 import { SceneError } from "../scene/builder.js";
 import { Grounder, type LocateResult, type ProgressEvent } from "./grounding.js";
-import { MODELS, isModelTier, type ModelTier } from "./models.js";
+import { MODELS, isModelTier, unavailableReason, type ModelTier } from "./models.js";
 import { USER_AGENT, attributionOf, searchImages, type ImageCandidate } from "./search.js";
 
 const MAX_IMAGE_WIDTH = 1280;
@@ -189,7 +189,9 @@ export class PhotoService {
 
   chosenTier(): ModelTier | undefined {
     const tier = this.db.getSetting("photo.model");
-    return isModelTier(tier) ? tier : undefined;
+    if (!isModelTier(tier)) return undefined;
+    // A larger model chosen elsewhere cannot run here; fall back to Small.
+    return unavailableReason(tier) ? "small" : tier;
   }
 
   modelState(): ModelState {
@@ -204,6 +206,8 @@ export class PhotoService {
   /** Starts a background download; progress is polled through modelState(). */
   startDownload(tier: ModelTier): ModelState {
     if (this.download?.state === "downloading") return this.download;
+    const reason = unavailableReason(tier);
+    if (reason) return { state: "error", tier, message: reason };
     const files = new Map<string, { loaded: number; total: number }>();
     this.download = { state: "downloading", tier, progress: 0 };
     const onProgress = (event: ProgressEvent) => {
