@@ -6,6 +6,25 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.6] - 2026-11-02
+
+**Efficiency update.** Claude now describes scenes in a compact line syntax and sees one short tool instead of fifteen. Measured with Claude Sonnet on five topics:
+
+- Claude writes **41% fewer tokens per drawing** than with JSON scenes (686 instead of 1,168), and 29% fewer than for a plain-text answer.
+- The tool definitions shrink by **88%**, from about 4,100 to about 500 tokens.
+- A first drawing costs ~$0.043 instead of ~$0.059. Over a session of six questions Sketchy is now **cheaper than plain text** ($0.58 against $0.61) and 23% cheaper than before ($0.75).
+
+### Added
+
+- Compact scene syntax for the `sketch` tool, the chat skill and the browser bundle (`browser -> server HTTPS`, `step Request: … | browser browser->server`), with tolerant parsing and errors that name the line.
+- Follow-up drawings keep the order and places of the elements the previous drawing already showed, also when a back-edge closes a cycle.
+- `SKETCHY_FORMAT=json` restores the JSON `sketch` tool and the incremental tools.
+
+### Changed
+
+- The extension offers `sketch`, `search_parts` and the photo tools; photos join a scene with an `image` line and region labels (`label <image>.<region>: <text>`).
+- The chat skill uses the compact syntax.
+
 ## [0.1.5] - 2026-11-02
 
 ### Fixed
@@ -71,7 +90,8 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.5...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.6...HEAD
+[0.1.6]: https://github.com/ddkbs/sketchy/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ddkbs/sketchy/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ddkbs/sketchy/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/ddkbs/sketchy/compare/v0.1.2...v0.1.3

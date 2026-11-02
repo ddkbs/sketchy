@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { RELEASES_URL, REPO_URL } from "./lib";
+import { TokenChart } from "./TokenChart";
 
 const SECTIONS = [
   ["introduction", "Introduction"],
@@ -316,18 +317,9 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
           </thead>
           <tbody>
             {[
-              ["sketch", "Draw a whole scene in one call"],
-              ["new_scene, render", "Build a scene incrementally, then show it"],
-              ["add_box, add_node, add_text, add_group", "Boxes, code nodes, notes and groups"],
-              ["add_arrow, add_edge", "Arrows between elements"],
-              ["place_part, connect, search_parts", "Electronic parts and wires"],
-              ["label", "Callouts on pins, photo regions or nodes"],
-              ["add_step", "Walkthrough steps"],
-              ["search_icons", "Lucide icons and technology logos"],
-              [
-                "find_image, locate, add_image, choose_model",
-                "Photos, local grounding, model setup",
-              ],
+              ["sketch", "Draw a whole scene in one call, in the compact line syntax"],
+              ["search_parts", "Electronic part types and their pins"],
+              ["find_image, locate, choose_model", "Photos, local grounding, model setup"],
             ].map(([tool, purpose]) => (
               <tr key={tool}>
                 <td>
@@ -338,6 +330,21 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
             ))}
           </tbody>
         </table>
+        <p>
+          A scene is a few short lines: <code>browser Browser @globe</code>,{" "}
+          <code>browser -&gt; server HTTPS</code>,{" "}
+          <code>step Request: The browser asks | browser browser-&gt;server</code>. Setting{" "}
+          <code>SKETCHY_FORMAT=json</code> restores the JSON <code>sketch</code> tool and the
+          incremental tools of earlier versions (<code>add_node</code>, <code>add_edge</code>,{" "}
+          <code>place_part</code>, <code>label</code>, <code>render</code>, …).
+        </p>
+        <h3>Follow-ups</h3>
+        <p>
+          Ask Claude to change a drawing and it sends the scene again with the same ids. Sketchy
+          keeps the order and places of everything the earlier drawing already showed and fits the
+          new parts in around them, so before and after stay comparable, also when a back-edge
+          closes a cycle.
+        </p>
 
         <h2 id="configuration">Configuration</h2>
         <table>
@@ -387,56 +394,77 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
               </td>
               <td>Folder the save dialog opens in for SVG and PNG exports</td>
             </tr>
+            <tr>
+              <td>
+                <code>SKETCHY_FORMAT</code>
+              </td>
+              <td>
+                <code>compact</code>
+              </td>
+              <td>
+                <code>json</code> restores the JSON scene tools of earlier versions
+              </td>
+            </tr>
           </tbody>
         </table>
 
         <h2 id="tokens">Token usage</h2>
         <p>
           Does a drawing cost more than a text answer? We asked Claude Sonnet to explain five topics
-          (DNS, git branches, transformers, the TLS handshake, an Arduino button circuit), twice
-          each, once in plain text and once with Sketchy, and read the exact usage Claude Code
-          reports.
+          (DNS, git branches, transformers, the TLS handshake, an Arduino button circuit), in plain
+          text and with Sketchy, and read the exact usage Claude Code reports. Version 0.1.6
+          introduced the compact scene format; the JSON column is the format before it.
         </p>
         <table>
           <thead>
             <tr>
-              <th>Average per answer</th>
+              <th>Average per answer, fresh conversation</th>
               <th>Plain text</th>
-              <th>With Sketchy</th>
+              <th>Sketchy, JSON (≤ 0.1.5)</th>
+              <th>Sketchy, compact (0.1.6)</th>
             </tr>
           </thead>
           <tbody>
             {[
-              ["Output tokens (what Claude writes)", "972", "1,114 (+15%)"],
-              ["New input tokens", "5,522", "9,438 (+3,916)"],
-              ["Cached input tokens (1/10 price)", "23,610", "92,797"],
-              ["Cost on Sonnet list prices", "~$0.042", "~$0.080"],
-            ].map(([what, text, sketch]) => (
+              ["Output tokens (what Claude writes)", "962", "1,168", "686 (−29% vs. text)"],
+              ["Tool definitions", "–", "~4,100", "~500"],
+              ["Cost on Sonnet list prices", "~$0.034", "~$0.059", "~$0.043"],
+            ].map(([what, text, json, compact]) => (
               <tr key={what}>
                 <td>{what}</td>
                 <td>{text}</td>
-                <td>{sketch}</td>
+                <td>{json}</td>
+                <td>{compact}</td>
               </tr>
             ))}
           </tbody>
         </table>
         <ul>
           <li>
-            <strong>Claude writes about as much for a diagram as for text.</strong> The scene
-            replaces most of the prose; layout and drawing happen in Sketchy and cost no tokens.
+            <strong>Claude writes less for a drawing than for text.</strong> Layout and drawing
+            happen in Sketchy and cost no tokens.
           </li>
           <li>
-            <strong>The tool definitions add about 4k input tokens</strong> once per conversation,
-            not per drawing.
-          </li>
-          <li>
-            <strong>A tool call adds turns.</strong> Each turn re-sends the context, mostly from the
-            cache at a tenth of the price.
+            <strong>A tool call adds a turn</strong> that re-sends the context, mostly from the
+            cache at a tenth of the price; this is why the very first answer still costs a little
+            more than text.
           </li>
         </ul>
+
+        <h3>Over a whole session</h3>
         <p>
-          So the first drawing in a fresh conversation costs roughly twice a text answer; later
-          drawings in the same conversation add only the output and the extra turns. Measured on
+          A single answer is not the whole story: in a conversation every answer stays in the
+          history and is sent again with the next question. We asked six questions in a row, each in
+          its own session per variant. An experimental compact scene format, where Claude writes{" "}
+          <code>browser -&gt; dns lookup</code> instead of JSON and sees only one short tool,
+          roughly halves what Claude writes per drawing.
+        </p>
+        <TokenChart />
+        <p>
+          With compact scenes, every answer from the second one on costs less than its text
+          counterpart, and the session as a whole is cheaper from the third answer: $0.58 against
+          $0.61 after six. Shorter answers keep the history small, and the extra tool turn is mostly
+          read from the cache. JSON scenes stay about 20% above text throughout. Measured on
           November 2, 2026 in Claude Code with an empty project; the script is{" "}
           <code>scripts/token-benchmark.mjs</code>.
         </p>

@@ -153,36 +153,43 @@ Every feature fills the same scene, and a single viewer renders it. The visual s
 <details>
 <summary>Tools</summary>
 
-| Tool                                                | Purpose                                         |
-| --------------------------------------------------- | ----------------------------------------------- |
-| `sketch`                                            | Draw a whole scene in one call                  |
-| `new_scene`, `render`                               | Build a scene incrementally, then show it       |
-| `add_box`, `add_node`, `add_text`, `add_group`      | Boxes, code nodes (clickable), notes and groups |
-| `add_arrow`, `add_edge`                             | Arrows between elements                         |
-| `place_part`, `connect`, `search_parts`             | Electronic parts and wires                      |
-| `label`                                             | Callouts on pins, photo regions or nodes        |
-| `add_step`                                          | Walkthrough steps                               |
-| `search_icons`                                      | Lucide icons and technology logos               |
-| `find_image`, `locate`, `add_image`, `choose_model` | Photo search, local grounding, model setup      |
+| Tool                                   | Purpose                                                    |
+| -------------------------------------- | ---------------------------------------------------------- |
+| `sketch`                               | Draw a whole scene in one call, in the compact line syntax |
+| `search_parts`                         | Electronic part types and their pins                       |
+| `find_image`, `locate`, `choose_model` | Photo search, local grounding, model setup                 |
+
+A scene is a few short lines: `browser Browser @globe`, `browser -> server HTTPS`, `step Request: The browser asks | browser browser->server`. Setting `SKETCHY_FORMAT=json` restores the JSON `sketch` tool and the incremental tools of earlier versions (`add_node`, `add_edge`, `place_part`, `label`, `render`, …).
 
 </details>
 
+### Follow-ups
+
+Ask Claude to change a drawing ("add the cache and the call back to the router") and it sends the scene again with the same ids. Sketchy keeps the order and places of everything the earlier drawing already showed and fits the new parts in around them, so before and after stay comparable, also when a back-edge closes a cycle.
+
 ## Token usage
 
-Does a drawing cost more than a text answer? We asked Claude Sonnet to explain five topics (DNS, git branches, transformers, the TLS handshake, an Arduino button circuit), twice each, once in plain text and once with Sketchy, and read the exact usage that Claude Code reports.
+Does a drawing cost more than a text answer? We asked Claude Sonnet to explain five topics (DNS, git branches, transformers, the TLS handshake, an Arduino button circuit), in plain text and with Sketchy, and read the exact usage Claude Code reports. Version 0.1.6 introduced the compact scene format; the JSON column is the format before it.
 
-| Average per answer                 | Plain text | With Sketchy   |
-| ---------------------------------- | ---------- | -------------- |
-| Output tokens (what Claude writes) | 972        | 1,114 (+15%)   |
-| New input tokens                   | 5,522      | 9,438 (+3,916) |
-| Cached input tokens (1/10 price)   | 23,610     | 92,797         |
-| Cost on Sonnet list prices         | ~$0.042    | ~$0.080        |
+| Average per answer, fresh conversation | Plain text | Sketchy, JSON (≤ 0.1.5) | Sketchy, compact (0.1.6) |
+| -------------------------------------- | ---------- | ----------------------- | ------------------------ |
+| Output tokens (what Claude writes)     | 962        | 1,168                   | **686** (−29% vs. text)  |
+| Tool definitions                       | –          | ~4,100                  | **~500**                 |
+| Cost on Sonnet list prices             | ~$0.034    | ~$0.059                 | ~$0.043                  |
 
-- **Claude writes about as much for a diagram as for text.** The scene replaces most of the prose; layout and drawing happen in Sketchy and cost no tokens.
-- **The tool definitions add about 4k input tokens** once per conversation, not per drawing.
-- **A tool call adds turns.** Each turn re-sends the context, mostly from the cache at a tenth of the price; that is the large cached number.
+Over a whole session the compact format is cheaper than plain text. Six questions in a row, each variant in its own session, mean of two runs:
 
-So the first drawing in a fresh conversation costs roughly twice a text answer; later drawings in the same conversation add only the output and the extra turns. Measured on November 2, 2026 in Claude Code with an empty project. Run it yourself with `npm run build && node scripts/token-benchmark.mjs`.
+| Answers in the session | Plain text | Sketchy, JSON | Sketchy, compact |
+| ---------------------- | ---------- | ------------- | ---------------- |
+| 1                      | $0.04      | $0.07         | $0.05            |
+| 3                      | $0.21      | $0.27         | **$0.20**        |
+| 6                      | $0.61      | $0.75         | **$0.58**        |
+
+- **Claude writes less for a drawing than for text.** Layout and drawing happen in Sketchy and cost no tokens.
+- **Every answer stays in the history.** Shorter answers keep it small, so each follow-up question costs less than after a text answer.
+- **A tool call adds a turn** that re-sends the context, mostly from the cache at a tenth of the price; this is why the very first answer still costs a little more than text.
+
+Measured on November 2, 2026 in Claude Code with an empty project. Run it yourself with `npm run build && node scripts/token-benchmark.mjs`.
 
 ## Configuration
 
@@ -192,6 +199,7 @@ So the first drawing in a fresh conversation costs roughly twice a text answer; 
 | `SKETCHY_PHOTOS`     | `on`          | `off` disables photo search and labeling                                          |
 | `SKETCHY_DATA_DIR`   | `~/.sketchy`  | Models, cached photos and the local SQLite database                               |
 | `SKETCHY_EXPORT_DIR` | `~/Downloads` | Folder the save dialog opens in, and where exports go when no dialog is available |
+| `SKETCHY_FORMAT`     | `compact`     | `json` restores the JSON scene tools of earlier versions                          |
 
 ## Development
 
