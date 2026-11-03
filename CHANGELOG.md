@@ -6,6 +6,18 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Sketchy is on npm as `@ddkbs/sketchy`: `npx -y @ddkbs/sketchy` starts the server in Claude Code, Cursor, VS Code and other MCP clients, on every platform Node.js runs on.
+- One-click install links for Cursor and VS Code on the website and in the README.
+- Cursor plugin manifest (`.cursor-plugin/plugin.json` and `mcp.json`) for the Cursor Marketplace.
+- Releases publish the npm package once the GitHub release is published.
+
+### Changed
+
+- The npm package leaves out the photo-labeling runtime (transformers.js, about 470 MB) and installs it into the data folder the first time a model is picked. The desktop extension still ships it.
+- Claude Code in the terminal no longer needs a clone of the repository.
+
 ## [0.1.6] - 2026-11-02
 
 **Efficiency update.** Claude now describes scenes in a compact line syntax and sees one short tool instead of fifteen. Measured with Claude Sonnet on five topics:
