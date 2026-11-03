@@ -107,6 +107,36 @@ claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"
 
 Run `claude mcp list` to check that it is connected.
 
+### Cursor
+
+Cursor shows Sketchy's drawings inline in the agent chat ([MCP Apps](https://cursor.com/docs/context/mcp)). It needs [Node.js](https://nodejs.org) 20 or newer.
+
+1. Download `sketchy-<version>-cursor-<platform>.zip` for your platform from the [latest release](https://github.com/ddkbs/sketchy/releases/latest) and unpack it into your home folder, so that you get `~/sketchy` (on Windows `C:\Users\<you>\sketchy`). On macOS, unpack it in the terminal so the native libraries are not quarantined:
+
+   ```bash
+   cd ~ && curl -fLO https://github.com/ddkbs/sketchy/releases/latest/download/sketchy-0.1.6-cursor-darwin-arm64.zip && unzip -q sketchy-0.1.6-cursor-darwin-arm64.zip
+   ```
+
+2. Add Sketchy to `~/.cursor/mcp.json` (all projects) or `.cursor/mcp.json` (one project):
+
+   ```json
+   {
+     "mcpServers": {
+       "sketchy": {
+         "type": "stdio",
+         "command": "node",
+         "args": ["${userHome}/sketchy/dist/index.js"],
+         "env": { "SKETCHY_EDITOR": "cursor" }
+       }
+     }
+   }
+   ```
+
+3. Restart Cursor and check under **Settings → Tools & MCP** that Sketchy is enabled.
+4. Ask the agent for a drawing, for example _"Explain my repo with Sketchy"_. Cursor asks before each tool call unless you allow it to run tools automatically.
+
+If Cursor cannot find `node` (for example with nvm), use its full path as `command`; `which node` prints it.
+
 ### Other MCP clients
 
 Sketchy is a standard MCP server and works in any client that supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps):
