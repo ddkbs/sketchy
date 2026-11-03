@@ -1,7 +1,15 @@
 // Builds a platform-specific .mcpb bundle: production dependencies only,
 // with native binaries for other platforms removed to keep the download small.
 import { execFileSync } from "node:child_process";
-import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import {
+  cpSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  readFileSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -36,21 +44,30 @@ cpSync(join(root, "assets", "icon.png"), join(stage, "assets", "icon.png"));
 for (const file of ["parts.json", "viewer.html"])
   cpSync(join(root, "build", file), join(stage, "build", file));
 
-run(
-  "npm",
-  [
-    "ci",
-    "--omit=dev",
-    "--ignore-scripts",
-    "--no-audit",
-    "--no-fund",
-    `--os=${platform}`,
-    `--cpu=${arch}`,
-    // Without a libc, cross builds skip the glibc-only native packages (sharp).
-    ...(platform === "linux" ? ["--libc=glibc"] : []),
-  ],
-  stage,
-);
+const flags = [
+  "--omit=dev",
+  "--ignore-scripts",
+  "--no-audit",
+  "--no-fund",
+  `--os=${platform}`,
+  `--cpu=${arch}`,
+  // Without a libc, cross builds skip the glibc-only native packages (sharp).
+  ...(platform === "linux" ? ["--libc=glibc"] : []),
+];
+run("npm", ["ci", ...flags], stage);
+// The npm package installs its optional peers (transformers.js) on first use;
+// bundles ship them so photo labeling works offline. Dropping the dev
+// dependencies lets npm treat them as production packages, still at the
+// versions the lockfile pins.
+const manifest = JSON.parse(readFileSync(join(stage, "package.json"), "utf8"));
+if (manifest.peerDependencies) {
+  Object.assign(manifest.dependencies, manifest.peerDependencies);
+  delete manifest.devDependencies;
+  delete manifest.peerDependencies;
+  delete manifest.peerDependenciesMeta;
+  writeFileSync(join(stage, "package.json"), `${JSON.stringify(manifest, null, 2)}\n`);
+  run("npm", ["install", ...flags], stage);
+}
 
 // transformers.js bundles the web runtime it needs; the separate package is unused in Node.
 rmSync(join(stage, "node_modules", "onnxruntime-web"), { recursive: true, force: true });

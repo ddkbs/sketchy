@@ -224,7 +224,7 @@ export class PhotoService {
         this.download.progress = Math.max(this.download.progress, Math.min(0.99, loaded / total));
       }
     };
-    Grounder.load(tier, this.modelDir(), onProgress)
+    Grounder.load(tier, this.dataDir, onProgress)
       .then((grounder) => {
         this.grounder = grounder;
         this.db.setSetting(`photo.model.${tier}.ready`, "true");
@@ -251,12 +251,8 @@ export class PhotoService {
       );
     }
     if (this.grounder?.tier !== state.tier) {
-      this.grounder = await Grounder.load(state.tier, this.modelDir());
+      this.grounder = await Grounder.load(state.tier, this.dataDir);
     }
     return this.grounder;
-  }
-
-  private modelDir(): string {
-    return join(this.dataDir, "models");
   }
 }

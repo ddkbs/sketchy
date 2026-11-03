@@ -1,5 +1,7 @@
+import { join } from "node:path";
 import type { Region } from "../scene/types.js";
 import { MODELS, type ModelTier } from "./models.js";
+import { loadTransformers, type Transformers } from "./runtime.js";
 
 export type LocateMethod = "text" | "grounding" | "detection";
 
@@ -12,7 +14,6 @@ export type ProgressEvent = { file?: string; loaded?: number; total?: number; st
 type Box = [number, number, number, number];
 
 // transformers.js is loaded lazily: the drawing core must work without it.
-type Transformers = typeof import("@huggingface/transformers");
 type Florence = {
   model: { generate(inputs: Record<string, unknown>): Promise<unknown> };
   processor: {
@@ -45,10 +46,11 @@ export class Grounder {
 
   static async load(
     tier: ModelTier,
-    cacheDir: string,
+    dataDir: string,
     onProgress?: (event: ProgressEvent) => void,
   ): Promise<Grounder> {
-    const tf = await import("@huggingface/transformers");
+    const tf = await loadTransformers(join(dataDir, "runtime"));
+    const cacheDir = join(dataDir, "models");
     tf.env.cacheDir = cacheDir;
     const info = MODELS[tier];
     const progress_callback = (event: unknown) => onProgress?.(event as ProgressEvent);
