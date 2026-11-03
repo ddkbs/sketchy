@@ -1,7 +1,5 @@
 // Builds a platform-specific .mcpb bundle: production dependencies only,
 // with native binaries for other platforms removed to keep the download small.
-// With --cursor it zips the same folder instead, for clients configured through
-// mcp.json (Cursor and other MCP clients) that cannot install .mcpb files.
 import { execFileSync } from "node:child_process";
 import { cpSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
@@ -11,7 +9,6 @@ const root = fileURLToPath(new URL("..", import.meta.url));
 const stage = join(root, "build", "bundle");
 const platform = process.env.TARGET_PLATFORM ?? process.platform;
 const arch = process.env.TARGET_ARCH ?? process.arch;
-const cursor = process.argv.includes("--cursor");
 const { version } = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 // npm and npx are .cmd shims on Windows and need a shell to start.
 const run = (cmd, args, cwd = root) =>
@@ -69,22 +66,6 @@ if (existsSync(ortBin)) {
   }
 }
 
-if (cursor) {
-  // The zip unpacks to a single sketchy/ folder that mcp.json points at.
-  const out = join(root, `sketchy-${version}-cursor-${platform}-${arch}.zip`);
-  const folder = join(root, "build", "sketchy");
-  rmSync(out, { force: true });
-  rmSync(folder, { recursive: true, force: true });
-  cpSync(stage, folder, { recursive: true, verbatimSymlinks: true });
-  rmSync(join(folder, "manifest.json"));
-  // Windows has no zip command, but its bsdtar writes zip archives.
-  if (process.platform === "win32")
-    run("tar", ["-a", "-c", "-f", out, "sketchy"], join(root, "build"));
-  else run("zip", ["-qry", out, "sketchy"], join(root, "build"));
-  rmSync(folder, { recursive: true, force: true });
-  console.error(`pack: wrote ${out}`);
-} else {
-  const out = join(root, `sketchy-${version}-${platform}-${arch}.mcpb`);
-  run("npx", ["mcpb", "pack", stage, out]);
-  console.error(`pack: wrote ${out}`);
-}
+const out = join(root, `sketchy-${version}-${platform}-${arch}.mcpb`);
+run("npx", ["mcpb", "pack", stage, out]);
+console.error(`pack: wrote ${out}`);

@@ -26,7 +26,6 @@ jobs:
       - run: npm run build
       - run: npm test
       - run: npm run pack
-      - run: npm run pack:cursor
       # jsDelivr serves the cdn branch; chat widgets load the bundle from there.
       - if: matrix.os == 'ubuntu-latest'
         name: Publish the browser bundle to the cdn branch
@@ -60,6 +59,5 @@ jobs:
         with:
           files: |
             *.mcpb
-            sketchy-*-cursor-*.zip
             sketchy-skill-*.zip
           draft: true

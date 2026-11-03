@@ -40,8 +40,7 @@
     "preview": "tsx scripts/preview-data.ts && vite",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "pack": "node scripts/pack.mjs",
-    "pack:cursor": "node scripts/pack.mjs --cursor"
+    "pack": "node scripts/pack.mjs"
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",

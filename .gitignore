@@ -4,7 +4,6 @@ dist/
 build/
 *.mcpb
 sketchy-skill-*.zip
-sketchy-*-cursor-*.zip
 
 # Logs and local environment
 *.log
