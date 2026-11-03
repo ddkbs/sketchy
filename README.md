@@ -66,7 +66,7 @@ Claude finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 Where do you use Claude? Sketchy comes two ways, and both can be installed side by side:
 
 - **In the chat** (web, desktop and mobile): the skill. Nothing to install locally.
-- **While coding** (Claude Code in the desktop app or terminal): the extension, which adds photo labeling, SVG and PNG export and click-to-open files.
+- **While coding** (Claude Code in the desktop app or terminal, Cursor, VS Code): the extension, which adds photo labeling, SVG and PNG export and click-to-open files.
 
 ### Claude chat (web, desktop and mobile)
 
@@ -97,61 +97,39 @@ The photo-labeling model is **not** part of the download. The first time Claude 
 
 ### Claude Code in the terminal
 
-The terminal `claude` does not use desktop extensions, so register Sketchy once for all your projects:
+Sketchy is on npm as [`@ddkbs/sketchy`](https://www.npmjs.com/package/@ddkbs/sketchy). With [Node.js](https://nodejs.org) 20 or newer, register it once for all your projects:
 
 ```bash
-git clone https://github.com/ddkbs/sketchy.git
-cd sketchy && npm install && npm run build
-claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"
+claude mcp add sketchy --scope user -- npx -y @ddkbs/sketchy
 ```
 
-Run `claude mcp list` to check that it is connected.
+Run `claude mcp list` to check that it is connected. npx downloads the server on first start and picks up new versions on its own.
 
-### Cursor
+### Cursor and VS Code
 
-Cursor shows Sketchy's drawings inline in the agent chat ([MCP Apps](https://cursor.com/docs/context/mcp)). It needs [Node.js](https://nodejs.org) 20 or newer.
+Both show Sketchy's drawings inline in the agent chat. With Node.js installed, click **[Add to Cursor](https://cursor.com/en/install-mcp?name=sketchy&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkBkZGticy9za2V0Y2h5Il0sImVudiI6eyJTS0VUQ0hZX0VESVRPUiI6ImN1cnNvciJ9fQ%3D%3D)** or **[Add to VS Code](https://vscode.dev/redirect/mcp/install?name=sketchy&config=%7B%22type%22%3A%22stdio%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40ddkbs%2Fsketchy%22%5D%7D)** and confirm.
 
-1. Download `sketchy-<version>-cursor-<platform>.zip` for your platform from the [latest release](https://github.com/ddkbs/sketchy/releases/latest) and unpack it into your home folder, so that you get `~/sketchy` (on Windows `C:\Users\<you>\sketchy`). On macOS, unpack it in the terminal so the native libraries are not quarantined:
-
-   ```bash
-   cd ~ && curl -fLO https://github.com/ddkbs/sketchy/releases/latest/download/sketchy-0.1.6-cursor-darwin-arm64.zip && unzip -q sketchy-0.1.6-cursor-darwin-arm64.zip
-   ```
-
-2. Add Sketchy to `~/.cursor/mcp.json` (all projects) or `.cursor/mcp.json` (one project):
-
-   ```json
-   {
-     "mcpServers": {
-       "sketchy": {
-         "type": "stdio",
-         "command": "node",
-         "args": ["${userHome}/sketchy/dist/index.js"],
-         "env": { "SKETCHY_EDITOR": "cursor" }
-       }
-     }
-   }
-   ```
-
-3. Restart Cursor and check under **Settings → Tools & MCP** that Sketchy is enabled.
-4. Ask the agent for a drawing, for example _"Explain my repo with Sketchy"_. Cursor asks before each tool call unless you allow it to run tools automatically.
-
-If Cursor cannot find `node` (for example with nvm), use its full path as `command`; `which node` prints it.
-
-### Other MCP clients
-
-Sketchy is a standard MCP server and works in any client that supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps):
+To add it by hand, put this into `~/.cursor/mcp.json` (Cursor, all projects) or your VS Code MCP settings:
 
 ```json
 {
   "mcpServers": {
     "sketchy": {
-      "command": "node",
-      "args": ["/path/to/sketchy/dist/index.js"],
+      "command": "npx",
+      "args": ["-y", "@ddkbs/sketchy"],
       "env": { "SKETCHY_EDITOR": "cursor" }
     }
   }
 }
 ```
+
+`SKETCHY_EDITOR` decides which editor opens when you click a box in a drawing; leave it out for VS Code.
+
+### Other MCP clients
+
+Sketchy is a standard MCP server and works in any client that supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps). Start it with `npx -y @ddkbs/sketchy`, as above.
+
+The npm package leaves out the photo-labeling runtime (about 470 MB) so it starts quickly. Sketchy installs it with npm into its data folder the first time you pick a model; the desktop extension ships it.
 
 ## Try it
 
