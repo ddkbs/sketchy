@@ -364,7 +364,7 @@ export function createServer(options: ServerOptions): McpServer {
       "save_export",
       {
         title: "Save export",
-        description: "Saves an SVG or PNG export of the drawing. Used by the viewer.",
+        description: "Saves an SVG, PNG or Excalidraw export of the drawing. Used by the viewer.",
         inputSchema: {
           name: z.string().max(120),
           text: z.string().optional(),

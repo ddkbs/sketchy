@@ -1,5 +1,6 @@
 import type { LaidOutScene } from "../../src/scene/laid-out.js";
 import { FONT_CSS } from "./fonts.js";
+import { toExcalidraw } from "./excalidraw.js";
 import { slug, toPngBase64, toSvgString } from "./export.js";
 import { fitText, renderScene, type RenderedScene } from "./render.js";
 import { applyStep } from "./steps.js";
@@ -55,6 +56,13 @@ function toolbar(scene: LaidOutScene, rendered: RenderedScene, host: Host): HTML
           name: `${name}.png`,
           mimeType: "image/png",
           base64: await toPngBase64(rendered.svg),
+        });
+      }),
+      button("Excalidraw", "Download for Excalidraw", async () => {
+        await download({
+          name: `${name}.excalidraw`,
+          mimeType: "application/json",
+          text: toExcalidraw(scene),
         });
       }),
     );
