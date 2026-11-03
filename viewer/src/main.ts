@@ -11,15 +11,10 @@ const app = new App({ name: "Sketchy", version: "0.1.8" }, {}, { autoResize: tru
 
 const host: Host = {
   openLink(url) {
-    // Hosts often refuse editor schemes like cursor://; the local server opens those.
-    if (!/^https?:/.test(url)) {
-      void app
-        .callServerTool({ name: "open_link", arguments: { url } })
-        .then((result) => (result.isError ? app.openLink({ url }) : undefined))
-        .catch(() => app.openLink({ url }));
-      return;
-    }
     void app.openLink({ url });
+  },
+  openFile({ path, line, link }) {
+    void openFile(path, line, link);
   },
   async download(file) {
     const { name, mimeType, text, base64 } = file;
@@ -74,6 +69,34 @@ const host: Host = {
     void app.requestDisplayMode({ mode });
   },
 };
+
+/**
+ * In Claude the file opens in the app itself: the click asks Claude, which
+ * shows it in its file viewer. Elsewhere the local server starts the editor
+ * from its deep link, since hosts often refuse schemes like cursor://.
+ */
+async function openFile(path: string, line?: number, link?: string): Promise<void> {
+  const canMessage = Boolean(app.getHostCapabilities()?.message);
+  const ask = () =>
+    app
+      .sendMessage({
+        role: "user",
+        content: [
+          { type: "text", text: `Open ${path}${line ? `:${line}` : ""} in the file viewer.` },
+        ],
+      })
+      .catch(() => undefined);
+  if (canMessage && /claude/i.test(app.getHostVersion()?.name ?? "")) return void (await ask());
+  if (link) {
+    const opened = await app
+      .callServerTool({ name: "open_link", arguments: { url: link } })
+      .then((result) => !result.isError)
+      .catch(() => false);
+    if (opened) return;
+  }
+  if (canMessage) await ask();
+  else if (link) await app.openLink({ url: link }).catch(() => undefined);
+}
 
 type ViewData = LaidOutScene | ModelPickerData;
 

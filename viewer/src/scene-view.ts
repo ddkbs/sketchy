@@ -9,6 +9,11 @@ import { applyStep } from "./steps.js";
 /** What the view needs from its surroundings (the MCP host or a dev page). */
 export interface Host {
   openLink(url: string): void;
+  /**
+   * Opens a source file shown in the drawing. Without it, the editor deep link
+   * goes to openLink.
+   */
+  openFile?(file: { path: string; line?: number; link?: string }): void;
   /** Omitted where files cannot be saved; the export buttons are hidden then. */
   download?(file: {
     name: string;
@@ -319,8 +324,10 @@ function wireInteractions(
     const credit = target.closest(".attribution");
     if (credit) return host.openLink(credit.getAttribute("data-href") ?? "");
     const id = target.closest(".element")?.getAttribute("data-id");
-    const link = id ? nodes.get(id)?.link : undefined;
-    if (link) host.openLink(link);
+    const node = id ? nodes.get(id) : undefined;
+    if (node?.file && host.openFile)
+      return host.openFile({ path: node.file, line: node.line, link: node.link });
+    if (node?.link) host.openLink(node.link);
   });
 }
 
