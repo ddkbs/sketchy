@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from "vitest";
 import { layoutScene } from "../src/layout/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { SceneBuilder } from "../src/scene/builder.js";
+import { describeMarks, type Mark } from "../viewer/src/annotate.js";
 import { toExcalidraw, WATERMARK } from "../viewer/src/excalidraw.js";
 import { SAMPLES } from "./fixtures.js";
 
@@ -75,5 +76,33 @@ describe("toExcalidraw", () => {
     const { elements } = await convert("comparison");
     const mark = elements.find((e) => e.text === WATERMARK)!;
     expect(mark.opacity).toBeLessThan(50);
+  });
+});
+
+describe("drawing mode marks", () => {
+  it("names the elements a stroke touches and where notes sit", async () => {
+    const builder = new SceneBuilder(parts);
+    SAMPLES.architecture!(builder);
+    const scene = await layoutScene(builder.scene, parts);
+    const layout = scene.nodes.find((n) => n.label === "Layout engine")!;
+    const ring = [
+      { x: layout.x - 6, y: layout.y - 6 },
+      { x: layout.x + layout.width + 6, y: layout.y - 6 },
+      { x: layout.x + layout.width + 6, y: layout.y + layout.height + 6 },
+      { x: layout.x - 6, y: layout.y + layout.height + 6 },
+    ];
+    const marks: Mark[] = [
+      { kind: "pen", points: ring },
+      { kind: "text", x: layout.x + layout.width + 10, y: layout.y, text: "why here?" },
+    ];
+    expect(describeMarks(scene, marks)).toBe(
+      'Marked: Layout engine.\nNotes: "why here?" (next to Layout engine).',
+    );
+
+    const file = JSON.parse(toExcalidraw(scene, 0, marks)) as File;
+    const stroke = file.elements.find((e) => e.id === "mark-1")!;
+    expect(stroke.type).toBe("freedraw");
+    expect((stroke.points as number[][]).length).toBe(4);
+    expect(file.elements.find((e) => e.id === "mark-2")!.text).toBe("why here?");
   });
 });

@@ -45,6 +45,22 @@ const host: Host = {
       saved && !saved.isError && path ? `Saved to ${path}` : "Export is not available here.",
     );
   },
+  async ask({ text, image }) {
+    const caps = app.getHostCapabilities();
+    const content: (
+      { type: "text"; text: string } | { type: "image"; data: string; mimeType: string }
+    )[] = [{ type: "text", text }];
+    if (image && caps?.message?.image)
+      content.push({ type: "image", data: image, mimeType: "image/png" });
+    else if (image && caps?.updateModelContext?.image) {
+      // The host takes images only as context; it arrives with the message.
+      await app
+        .updateModelContext({ content: [{ type: "image", data: image, mimeType: "image/png" }] })
+        .catch(() => undefined);
+    }
+    const result = await app.sendMessage({ role: "user", content }).catch(() => undefined);
+    return Boolean(result && !result.isError);
+  },
   toggleFullscreen() {
     const mode = app.getHostContext()?.displayMode === "fullscreen" ? "inline" : "fullscreen";
     void app.requestDisplayMode({ mode });
@@ -70,6 +86,7 @@ async function show(result: CallToolResult): Promise<void> {
   if (data?.kind === "scene") {
     mountScene(root, data, {
       ...host,
+      ask: app.getHostCapabilities()?.message ? host.ask : undefined,
       toggleFullscreen: app.getHostContext()?.availableDisplayModes?.includes("fullscreen")
         ? host.toggleFullscreen
         : undefined,

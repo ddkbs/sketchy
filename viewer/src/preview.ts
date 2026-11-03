@@ -36,6 +36,10 @@ const show = () => {
   mountScene(root, data, {
     openLink: (url) => console.log("open", url),
     download: async (file) => console.log("download", file.name),
+    ask: async (message) => {
+      console.log("ask", message.text, message.image ? `+ image (${message.image.length})` : "");
+      return true;
+    },
   });
 };
 select.onchange = show;

@@ -300,3 +300,80 @@ button:disabled {
 .error {
   color: var(--accent);
 }
+
+/* Drawing mode */
+.layer-annotations .mark {
+  pointer-events: none;
+}
+
+.drawbar {
+  display: none;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  padding: 8px 12px;
+  border-bottom: 1.5px dashed var(--line);
+}
+
+.frame.drawing .drawbar {
+  display: flex;
+}
+
+.frame.drawing .toolbar {
+  display: none;
+}
+
+.drawbar-tools,
+.drawbar-ask {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: center;
+}
+
+.drawbar-ask {
+  flex: 1 1 260px;
+}
+
+.drawbar button[aria-pressed="true"] {
+  background: #fff4c2;
+}
+
+.drawbar-ask input,
+.note-input {
+  font: inherit;
+  color: var(--ink);
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 8px 10px 7px 9px;
+  padding: 1px 8px;
+}
+
+.drawbar-ask input {
+  flex: 1 1 160px;
+  min-width: 0;
+}
+
+.note-input {
+  position: absolute;
+  z-index: 3;
+  width: 180px;
+  color: var(--accent);
+}
+
+.frame.drawing .canvas > svg {
+  touch-action: none;
+  cursor: crosshair;
+}
+
+.frame.drawing[data-tool="text"] .canvas > svg {
+  cursor: text;
+}
+
+.frame.drawing[data-tool="eraser"] .canvas > svg {
+  cursor: cell;
+}
+
+.frame.drawing[data-tool="eraser"] .layer-annotations .mark {
+  pointer-events: visiblePainted;
+}

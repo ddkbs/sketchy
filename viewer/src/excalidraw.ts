@@ -1,5 +1,6 @@
 import type { LaidOutNode, LaidOutScene, Point, Rect, TextBox } from "../../src/scene/laid-out.js";
 import { FONT } from "../../src/style/metrics.js";
+import { MARK_STYLE, type Mark } from "./annotate.js";
 import { seedFor } from "./draw.js";
 import {
   ANNOTATION,
@@ -30,7 +31,7 @@ const HAND = 5;
 const LINE_HEIGHT = 1.25;
 export const WATERMARK = "sketchy";
 
-export function toExcalidraw(scene: LaidOutScene, now = Date.now()): string {
+export function toExcalidraw(scene: LaidOutScene, now = Date.now(), marks: Mark[] = []): string {
   const elements: Element[] = [];
   const files: Record<string, BinaryFile> = {};
   const byId = new Map<string, Element>();
@@ -248,6 +249,31 @@ export function toExcalidraw(scene: LaidOutScene, now = Date.now()): string {
       textAlign: leftSide ? "right" : "left",
     });
   }
+
+  // The user's own marks from drawing mode, as freehand strokes and notes.
+  marks.forEach((mark, i) => {
+    const id = `mark-${i + 1}`;
+    if (mark.kind === "text") {
+      text(
+        id,
+        [mark.text],
+        { x: mark.x, y: mark.y, width: mark.text.length * 9, height: MARK_STYLE.text.size * 1.25 },
+        MARK_STYLE.text.size,
+        { strokeColor: MARK_STYLE.text.color },
+      );
+      return;
+    }
+    const style = MARK_STYLE[mark.kind];
+    line(id, "line", mark.points, {
+      type: "freedraw",
+      strokeColor: style.color,
+      strokeWidth: mark.kind === "marker" ? 4 : 2,
+      opacity: Math.round(style.opacity * 100),
+      endArrowhead: null,
+      pressures: [],
+      simulatePressure: true,
+    });
+  });
 
   text(
     "sketchy-watermark",
