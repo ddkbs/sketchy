@@ -4,6 +4,19 @@ export const REPO = "ddkbs/sketchy";
 export const REPO_URL = `https://github.com/${REPO}`;
 export const RELEASES_URL = `${REPO_URL}/releases/latest`;
 
+/** The MCP server on npm; editors start it with npx and keep it up to date. */
+export const NPM_PACKAGE = "@ddkbs/sketchy";
+const SERVER = { command: "npx", args: ["-y", NPM_PACKAGE] };
+export const CLAUDE_CODE_INSTALL = `claude mcp add sketchy --scope user -- npx -y ${NPM_PACKAGE}`;
+/** Cursor's install link: the server entry as base64 JSON. */
+export const CURSOR_INSTALL_URL = `https://cursor.com/en/install-mcp?name=sketchy&config=${encodeURIComponent(
+  btoa(JSON.stringify({ ...SERVER, env: { SKETCHY_EDITOR: "cursor" } })),
+)}`;
+/** VS Code's install link: the server entry as URL-encoded JSON. */
+export const VSCODE_INSTALL_URL = `https://vscode.dev/redirect/mcp/install?name=sketchy&config=${encodeURIComponent(
+  JSON.stringify({ type: "stdio", ...SERVER }),
+)}`;
+
 export type Platform = "darwin-arm64" | "win32-x64" | "linux-x64";
 export const PLATFORMS: { id: Platform; label: string }[] = [
   { id: "darwin-arm64", label: "macOS" },

@@ -1,5 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { RELEASES_URL, REPO_URL } from "./lib";
+import {
+  CLAUDE_CODE_INSTALL,
+  CURSOR_INSTALL_URL,
+  NPM_PACKAGE,
+  RELEASES_URL,
+  REPO_URL,
+  VSCODE_INSTALL_URL,
+} from "./lib";
 import { TokenChart } from "./TokenChart";
 
 const SECTIONS = [
@@ -82,8 +89,8 @@ export function Docs({ header }: { header?: ReactNode }) {
         <h2 id="install">Installation</h2>
         <p>
           Sketchy comes two ways. Use the <strong>skill</strong> to draw in the Claude chat, and the{" "}
-          <strong>extension</strong> when you work in Claude Code. Both can be installed side by
-          side.
+          <strong>extension</strong> when you work in Claude Code, Cursor or VS Code. Both can be
+          installed side by side.
         </p>
         <table>
           <thead>
@@ -158,11 +165,36 @@ export function Docs({ header }: { header?: ReactNode }) {
           extensions; use the skill there.
         </p>
         <h3>Claude Code in the terminal</h3>
+        <p>
+          Register Sketchy once for all your projects. It needs{" "}
+          <a href="https://nodejs.org">Node.js</a> 20 or newer; npx downloads the server from npm
+          and keeps it up to date.
+        </p>
         <pre>
-          <code>{`git clone https://github.com/ddkbs/sketchy.git
-cd sketchy && npm install && npm run build
-claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"`}</code>
+          <code>{CLAUDE_CODE_INSTALL}</code>
         </pre>
+        <h3>Cursor and VS Code</h3>
+        <p>
+          Both show Sketchy's drawings inline in the agent chat. With Node.js installed, click{" "}
+          <a href={CURSOR_INSTALL_URL}>Add to Cursor</a> or{" "}
+          <a href={VSCODE_INSTALL_URL}>Add to VS Code</a> and confirm. Or add the server to the
+          editor's MCP settings yourself (<code>~/.cursor/mcp.json</code> in Cursor):
+        </p>
+        <pre>
+          <code>{`{
+  "mcpServers": {
+    "sketchy": {
+      "command": "npx",
+      "args": ["-y", "${NPM_PACKAGE}"],
+      "env": { "SKETCHY_EDITOR": "cursor" }
+    }
+  }
+}`}</code>
+        </pre>
+        <p>
+          The photo-labeling runtime (about 470 MB) is not part of the npm package. Sketchy installs
+          it into its data folder the first time you pick a model.
+        </p>
         <h3>Photo-labeling model</h3>
         <p>
           The vision model is not part of the download. The first time Claude labels a photo,

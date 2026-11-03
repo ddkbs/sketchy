@@ -4,14 +4,16 @@ import { useState, type ReactNode } from "react";
 import { CAPABILITIES, TAGLINE } from "./shared/content";
 import { ChatDemo } from "./shared/demo/ChatDemo";
 import { Docs } from "./shared/Docs";
-import { useDownload } from "./shared/lib";
+import {
+  CLAUDE_CODE_INSTALL,
+  CURSOR_INSTALL_URL,
+  VSCODE_INSTALL_URL,
+  useDownload,
+} from "./shared/lib";
 import { LogoMark } from "./shared/Logo";
 import { GithubButton, Nav } from "./shared/Nav";
 import { REPO_URL } from "./shared/lib";
 
-const TERMINAL_INSTALL = `git clone https://github.com/ddkbs/sketchy.git
-cd sketchy && npm install && npm run build
-claude mcp add sketchy --scope user -- node "$PWD/dist/index.js"`;
 import DecryptedText from "./vendor/DecryptedText";
 import Magnet from "./vendor/Magnet";
 import TargetCursor from "./vendor/TargetCursor";
@@ -64,6 +66,28 @@ function DownloadButton({
         {children}
       </a>
     </Magnet>
+  );
+}
+
+/** Secondary action: an outlined link that opens an editor's install prompt. */
+function EditorButton({ href, children }: { href: string; children: ReactNode }) {
+  return (
+    <a
+      href={href}
+      className="cursor-target inline-flex h-10 items-center gap-2 rounded-lg border border-white/15 bg-white/[0.04] px-4 text-[14px] font-medium text-foreground transition-colors hover:border-accent/50 hover:bg-white/[0.08]"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        className="size-4 text-accent"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        aria-hidden
+      >
+        <path d="M12 5v14M5 12h14" strokeLinecap="round" />
+      </svg>
+      {children}
+    </a>
   );
 }
 
@@ -226,7 +250,7 @@ const MODES: { id: Mode; title: string; hint: string; icon: ReactNode }[] = [
   {
     id: "code",
     title: "While coding",
-    hint: "Claude Code",
+    hint: "Claude Code · editors",
     icon: <path d="m5 7 5 5-5 5M12.5 17H19" strokeLinecap="round" strokeLinejoin="round" />,
   },
 ];
@@ -353,10 +377,17 @@ function Install() {
                 <DownloadButton href={href}>Download for {label}</DownloadButton>
               </div>
               <p className="mt-8 text-[13.5px] text-muted-foreground">
+                In Cursor or VS Code, one click (needs Node.js):
+              </p>
+              <div className="mt-3 flex flex-wrap justify-center gap-3">
+                <EditorButton href={CURSOR_INSTALL_URL}>Add to Cursor</EditorButton>
+                <EditorButton href={VSCODE_INSTALL_URL}>Add to VS Code</EditorButton>
+              </div>
+              <p className="mt-8 text-[13.5px] text-muted-foreground">
                 Claude Code in the terminal:
               </p>
               <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-black/40 p-4 text-left font-mono text-[12.5px] leading-relaxed text-muted-foreground">
-                {TERMINAL_INSTALL}
+                {CLAUDE_CODE_INSTALL}
               </pre>
             </motion.div>
           )}
