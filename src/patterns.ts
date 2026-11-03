@@ -97,7 +97,7 @@ Photos: find_image, locate the regions, then sketch with an image line and label
 export const COMPACT_SYNTAX = `Draw a whole scene and show it. One element per line:
 title <text> | subtitle <text> | dir right|down
 group <id> <label> [in <parent>]
-<id> <label> [@icon] [(cylinder|person|note|circle|rounded|text)] [in <group>] [!accent|!muted] [~ hover text]
+<id> <label> [@icon] [(cylinder|person|note|circle|rounded|text)] [in <group>] [!accent|!muted] [file=<absolute path>] [~ hover text]
 <a> -> <b> [label] [!accent|!muted]   (--> dashed, <-> both ends)
 label <id>[.<pin>] <text>      (photo region with spaces: label <image>.<region>: <text>)
 image <id from find_image>
