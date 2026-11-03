@@ -118,7 +118,7 @@ function Landing() {
               v{version ?? "0.1.0"}
             </span>
             <DecryptedText
-              text="open-source drawing for Claude"
+              text="open-source drawing for AI chats"
               animateOn="view"
               sequential
               speed={35}
@@ -131,7 +131,7 @@ function Landing() {
             {...up(0.1)}
             className="text-[clamp(46px,8vw,100px)] font-semibold leading-[0.95] tracking-[-0.055em]"
           >
-            Claude explains.
+            AI explains.
             <br />
             <span className="bg-gradient-to-b from-[#ff8a7d] via-accent to-[#b8281b] bg-clip-text text-transparent">
               Sketchy draws.
@@ -151,7 +151,7 @@ function Landing() {
             <HeroGithubButton />
           </motion.div>
           <motion.p {...up(0.4)} className="mt-6 font-mono text-[11.5px] tracking-wide text-faint">
-            MIT · in the Claude chat on web, desktop and mobile · in Claude Code
+            MIT · Claude chat on web, desktop and mobile · Claude Code · Cursor · VS Code
           </motion.p>
         </div>
       </section>
@@ -213,7 +213,7 @@ function PhotoLabeling() {
         </div>
         <p className="text-[15px] leading-relaxed text-muted-foreground">
           Ask <span className="text-foreground">“Show me an Arduino Uno and label the pins.”</span>{" "}
-          Claude finds an openly licensed photo, a vision model running on your computer
+          The AI finds an openly licensed photo, a vision model running on your computer
           (Florence-2) locates the parts and printed text, and Sketchy draws the callouts. Your
           images never leave your machine, and the credit is always shown.
         </p>
@@ -227,7 +227,7 @@ function PhotoLabeling() {
         />
       </figure>
       <p className="mt-3 px-1 font-mono text-[11.5px] text-faint">
-        real Sketchy output · comes with the extension for Claude Code
+        real Sketchy output · comes with the extension for Claude Code, Cursor and VS Code
       </p>
     </section>
   );
@@ -239,7 +239,7 @@ const MODES: { id: Mode; title: string; hint: string; icon: ReactNode }[] = [
   {
     id: "chat",
     title: "In the chat",
-    hint: "web · desktop · mobile",
+    hint: "Claude · web · desktop · mobile",
     icon: (
       <path
         d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-4.5 4v-4h0A1.5 1.5 0 0 1 4 14.5Z"
@@ -250,7 +250,7 @@ const MODES: { id: Mode; title: string; hint: string; icon: ReactNode }[] = [
   {
     id: "code",
     title: "While coding",
-    hint: "Claude Code · editors",
+    hint: "Claude Code · Cursor · VS Code",
     icon: <path d="m5 7 5 5-5 5M12.5 17H19" strokeLinecap="round" strokeLinejoin="round" />,
   },
 ];
@@ -267,7 +267,7 @@ function ModePicker({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
   return (
     <div
       role="group"
-      aria-label="Where you use Claude"
+      aria-label="Where you use Sketchy"
       className="mx-auto mt-7 grid max-w-[520px] grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 sm:gap-3"
     >
       {MODES.map((m) => {
@@ -318,7 +318,9 @@ function ModePicker({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
                 >
                   {m.title}
                 </span>
-                <span className="block truncate font-mono text-[11px] text-faint">{m.hint}</span>
+                <span className="block font-mono text-[11px] leading-snug text-faint">
+                  {m.hint}
+                </span>
               </span>
             </span>
           </button>
@@ -339,7 +341,7 @@ function Install() {
         <h2 className="text-[clamp(28px,4vw,44px)] font-semibold tracking-[-0.04em]">
           Ready in a minute.
         </h2>
-        <p className="mx-auto mt-3 max-w-[46ch] text-muted-foreground">Where do you use Claude?</p>
+        <p className="mx-auto mt-3 max-w-[46ch] text-muted-foreground">Where do you work?</p>
         <ModePicker mode={mode} onChange={setMode} />
 
         <AnimatePresence mode="wait" initial={false}>
@@ -370,14 +372,17 @@ function Install() {
             <motion.div key="code" {...swap} className="mx-auto mt-8 max-w-[620px]">
               <p className="text-[15px] text-muted-foreground">
                 The extension runs on your computer and adds photo labeling, SVG and PNG export and
-                click-to-open files. Install it, then start a session in the{" "}
-                <span className="text-foreground">Code</span> tab.
+                click-to-open files.
               </p>
-              <div className="mt-8 flex flex-wrap justify-center gap-3">
+              <p className="mt-8 text-[13.5px] text-muted-foreground">
+                Claude desktop app, then start a session in the{" "}
+                <span className="text-foreground">Code</span> tab:
+              </p>
+              <div className="mt-3 flex flex-wrap justify-center gap-3">
                 <DownloadButton href={href}>Download for {label}</DownloadButton>
               </div>
               <p className="mt-8 text-[13.5px] text-muted-foreground">
-                In Cursor or VS Code, one click (needs Node.js):
+                Cursor or VS Code, one click (needs Node.js):
               </p>
               <div className="mt-3 flex flex-wrap justify-center gap-3">
                 <EditorButton href={CURSOR_INSTALL_URL}>Add to Cursor</EditorButton>

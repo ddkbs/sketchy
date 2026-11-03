@@ -74,14 +74,15 @@ export function Docs({ header }: { header?: ReactNode }) {
           Sketchy documentation
         </h1>
         <p>
-          Sketchy is open source and lets Claude draw while it explains. Answers come with
-          interactive diagrams rendered right next to the text: systems and flows, your own code,
-          Arduino and ESP32 circuits, labeled photos, comparisons and metaphors.
+          Sketchy is open source and lets your AI assistant draw while it explains, in Claude,
+          Cursor or VS Code. Answers come with interactive diagrams rendered right next to the text:
+          systems and flows, your own code, Arduino and ESP32 circuits, labeled photos, comparisons
+          and metaphors.
         </p>
         <p>
-          The idea behind it is a split of responsibilities. Claude decides <strong>what</strong> to
+          The idea behind it is a split of responsibilities. The AI decides <strong>what</strong> to
           draw and label. Sketchy decides <strong>where</strong>: a part library with named anchor
-          points and a real layout engine. Claude never computes a coordinate, so drawings come out
+          points and a real layout engine. The AI never computes a coordinate, so drawings come out
           precise and consistent every time.
         </p>
         <img src="/gallery/chat.png" alt="A Sketchy drawing inside a Claude Code session" />
@@ -105,7 +106,7 @@ export function Docs({ header }: { header?: ReactNode }) {
               [
                 "Where",
                 "Claude chat on web, desktop and mobile",
-                "Code tab, terminal, MCP clients",
+                "Claude Code, Cursor, VS Code and other MCP clients",
               ],
               ["Diagrams, steps, circuits", "Yes", "Yes"],
               ["Labeled photos", "No", "Yes, on your computer"],
@@ -197,7 +198,7 @@ export function Docs({ header }: { header?: ReactNode }) {
         </p>
         <h3>Photo-labeling model</h3>
         <p>
-          The vision model is not part of the download. The first time Claude labels a photo,
+          The vision model is not part of the download. The first time the AI labels a photo,
           Sketchy asks you to pick a size:
         </p>
         <table>
@@ -249,7 +250,7 @@ export function Docs({ header }: { header?: ReactNode }) {
 
         <h2 id="how-it-works">How it works</h2>
         <pre>
-          <code>{`Claude describes the scene (extension: tools like sketch, place_part, label;
+          <code>{`The AI describes the scene (extension: tools like sketch, place_part, label;
                             skill: the same scene as JSON in an inline widget)
           ↓
 Scene: nodes, groups, parts, wires, labels, photos, steps — no coordinates
@@ -260,7 +261,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
         </pre>
         <p>
           Every feature fills the same scene, and a single viewer renders it. The visual style lives
-          in the renderer only, so every drawing looks consistent no matter what Claude asks for.
+          in the renderer only, so every drawing looks consistent no matter what the AI asks for.
           Layout runs locally inside the server process. The drawing core has no other local
           dependencies, so the same code also runs in the browser for the chat skill.
         </p>
@@ -272,7 +273,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
         </p>
 
         <h2 id="patterns">Explanation patterns</h2>
-        <p>Claude picks one pattern per drawing. They are also available as prompts.</p>
+        <p>The AI picks one pattern per drawing. They are also available as prompts.</p>
         <ul>
           <li>
             <strong>Structure</strong> — “what is it made of?” Components as nodes or parts, groups
@@ -299,7 +300,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
         <h2 id="interaction">Steps, hover and export</h2>
         <ul>
           <li>
-            <strong>Walkthroughs.</strong> Claude adds 3–7 steps. Each step circles what matters in
+            <strong>Walkthroughs.</strong> The AI adds 3–7 steps. Each step circles what matters in
             red pen and fades the rest. Use the buttons or the arrow keys.
           </li>
           <li>
@@ -318,7 +319,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
 
         <h2 id="code">Your code</h2>
         <p>
-          Ask <em>“Explain my repo”</em>. Claude reads the code and draws modules as nodes, folders
+          Ask <em>“Explain my repo”</em>. The AI reads the code and draws modules as nodes, folders
           as groups and imports or data flow as edges. <strong>Click a box to open the file</strong>{" "}
           in VS Code, Cursor, Windsurf or Zed, at the right line.
         </p>
@@ -326,7 +327,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
 
         <h2 id="circuits">Circuits</h2>
         <p>
-          Ask <em>“How is my sketch wired?”</em> and attach your <code>.ino</code>. Claude reads{" "}
+          Ask <em>“How is my sketch wired?”</em> and attach your <code>.ino</code>. The AI reads{" "}
           <code>pinMode</code>, <code>digitalWrite</code> and the libraries, places real parts and
           connects pins by name (<code>uno.D13 → led1.A</code>). Sketchy routes the wires and places
           the callouts. The part library has 50 boards, sensors, displays and modules from{" "}
@@ -337,7 +338,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
 
         <h2 id="photos">Labeled photos</h2>
         <p>
-          Ask <em>“Show me an Arduino Uno and label the pins.”</em> Claude searches openly licensed
+          Ask <em>“Show me an Arduino Uno and label the pins.”</em> The AI searches openly licensed
           photos (Wikimedia Commons, Openverse), picks one and asks Sketchy to locate the parts and
           printed text in it. Grounding runs on your machine with Florence-2 through ONNX Runtime;
           your images never leave it. Sketchy then draws the callouts, and the attribution is always
@@ -378,7 +379,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
         </p>
         <h3>Follow-ups</h3>
         <p>
-          Ask Claude to change a drawing and it sends the scene again with the same ids. Sketchy
+          Ask the AI to change a drawing and it sends the scene again with the same ids. Sketchy
           keeps the order and places of everything the earlier drawing already showed and fits the
           new parts in around them, so before and after stay comparable, also when a back-edge
           closes a cycle.
