@@ -252,9 +252,9 @@ export function toExcalidraw(scene: LaidOutScene, now = Date.now()): string {
   text(
     "sketchy-watermark",
     [WATERMARK],
-    { x: scene.width - 70, y: scene.height - 22, width: 58, height: 16 },
-    13,
-    { opacity: 30, link: "https://sketchy.davidkubus.dev" },
+    { x: scene.width - 92, y: scene.height - 26, width: 78, height: 22 },
+    18,
+    { opacity: 40, link: "https://sketchy.davidkubus.dev" },
   );
 
   return JSON.stringify(

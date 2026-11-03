@@ -93,18 +93,21 @@ export function renderScene(scene: LaidOutScene, fontCss: string): RenderedScene
   return { svg, elements, overlay, pen };
 }
 
-/** A faint signature in the bottom margin, kept in exports. */
+/**
+ * A faint signature in the bottom margin, kept in exports. Hosts often show
+ * wide drawings at about 60 %, so it is sized to stay readable there.
+ */
 function drawWatermark(svg: SVGSVGElement, scene: LaidOutScene): void {
   const mark = text({
-    x: scene.width - 12,
-    y: scene.height - 22,
+    x: scene.width - 14,
+    y: scene.height - 26,
     lines: [WATERMARK],
-    size: 13,
+    size: 18,
     color: INK,
     anchor: "end",
   });
   mark.setAttribute("class", "watermark");
-  mark.setAttribute("opacity", "0.28");
+  mark.setAttribute("opacity", "0.38");
   mark.setAttribute("pointer-events", "none");
   svg.appendChild(mark);
 }
