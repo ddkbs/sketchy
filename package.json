@@ -1,6 +1,6 @@
 {
-  "name": "sketchy",
-  "private": true,
+  "name": "@ddkbs/sketchy",
+  "mcpName": "io.github.ddkbs/sketchy",
   "version": "0.1.6",
   "description": "Lets Claude draw while it explains: hand-drawn, interactive diagrams, circuits and labeled photos, right in the Claude chat and in Claude Code.",
   "type": "module",
@@ -40,7 +40,8 @@
     "preview": "tsx scripts/preview-data.ts && vite",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "pack": "node scripts/pack.mjs"
+    "pack": "node scripts/pack.mjs",
+    "prepublishOnly": "npm run build"
   },
   "devDependencies": {
     "@anthropic-ai/mcpb": "^2.1.2",
@@ -84,11 +85,15 @@
   "main": "dist/index.js",
   "files": [
     "dist",
+    "!dist/**/*.map",
     "build/parts.json",
     "build/viewer.html",
     "LICENSE",
     "README.md",
     "assets/icon.png",
     "THIRD_PARTY_NOTICES.md"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
