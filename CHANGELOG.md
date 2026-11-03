@@ -10,6 +10,7 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Drawing mode: mark up a sketch with a red pen, a highlighter, notes and an eraser, then send a question to the AI together with the marked-up drawing and the names of the elements you marked. Marks are kept in SVG, PNG and Excalidraw exports.
 - Export a drawing as an Excalidraw file (`.excalidraw`) to keep editing it on excalidraw.com: shapes, labels, groups and bound arrows stay editable; parts, icons and photos come along as images, photo credits included.
 - A faint "sketchy" signature in the bottom-right corner of every drawing and export.
 
@@ -17,6 +18,7 @@ All notable changes to this project are documented here. The format follows
 
 - The website, README and package description name Cursor and VS Code next to Claude.
 - The error for an expired drawing no longer assumes the client is Claude.
+- The compact `sketch` syntax documents `file=<absolute path>` for nodes that link to source files.
 
 ## [0.1.7] - 2026-11-03
 
