@@ -57,6 +57,7 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 ### Interactive, exportable
 
 - **Hover** any box, pin or wire for details.
+- **Draw** on the sketch with a red pen, a highlighter and notes, then **Send to AI** with a question: the AI gets the marked-up drawing and which parts you marked.
 - **Click** a code node to open the file, or a photo credit to open its source.
 - **Export** as **SVG** or **PNG**, fonts included, or as an **Excalidraw** file to keep editing on [excalidraw.com](https://excalidraw.com): your system's save dialog asks where to put the file.
 - **Fullscreen** where the host supports it.

@@ -307,6 +307,11 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
             <strong>Hover</strong> any element for its description.
           </li>
           <li>
+            <strong>Draw</strong> on the sketch with a red pen, a highlighter and notes. Ask a
+            question and press <em>Send to AI</em>: the AI gets the marked-up drawing and the names
+            of the parts you marked. Your marks are kept in every export.
+          </li>
+          <li>
             <strong>Export</strong> as SVG or PNG, with the handwriting embedded, or as an
             Excalidraw file to keep editing on <a href="https://excalidraw.com">excalidraw.com</a>.
             Your system's save dialog asks where to put the file (extension only).
