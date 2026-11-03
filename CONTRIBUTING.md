@@ -33,7 +33,7 @@ test host that drives the real viewer over the MCP Apps protocol (`/host.html`).
 
 ## Principles
 
-- **Claude never computes coordinates.** Tools accept structure; the layout engine owns geometry.
+- **The model never computes coordinates.** Tools accept structure; the layout engine owns geometry.
 - **The style lives in the renderer.** Tools cannot change colors or fonts beyond the fixed tones.
 - **The drawing core stays portable.** No filesystem or model dependencies outside `src/photos/`, `src/storage/database.ts` and `src/exports.ts`, so the same core runs in the browser bundle.
 - **Errors teach.** Tool errors say what is wrong and how to fix it (known pins, similar part types, …).

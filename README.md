@@ -1,8 +1,8 @@
 # Sketchy
 
-Sketchy lets Claude **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill and in Claude Code as an [MCP](https://modelcontextprotocol.io) server.
+Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Cursor, VS Code and other MCP clients.
 
-Claude decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. Claude never computes coordinates, so drawings come out precise and consistent every time.
+The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. The AI never computes coordinates, so drawings come out precise and consistent every time.
 
 ![An interactive Sketchy drawing inside a Claude Code chat: what happens when you open a web page](docs/images/chat.png)
 
@@ -10,7 +10,7 @@ Claude decides **what** to draw and label. Sketchy decides **where**: a part lib
 
 ### Systems, step by step
 
-Ask _"What happens when I open a web page?"_ and Claude draws the whole path, then walks you through it. Each step circles what matters in red pen and fades the rest. Use the buttons or the arrow keys.
+Ask _"What happens when I open a web page?"_ and the AI draws the whole path, then walks you through it. Each step circles what matters in red pen and fades the rest. Use the buttons or the arrow keys.
 
 ![The life of a web request, from the browser through CDN, load balancer and services to cache, database and queue](docs/images/request.png)
 
@@ -24,13 +24,13 @@ Sketchy is not limited to hardware. Structure, flow, comparison and metaphor pat
 
 ### Your own code
 
-Ask _"Explain my repo"_. Claude reads the code and draws modules, folders and data flow. **Click a box to open the file** in VS Code, Cursor, Windsurf or Zed; hover to see what it does.
+Ask _"Explain my repo"_. The AI reads the code and draws modules, folders and data flow. **Click a box to open the file** in VS Code, Cursor, Windsurf or Zed; hover to see what it does.
 
 ![Architecture of a repository with nested folders](docs/images/repo.png)
 
 ### Circuits from Arduino and ESP32 sketches
 
-Ask _"How is my sketch wired?"_. Claude reads `pinMode`, `digitalWrite` and friends, places real parts (50 boards, sensors, displays and modules from [wokwi-elements](https://github.com/wokwi/wokwi-elements)) and connects pins by name. Sketchy routes the wires and places the callouts.
+Ask _"How is my sketch wired?"_. The AI reads `pinMode`, `digitalWrite` and friends, places real parts (50 boards, sensors, displays and modules from [wokwi-elements](https://github.com/wokwi/wokwi-elements)) and connects pins by name. Sketchy routes the wires and places the callouts.
 
 <table>
   <tr>
@@ -41,7 +41,7 @@ Ask _"How is my sketch wired?"_. Claude reads `pinMode`, `digitalWrite` and frie
 
 ### Labeled photos
 
-Claude finds a freely licensed photo (Wikimedia Commons, Openverse), and a vision model **running on your computer** ([Florence-2](https://huggingface.co/microsoft/Florence-2-base-ft)) locates the parts and printed text to label. Attribution is always shown.
+The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a vision model **running on your computer** ([Florence-2](https://huggingface.co/microsoft/Florence-2-base-ft)) locates the parts and printed text to label. Attribution is always shown.
 
 ![Photo of an Arduino Uno with labeled parts](docs/images/photo.jpg)
 
@@ -63,9 +63,9 @@ Claude finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 
 ## Install
 
-Where do you use Claude? Sketchy comes two ways, and both can be installed side by side:
+Where do you work? Sketchy comes two ways, and both can be installed side by side:
 
-- **In the chat** (web, desktop and mobile): the skill. Nothing to install locally.
+- **In the chat** (Claude on web, desktop and mobile): the skill. Nothing to install locally.
 - **While coding** (Claude Code in the desktop app or terminal, Cursor, VS Code): the extension, which adds photo labeling, SVG and PNG export and click-to-open files.
 
 ### Claude chat (web, desktop and mobile)
@@ -87,7 +87,7 @@ Claude writes the scene, and the chat's inline visualization loads Sketchy's bro
 
 The **Chat** tab does not display views from locally installed extensions; use the skill above there.
 
-The photo-labeling model is **not** part of the download. The first time Claude labels a photo, Sketchy asks you to pick a model size:
+The photo-labeling model is **not** part of the download. The first time the AI labels a photo, Sketchy asks you to pick a model size:
 
 | Model  | Download | Memory  | Notes                                     |
 | ------ | -------- | ------- | ----------------------------------------- |
@@ -146,7 +146,7 @@ The same patterns are available as prompts: `explain-structure`, `explain-flow`,
 ## How it works
 
 ```
-Claude describes the scene (extension: tools like sketch, place_part, label;
+The AI describes the scene (extension: tools like sketch, place_part, label;
                             skill: the same scene as JSON in an inline widget)
           ↓
 Scene: nodes, groups, parts, wires, labels, photos, steps — no coordinates
@@ -156,7 +156,7 @@ Layout engine (elkjs): positions, orthogonal routing, collision-free callouts
 Viewer: hand-drawn rendering with rough.js, hover, steps, export
 ```
 
-Every feature fills the same scene, and a single viewer renders it. The visual style lives in the renderer, so every drawing looks consistent no matter what Claude asks for. The extension runs layout in its server process and shows the viewer as an MCP App; the skill runs the same code in the browser from a bundle on jsDelivr.
+Every feature fills the same scene, and a single viewer renders it. The visual style lives in the renderer, so every drawing looks consistent no matter what the AI asks for. The extension runs layout in its server process and shows the viewer as an MCP App; the skill runs the same code in the browser from a bundle on jsDelivr.
 
 <details>
 <summary>Tools</summary>
@@ -173,7 +173,7 @@ A scene is a few short lines: `browser Browser @globe`, `browser -> server HTTPS
 
 ### Follow-ups
 
-Ask Claude to change a drawing ("add the cache and the call back to the router") and it sends the scene again with the same ids. Sketchy keeps the order and places of everything the earlier drawing already showed and fits the new parts in around them, so before and after stay comparable, also when a back-edge closes a cycle.
+Ask the AI to change a drawing ("add the cache and the call back to the router") and it sends the scene again with the same ids. Sketchy keeps the order and places of everything the earlier drawing already showed and fits the new parts in around them, so before and after stay comparable, also when a back-edge closes a cycle.
 
 ## Token usage
 
