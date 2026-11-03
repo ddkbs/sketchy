@@ -58,7 +58,7 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 
 - **Hover** any box, pin or wire for details.
 - **Click** a code node to open the file, or a photo credit to open its source.
-- **Export** as **SVG** or **PNG**, fonts included: your system's save dialog asks where to put the file.
+- **Export** as **SVG** or **PNG**, fonts included, or as an **Excalidraw** file to keep editing on [excalidraw.com](https://excalidraw.com): your system's save dialog asks where to put the file.
 - **Fullscreen** where the host supports it.
 
 ## Install
@@ -66,7 +66,7 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 Where do you work? Sketchy comes two ways, and both can be installed side by side:
 
 - **In the chat** (Claude on web, desktop and mobile): the skill. Nothing to install locally.
-- **While coding** (Claude Code in the desktop app or terminal, Cursor, VS Code): the extension, which adds photo labeling, SVG and PNG export and click-to-open files.
+- **While coding** (Claude Code in the desktop app or terminal, Cursor, VS Code): the extension, which adds photo labeling, SVG, PNG and Excalidraw export and click-to-open files.
 
 ### Claude chat (web, desktop and mobile)
 

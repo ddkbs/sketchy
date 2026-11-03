@@ -15,21 +15,21 @@ test host that drives the real viewer over the MCP Apps protocol (`/host.html`).
 
 ## Project layout
 
-| Path             | Contents                                                     |
-| ---------------- | ------------------------------------------------------------ |
-| `src/scene/`     | Scene types and the validating `SceneBuilder`                |
-| `src/layout/`    | elkjs layout, text metrics, callout placement, editor links  |
-| `src/parts/`     | SQLite part index built from `build/parts.json`              |
-| `src/photos/`    | Photo search, caching, Florence-2 grounding, photo tools     |
-| `src/storage/`   | sql.js helpers and the persistent local database             |
-| `src/server.ts`  | MCP tools, prompts and the viewer resource                   |
-| `src/exports.ts` | Save dialog for SVG and PNG exports (local server only)      |
-| `viewer/`        | The MCP App (rough.js renderer, steps, export, model picker) |
-| `web/`           | Browser bundle of the drawing core for the chat skill        |
-| `skill/`         | The chat skill: `SKILL.md` and its fallback render script    |
-| `website/`       | The project website and docs                                 |
-| `scripts/`       | Part extraction, preview data and bundle packaging           |
-| `test/`          | Vitest suites and shared fixtures                            |
+| Path             | Contents                                                       |
+| ---------------- | -------------------------------------------------------------- |
+| `src/scene/`     | Scene types and the validating `SceneBuilder`                  |
+| `src/layout/`    | elkjs layout, text metrics, callout placement, editor links    |
+| `src/parts/`     | SQLite part index built from `build/parts.json`                |
+| `src/photos/`    | Photo search, caching, Florence-2 grounding, photo tools       |
+| `src/storage/`   | sql.js helpers and the persistent local database               |
+| `src/server.ts`  | MCP tools, prompts and the viewer resource                     |
+| `src/exports.ts` | Save dialog for SVG, PNG and Excalidraw exports (local server) |
+| `viewer/`        | The MCP App (rough.js renderer, steps, export, model picker)   |
+| `web/`           | Browser bundle of the drawing core for the chat skill          |
+| `skill/`         | The chat skill: `SKILL.md` and its fallback render script      |
+| `website/`       | The project website and docs                                   |
+| `scripts/`       | Part extraction, preview data and bundle packaging             |
+| `test/`          | Vitest suites and shared fixtures                              |
 
 ## Principles
 

@@ -110,7 +110,7 @@ export function Docs({ header }: { header?: ReactNode }) {
               ],
               ["Diagrams, steps, circuits", "Yes", "Yes"],
               ["Labeled photos", "No", "Yes, on your computer"],
-              ["SVG and PNG export", "No", "Yes, with a save dialog"],
+              ["SVG, PNG and Excalidraw export", "No", "Yes, with a save dialog"],
               ["Click a box to open the file", "No", "Yes"],
               ["Needs", "Internet (jsDelivr)", "Nothing else; runs on your computer"],
             ].map(([what, skill, ext]) => (
@@ -307,8 +307,9 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
             <strong>Hover</strong> any element for its description.
           </li>
           <li>
-            <strong>Export</strong> as SVG or PNG, with the handwriting embedded. Your system's save
-            dialog asks where to put the file (extension only).
+            <strong>Export</strong> as SVG or PNG, with the handwriting embedded, or as an
+            Excalidraw file to keep editing on <a href="https://excalidraw.com">excalidraw.com</a>.
+            Your system's save dialog asks where to put the file (extension only).
           </li>
           <li>
             <strong>Fullscreen</strong> for large scenes; wide drawings scroll instead of shrinking
@@ -431,7 +432,7 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
               <td>
                 <code>~/Downloads</code>
               </td>
-              <td>Folder the save dialog opens in for SVG and PNG exports</td>
+              <td>Folder the save dialog opens in for exports</td>
             </tr>
             <tr>
               <td>

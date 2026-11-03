@@ -41,7 +41,7 @@ export type ServerOptions = {
   /** Photo search and grounding; omitted where only the drawing core runs. */
   photos?: PhotoTools;
   viewerHtml?: () => string;
-  /** Where the viewer's SVG/PNG exports go; omitted where there is no local disk. */
+  /** Where the viewer's exports go; omitted where there is no local disk. */
   exports?: ExportSink;
   /**
    * One `sketch` tool taking the compact line syntax and short instructions;

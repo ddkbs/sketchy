@@ -371,8 +371,8 @@ function Install() {
           ) : (
             <motion.div key="code" {...swap} className="mx-auto mt-8 max-w-[620px]">
               <p className="text-[15px] text-muted-foreground">
-                The extension runs on your computer and adds photo labeling, SVG and PNG export and
-                click-to-open files.
+                The extension runs on your computer and adds photo labeling, SVG, PNG and Excalidraw
+                export and click-to-open files.
               </p>
               <p className="mt-8 text-[13.5px] text-muted-foreground">
                 Claude desktop app, then start a session in the{" "}
