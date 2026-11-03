@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.8] - 2026-11-04
+
 ### Added
 
 - Export a drawing as an Excalidraw file (`.excalidraw`) to keep editing it on excalidraw.com: shapes, labels, groups and bound arrows stay editable; parts, icons and photos come along as images, photo credits included.
@@ -116,7 +118,8 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.7...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.8...HEAD
+[0.1.8]: https://github.com/ddkbs/sketchy/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/ddkbs/sketchy/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ddkbs/sketchy/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ddkbs/sketchy/compare/v0.1.4...v0.1.5
