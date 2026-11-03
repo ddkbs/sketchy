@@ -11,6 +11,14 @@ const app = new App({ name: "Sketchy", version: "0.1.8" }, {}, { autoResize: tru
 
 const host: Host = {
   openLink(url) {
+    // Hosts often refuse editor schemes like cursor://; the local server opens those.
+    if (!/^https?:/.test(url)) {
+      void app
+        .callServerTool({ name: "open_link", arguments: { url } })
+        .then((result) => (result.isError ? app.openLink({ url }) : undefined))
+        .catch(() => app.openLink({ url }));
+      return;
+    }
     void app.openLink({ url });
   },
   async download(file) {

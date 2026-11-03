@@ -3,6 +3,7 @@ import { parseArgs } from "node:util";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { setting } from "./env.js";
 import { dialogSink } from "./exports.js";
+import { systemOpener } from "./opener.js";
 import { serveHttp } from "./http.js";
 import { parseEditor } from "./layout/links.js";
 import { PartIndex } from "./parts/index.js";
@@ -43,6 +44,7 @@ if (values.http) {
     photos,
     editor,
     exports: dialogSink(),
+    opener: systemOpener(),
     // "json" restores the JSON scene tools of earlier versions.
     compact: setting("SKETCHY_FORMAT") !== "json",
   }).connect(new StdioServerTransport());

@@ -15,6 +15,7 @@ import { COMPACT_INSTRUCTIONS, COMPACT_SYNTAX, INSTRUCTIONS, PATTERNS } from "./
 import { parseCompact } from "./scene/compact.js";
 import { SceneBuilder, SceneError } from "./scene/builder.js";
 import { suggestIcons } from "./icons.js";
+import { isEditorLink, type Opener } from "./opener.js";
 import {
   edgeShape,
   groupShape,
@@ -43,6 +44,8 @@ export type ServerOptions = {
   viewerHtml?: () => string;
   /** Where the viewer's exports go; omitted where there is no local disk. */
   exports?: ExportSink;
+  /** Opens file links from the drawing in the editor; local servers only. */
+  opener?: Opener;
   /**
    * One `sketch` tool taking the compact line syntax and short instructions;
    * about half the tokens of the JSON tools. Off restores every tool.
@@ -356,6 +359,29 @@ export function createServer(options: ServerOptions): McpServer {
       };
     },
   );
+
+  if (options.opener) {
+    const open = options.opener;
+    registerAppTool(
+      server,
+      "open_link",
+      {
+        title: "Open file link",
+        description: "Opens a file from the drawing in the user's editor. Used by the viewer.",
+        inputSchema: { url: z.string().max(2048) },
+        _meta: { ui: { visibility: ["app"] } },
+      },
+      async ({ url }): Promise<CallToolResult> => {
+        if (!isEditorLink(url)) return fail("Only editor links to files can be opened.");
+        try {
+          await open(url);
+          return { content: [{ type: "text", text: `Opened ${url}` }] };
+        } catch (error) {
+          return failFrom(error);
+        }
+      },
+    );
+  }
 
   if (options.exports) {
     const sink = options.exports;
