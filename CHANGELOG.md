@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.1.7] - 2026-11-03
+
 ### Added
 
 - Sketchy is on npm as `@ddkbs/sketchy`: `npx -y @ddkbs/sketchy` starts the server in Claude Code, Cursor, VS Code and other MCP clients, on every platform Node.js runs on.
@@ -104,7 +106,8 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.6...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.7...HEAD
+[0.1.7]: https://github.com/ddkbs/sketchy/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ddkbs/sketchy/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/ddkbs/sketchy/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/ddkbs/sketchy/compare/v0.1.3...v0.1.4
