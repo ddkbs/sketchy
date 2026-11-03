@@ -349,7 +349,7 @@ export function createServer(options: ServerOptions): McpServer {
     },
     async ({ view }): Promise<CallToolResult> => {
       const payload = views.get(view);
-      if (!payload) return fail("This drawing has expired. Ask Claude to draw it again.");
+      if (!payload) return fail("This drawing has expired. Ask for the drawing again.");
       return {
         content: [{ type: "text", text: "Viewer data." }],
         structuredContent: payload as Record<string, unknown>,
