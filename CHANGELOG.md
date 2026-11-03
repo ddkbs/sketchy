@@ -6,6 +6,16 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- Export a drawing as an Excalidraw file (`.excalidraw`) to keep editing it on excalidraw.com: shapes, labels, groups and bound arrows stay editable; parts, icons and photos come along as images, photo credits included.
+- A faint "sketchy" signature in the bottom-right corner of every drawing and export.
+
+### Changed
+
+- The website, README and package description name Cursor and VS Code next to Claude.
+- The error for an expired drawing no longer assumes the client is Claude.
+
 ## [0.1.7] - 2026-11-03
 
 ### Added
