@@ -17,6 +17,7 @@ All notable changes to this project are documented here. The format follows
 ### Added
 
 - `sketchy-skill-0.1.6-pinned.zip` (added to the release after publication): a chat skill that loads the browser bundle from a fixed commit and verifies it with a Subresource Integrity hash. Every later release ships one too ([#1](https://github.com/ddkbs/sketchy/issues/1)).
+- `sketchy-0.1.6-cursor-<platform>.zip` (added to the release after publication): the server as a plain folder for Cursor and other clients configured through `mcp.json`, with setup steps in the README. Every later release ships them too.
 - Compact scene syntax for the `sketch` tool, the chat skill and the browser bundle (`browser -> server HTTPS`, `step Request: … | browser browser->server`), with tolerant parsing and errors that name the line.
 - Follow-up drawings keep the order and places of the elements the previous drawing already showed, also when a back-edge closes a cycle.
 - `SKETCHY_FORMAT=json` restores the JSON `sketch` tool and the incremental tools.
