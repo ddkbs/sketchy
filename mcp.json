@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "sketchy": {
+      "command": "npx",
+      "args": ["-y", "@ddkbs/sketchy"],
+      "env": { "SKETCHY_EDITOR": "cursor" }
+    }
+  }
+}

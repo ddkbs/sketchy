@@ -1,0 +1,12 @@
+{
+  "name": "sketchy",
+  "displayName": "Sketchy",
+  "version": "0.1.6",
+  "description": "Explains things visually: hand-drawn, interactive diagrams of your code, step-by-step walkthroughs, Arduino circuits and labeled photos, right in the agent chat.",
+  "author": {
+    "name": "ddkbs"
+  },
+  "license": "MIT",
+  "keywords": ["mcp", "mcp-apps", "diagram", "architecture", "visualization", "arduino", "explain"],
+  "logo": "assets/icon.svg"
+}
