@@ -9,6 +9,7 @@ import type {
   LaidOutWire,
 } from "../../src/scene/laid-out.js";
 import { FONT, SPACING } from "../../src/style/metrics.js";
+import { WATERMARK } from "./excalidraw.js";
 import {
   arrowHead,
   createPen,
@@ -87,8 +88,25 @@ export function renderScene(scene: LaidOutScene, fontCss: string): RenderedScene
   for (const wire of scene.wires) add(wiresLayer, wire.id, "wire", (g) => drawWire(g, pen, wire));
   for (const label of scene.labels)
     add(labelsLayer, label.id, "label", (g) => drawLabel(g, pen, label));
+  drawWatermark(svg, scene);
 
   return { svg, elements, overlay, pen };
+}
+
+/** A faint signature in the bottom margin, kept in exports. */
+function drawWatermark(svg: SVGSVGElement, scene: LaidOutScene): void {
+  const mark = text({
+    x: scene.width - 12,
+    y: scene.height - 22,
+    lines: [WATERMARK],
+    size: 13,
+    color: INK,
+    anchor: "end",
+  });
+  mark.setAttribute("class", "watermark");
+  mark.setAttribute("opacity", "0.28");
+  mark.setAttribute("pointer-events", "none");
+  svg.appendChild(mark);
 }
 
 function drawTitle(svg: SVGSVGElement, scene: LaidOutScene): void {
