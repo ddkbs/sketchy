@@ -58,6 +58,9 @@ describe("server", () => {
   it("serves the scene by view id for hosts that strip _meta", async () => {
     const result = await call("sketch", { nodes: [{ id: "a", label: "A", icon: "database" }] });
     const { view } = result.structuredContent as { view: string };
+    expect((result.structuredContent as { message: string }).message).toMatch(
+      /^(Rendered|Laid out)/,
+    );
     const fetched = await call("get_view", { view });
     expect((fetched.structuredContent as unknown as LaidOutScene).kind).toBe("scene");
     expect((await call("get_view", { view: "gone" })).isError).toBe(true);

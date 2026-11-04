@@ -127,7 +127,13 @@ export function createServer(options: ServerOptions): McpServer {
       showsViewer() || options.terminal
         ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${options.terminal && !showsViewer() ? " in the terminal" : ""}${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
         : await unseen(laidOut, summary);
-    return { content: [{ type: "text", text }], ...views.attach(laidOut) };
+    const attached = views.attach(laidOut);
+    // Some clients hand the model only structuredContent, so it carries the reply too.
+    return {
+      content: [{ type: "text", text }],
+      ...attached,
+      structuredContent: { ...attached.structuredContent, message: text },
+    };
   };
 
   /** The reply for clients without MCP Apps: the drawing goes to a file, if it can. */
