@@ -85,7 +85,10 @@ export function Docs({ header }: { header?: ReactNode }) {
           points and a real layout engine. The AI never computes a coordinate, so drawings come out
           precise and consistent every time.
         </p>
-        <img src="/gallery/chat.png" alt="A Sketchy drawing inside a Claude Code session" />
+        <img
+          src="/gallery/chat.png"
+          alt="A Sketchy drawing with its toolbar: Draw, SVG, PNG and Excalidraw"
+        />
 
         <h2 id="install">Installation</h2>
         <p>
@@ -321,6 +324,10 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
             text.
           </li>
         </ul>
+        <img
+          src="/gallery/draw.png"
+          alt="Drawing mode: a circled element, a note and a question for the AI"
+        />
         <img src="/gallery/request-step.png" alt="A walkthrough step with circled elements" />
 
         <h2 id="code">Your code</h2>

@@ -4,7 +4,7 @@ Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, in
 
 The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. The AI never computes coordinates, so drawings come out precise and consistent every time.
 
-![An interactive Sketchy drawing inside a Claude Code chat: what happens when you open a web page](docs/images/chat.png)
+![An interactive Sketchy drawing with its toolbar (Draw, SVG, PNG, Excalidraw): what happens when you open a web page](docs/images/chat.png)
 
 ## What it can draw
 
@@ -61,6 +61,8 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 - **Click** a code node to open the file, or a photo credit to open its source.
 - **Export** as **SVG** or **PNG**, fonts included, or as an **Excalidraw** file to keep editing on [excalidraw.com](https://excalidraw.com): your system's save dialog asks where to put the file.
 - **Fullscreen** where the host supports it.
+
+![Drawing mode: the CDN is circled in red pen with a note, and a question is ready to send to the AI](docs/images/draw.png)
 
 ## Install
 
