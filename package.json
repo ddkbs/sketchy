@@ -39,7 +39,7 @@
     "build:web": "vite build -c web/vite.config.ts",
     "start": "node dist/index.js",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json && tsc -p skill/tsconfig.json && tsc -p web/tsconfig.json",
+    "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json && tsc -p skill/tsconfig.json && tsc -p web/tsconfig.json && tsc -p claude-code/tsconfig.json",
     "preview": "tsx scripts/preview-data.ts && vite",
     "screenshots": "tsx scripts/screenshots.ts",
     "format": "prettier --write .",

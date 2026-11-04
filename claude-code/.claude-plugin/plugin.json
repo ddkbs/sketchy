@@ -1,0 +1,11 @@
+{
+  "name": "sketchy",
+  "version": "0.1.8",
+  "description": "Hand-drawn, interactive diagrams right in the Claude Code terminal: Sketchy's MCP server plus an inline renderer with step navigation.",
+  "author": { "name": "ddkbs" },
+  "homepage": "https://sketchy.davidkubus.dev",
+  "repository": "https://github.com/ddkbs/sketchy",
+  "license": "MIT",
+  "keywords": ["mcp", "diagram", "visualization", "terminal", "explain"],
+  "types": "./types/index.d.ts"
+}
