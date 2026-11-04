@@ -1,9 +1,11 @@
 #!/usr/bin/env node
+import { join } from "node:path";
 import { parseArgs } from "node:util";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { setting } from "./env.js";
 import { dialogSink } from "./exports.js";
 import { systemOpener } from "./opener.js";
+import { standaloneFiles } from "./standalone.js";
 import { serveHttp } from "./http.js";
 import { parseEditor } from "./layout/links.js";
 import { PartIndex } from "./parts/index.js";
@@ -45,6 +47,8 @@ if (values.http) {
     editor,
     exports: dialogSink(),
     opener: systemOpener(),
+    // Clients without MCP Apps get each drawing as an interactive HTML file.
+    standalone: standaloneFiles(join(dataDir, "exports"), setting("SKETCHY_OPEN") === "1"),
     // "json" restores the JSON scene tools of earlier versions.
     compact: setting("SKETCHY_FORMAT") !== "json",
   }).connect(new StdioServerTransport());

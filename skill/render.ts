@@ -4,6 +4,7 @@ import { layoutScene } from "../src/layout/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { SceneBuilder } from "../src/scene/builder.js";
 import { parseCompact } from "../src/scene/compact.js";
+import { embedScene } from "../src/standalone.js";
 import { sketchShape } from "../src/tools/schemas.js";
 
 // Skill entry: the same scene description as the `sketch` tool in, one
@@ -43,13 +44,7 @@ try {
 
   const laidOut = await layoutScene(builder.scene, parts);
   const template = readFileSync(new URL("./viewer.html", import.meta.url), "utf8");
-  // "<" is escaped so scene text can never close the script element.
-  const json = JSON.stringify(laidOut).replace(/</g, "\\u003c");
-  const marker = /(<script type="application\/json" id="sketchy-scene">)[\s\S]*?(<\/script>)/;
-  writeFileSync(
-    outPath,
-    template.replace(marker, (_, open, close) => `${open}${json}${close}`),
-  );
+  writeFileSync(outPath, embedScene(template, laidOut));
   console.log(`Wrote ${outPath}`);
 } catch (error) {
   // Validation errors name the field so Claude can fix the scene and retry.

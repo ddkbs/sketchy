@@ -16,6 +16,8 @@ import { parseCompact } from "./scene/compact.js";
 import { SceneBuilder, SceneError } from "./scene/builder.js";
 import { suggestIcons } from "./icons.js";
 import { isEditorLink, type Opener } from "./opener.js";
+import type { LaidOutScene } from "./scene/laid-out.js";
+import type { StandaloneSink } from "./standalone.js";
 import {
   edgeShape,
   groupShape,
@@ -46,6 +48,11 @@ export type ServerOptions = {
   exports?: ExportSink;
   /** Opens file links from the drawing in the editor; local servers only. */
   opener?: Opener;
+  /**
+   * Saves drawings as files for clients that cannot show the viewer inline;
+   * local servers only.
+   */
+  standalone?: StandaloneSink;
   /**
    * One `sketch` tool taking the compact line syntax and short instructions;
    * about half the tokens of the JSON tools. Off restores every tool.
@@ -111,15 +118,24 @@ export function createServer(options: ServerOptions): McpServer {
       .filter(([n]) => n > 0)
       .map(([n, what]) => `${n} ${what}${n === 1 ? "" : "s"}`)
       .join(", ");
-    return {
-      content: [
-        {
-          type: "text",
-          text: `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`,
-        },
-      ],
-      ...views.attach(laidOut),
-    };
+    const text = showsViewer()
+      ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
+      : await unseen(laidOut, summary);
+    return { content: [{ type: "text", text }], ...views.attach(laidOut) };
+  };
+
+  /** The reply for clients without MCP Apps: the drawing goes to a file, if it can. */
+  const unseen = async (laidOut: LaidOutScene, summary: string): Promise<string> => {
+    const explain = "explain the diagram fully in text";
+    if (options.standalone) {
+      try {
+        const path = await options.standalone(laidOut);
+        return `Laid out ${summary}. Inline display isn't supported in this client. Saved the diagram to ${path}. Tell the user to open it, and ${explain}.`;
+      } catch (error) {
+        console.error("sketchy: could not save the drawing:", error);
+      }
+    }
+    return `Laid out ${summary}. Inline display isn't supported in this client, so the user cannot see the drawing; ${explain}.`;
   };
 
   const uiMeta = { ui: { resourceUri: VIEWER_URI } };
