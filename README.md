@@ -132,6 +132,8 @@ To add it by hand, put this into `~/.cursor/mcp.json` (Cursor, all projects) or 
 
 Sketchy is a standard MCP server and works in any client that supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps). Start it with `npx -y @ddkbs/sketchy`, as above.
 
+Clients without MCP Apps (OpenCode, for example) cannot show drawings inline. There Sketchy saves each drawing as an interactive HTML file in `~/.sketchy/exports/`, tells the AI where it is, and asks it to explain the diagram fully in text. Set `SKETCHY_OPEN=1` to open the file in your browser right away.
+
 The npm package leaves out the photo-labeling runtime (about 470 MB) so it starts quickly. Sketchy installs it with npm into its data folder the first time you pick a model; the desktop extension ships it.
 
 ## Try it
@@ -211,6 +213,7 @@ Measured on November 2, 2026 in Claude Code with an empty project. Run it yourse
 | `SKETCHY_DATA_DIR`   | `~/.sketchy`  | Models, cached photos and the local SQLite database                               |
 | `SKETCHY_EXPORT_DIR` | `~/Downloads` | Folder the save dialog opens in, and where exports go when no dialog is available |
 | `SKETCHY_FORMAT`     | `compact`     | `json` restores the JSON scene tools of earlier versions                          |
+| `SKETCHY_OPEN`       | off           | `1` opens drawings in the browser in clients without MCP Apps                     |
 
 ## Development
 

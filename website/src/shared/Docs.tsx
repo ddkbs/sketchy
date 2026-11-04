@@ -457,6 +457,16 @@ Viewer: hand-drawn rendering with rough.js, hover, steps, export`}</code>
                 <code>json</code> restores the JSON scene tools of earlier versions
               </td>
             </tr>
+            <tr>
+              <td>
+                <code>SKETCHY_OPEN</code>
+              </td>
+              <td>off</td>
+              <td>
+                <code>1</code> opens drawings in the browser in clients without MCP Apps, which get
+                them as HTML files in <code>~/.sketchy/exports/</code>
+              </td>
+            </tr>
           </tbody>
         </table>
 
