@@ -41,6 +41,7 @@
     "test": "vitest run",
     "typecheck": "tsc --noEmit && tsc -p viewer/tsconfig.json && tsc -p skill/tsconfig.json && tsc -p web/tsconfig.json",
     "preview": "tsx scripts/preview-data.ts && vite",
+    "screenshots": "tsx scripts/screenshots.ts",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "pack": "node scripts/pack.mjs",
