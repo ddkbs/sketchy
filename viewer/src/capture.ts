@@ -7,10 +7,15 @@ import { applyStep } from "./steps.js";
 import "./styles.css";
 
 // Screenshot page for `npm run screenshots`: renders one laid-out scene from
-// build/preview/capture.json as a bare drawing, with its toolbar, or in drawing mode.
+// build/preview/capture.json as a bare drawing, with its toolbar, in drawing mode
+// or inside a neutral chat conversation.
 type Shot = {
   scene: LaidOutScene;
-  mode: "plain" | "toolbar" | "draw";
+  mode: "plain" | "toolbar" | "draw" | "chat";
+  /** Chat mode: the user's question and the answer around the drawing. */
+  prompt?: string;
+  before?: string;
+  after?: string;
   /** Plain drawings: the walkthrough step to show. */
   step?: number;
   /** Drawing mode: node ids to circle, a note next to the last one, and a question. */
@@ -34,21 +39,47 @@ if (shot.mode === "plain") {
   void ready();
 } else {
   document.body.style.cssText = "margin:0;padding:28px;background:#1f1f1f;width:1000px";
-  mountScene(root, shot.scene, {
+  const view = shot.mode === "chat" ? chat(shot) : root;
+  mountScene(view, shot.scene, {
     openLink: () => undefined,
     download: async () => undefined,
     ask: async () => true,
     toggleFullscreen: () => undefined,
   });
   const frame = root.querySelector<HTMLElement>(".frame")!;
-  if (shot.mode === "toolbar") {
-    frame.querySelector<HTMLElement>(".toolbar")!.style.opacity = "1";
+  if (shot.mode === "toolbar" || shot.mode === "chat") {
+    frame.querySelector<HTMLElement>(".toolbar")!.style.cssText = "opacity:1;transition:none";
   } else {
     await document.fonts.ready;
     frame.querySelector<HTMLButtonElement>('button[title="Draw on the sketch"]')!.click();
     drawMarks(frame, shot);
   }
   void ready();
+}
+
+/** A plain, unbranded chat: the question, the answer and the drawing in between. */
+function chat(shot: Shot): HTMLElement {
+  document.body.style.cssText =
+    "margin:0;padding:44px 48px;background:#1f1f1f;width:1200px;" +
+    "font:16.5px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;color:#e8e6e1";
+  const el = (css: string, text?: string) => {
+    const d = document.createElement("div");
+    d.style.cssText = css;
+    if (text) d.textContent = text;
+    return d;
+  };
+  const question = el("display:flex;justify-content:flex-end;margin-bottom:26px");
+  question.appendChild(
+    el(
+      "max-width:70%;background:#33322f;color:#f4f3ef;padding:11px 18px;border-radius:20px 20px 6px 20px",
+      shot.prompt,
+    ),
+  );
+  // The viewer keeps its own handwriting font, as in its iframe.
+  const view = el("margin:14px 0 18px;font-family:var(--font);color:var(--ink)");
+  root.style.cssText = "display:block";
+  root.append(question, el("margin:0", shot.before), view, el("margin:0", shot.after));
+  return view;
 }
 
 /** Draws with real pointer events, so the marks go through the drawing mode itself. */

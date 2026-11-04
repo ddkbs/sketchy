@@ -34,7 +34,10 @@ const fromCompact =
 
 type Shot = {
   scene: Fill;
-  mode: "plain" | "toolbar" | "draw";
+  mode: "plain" | "toolbar" | "draw" | "chat";
+  prompt?: string;
+  before?: string;
+  after?: string;
   /** Plain drawings: the walkthrough step to show, counted from 0. */
   step?: number;
   circle?: string[];
@@ -47,7 +50,11 @@ type Shot = {
 const SHOTS: Record<string, Shot> = {
   chat: {
     scene: fromDemo("web"),
-    mode: "toolbar",
+    mode: "chat",
+    prompt: "What happens when I open a web page? Walk me through it.",
+    before: "Here is the whole path, from your browser to the database:",
+    after:
+      "Step through it with the arrows: the CDN answers most static files on its own, and only cache misses reach your servers. Slow jobs wait in a queue, so the page never does.",
     files: ["docs/images/chat.png", "website/public/gallery/chat.png"],
   },
   draw: {
@@ -125,7 +132,7 @@ try {
         "--hide-scrollbars",
         "--force-device-scale-factor=2",
         "--virtual-time-budget=8000",
-        `--window-size=${plain ? `${Math.ceil(scene.width)},${Math.ceil(scene.height)}` : "1056,1400"}`,
+        `--window-size=${plain ? `${Math.ceil(scene.width)},${Math.ceil(scene.height)}` : shot.mode === "chat" ? "1296,1600" : "1056,1400"}`,
         `--screenshot=${raw}`,
         `http://localhost:${PORT}/capture.html?shot=${name}`,
       ],
