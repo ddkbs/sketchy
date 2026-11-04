@@ -124,7 +124,7 @@ function drawbar(
     b.dataset.tool = tool;
     return b;
   });
-  const undo = button("↶", "Undo (Ctrl+Z)", () => annotator.undo());
+  const undo = button("Undo", "Undo (Ctrl+Z)", () => annotator.undo());
   const clear = button("Clear", "Remove all marks", () => annotator.clear());
   const done = button("Done", "Leave drawing mode", () => setDrawing(frame, false));
   tools.append(...toolButtons, undo, clear, done);
