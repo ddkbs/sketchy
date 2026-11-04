@@ -41,7 +41,7 @@ cpSync(join(root, "dist"), join(stage, "dist"), {
   filter: (src) => !src.endsWith(".map"),
 });
 cpSync(join(root, "assets", "icon.png"), join(stage, "assets", "icon.png"));
-for (const file of ["parts.json", "viewer.html"])
+for (const file of ["parts.json", "viewer.html", "standalone.html"])
   cpSync(join(root, "build", file), join(stage, "build", file));
 
 const flags = [
