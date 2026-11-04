@@ -1,11 +1,15 @@
 // Re-takes the README and website screenshots from the real viewer with headless
-// Chrome: `npm run screenshots`. Scenes come from the website demo input.
+// Chrome: `npm run screenshots`. Scenes come from the website demo, the test
+// fixtures and scripts/screenshot-scenes.ts.
 import { execFileSync, spawn } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import sharp from "sharp";
 import { layoutScene } from "../src/layout/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { SceneBuilder } from "../src/scene/builder.js";
+import { parseCompact } from "../src/scene/compact.js";
+import { SAMPLES } from "../test/fixtures.js";
+import { REPO, REQUEST, TRANSFORMER } from "./screenshot-scenes.js";
 
 const root = new URL("..", import.meta.url);
 const at = (path: string) => new URL(path, root).pathname;
@@ -14,33 +18,72 @@ const PORT = 5191;
 const DARK = "#1f1f1f";
 
 type SceneInput = Record<string, any>;
-const scenes = JSON.parse(readFileSync(at("website/scripts/scenes.input.json"), "utf8")) as Record<
+type Fill = (b: SceneBuilder) => void;
+const demo = JSON.parse(readFileSync(at("website/scripts/scenes.input.json"), "utf8")) as Record<
   string,
   SceneInput
 >;
+const fromDemo =
+  (name: string): Fill =>
+  (b) =>
+    fill(b, demo[name]!);
+const fromCompact =
+  (source: string): Fill =>
+  (b) =>
+    fill(b, parseCompact(source));
+
+type Shot = {
+  scene: Fill;
+  mode: "plain" | "toolbar" | "draw";
+  /** Plain drawings: the walkthrough step to show, counted from 0. */
+  step?: number;
+  circle?: string[];
+  note?: string;
+  question?: string;
+  files: string[];
+};
 
 /** Each screenshot: a scene, how it is shown, and where the image goes. */
-const SHOTS = {
+const SHOTS: Record<string, Shot> = {
   chat: {
-    scene: "web",
+    scene: fromDemo("web"),
     mode: "toolbar",
     files: ["docs/images/chat.png", "website/public/gallery/chat.png"],
   },
   draw: {
-    scene: "web",
+    scene: fromDemo("web"),
     mode: "draw",
     circle: ["cdn"],
     note: "why not the server?",
     question: "Why does the CDN answer most requests?",
     files: ["docs/images/draw.png", "website/public/gallery/draw.png"],
   },
+  request: { scene: fromCompact(REQUEST), mode: "plain", files: ["docs/images/request.png"] },
+  "request-step": {
+    scene: fromCompact(REQUEST),
+    mode: "plain",
+    step: 4,
+    files: ["docs/images/request-step.png", "website/public/gallery/request-step.png"],
+  },
+  transformer: {
+    scene: fromCompact(TRANSFORMER),
+    mode: "plain",
+    files: ["docs/images/transformer.png"],
+  },
+  repo: {
+    scene: fromCompact(REPO),
+    mode: "plain",
+    files: ["docs/images/repo.png", "website/public/gallery/repo.png"],
+  },
   esp32: {
-    scene: "circuit",
+    scene: fromDemo("circuit"),
     mode: "plain",
     files: ["docs/images/esp32.png", "website/public/gallery/esp32.png"],
   },
-  metaphor: { scene: "metaphor", mode: "plain", files: ["docs/images/metaphor.png"] },
-} as const;
+  circuit: { scene: SAMPLES.circuit!, mode: "plain", files: ["docs/images/circuit.png"] },
+  comparison: { scene: SAMPLES.comparison!, mode: "plain", files: ["docs/images/comparison.png"] },
+  metaphor: { scene: fromDemo("metaphor"), mode: "plain", files: ["docs/images/metaphor.png"] },
+};
 
 function fill(b: SceneBuilder, s: SceneInput): void {
   b.reset({ title: s.title, subtitle: s.subtitle, direction: s.direction });
@@ -55,9 +98,9 @@ function fill(b: SceneBuilder, s: SceneInput): void {
 
 const parts = await PartIndex.load();
 const capture: Record<string, unknown> = {};
-for (const [name, shot] of Object.entries(SHOTS)) {
+for (const [name, { scene, files: _files, ...shot }] of Object.entries(SHOTS)) {
   const builder = new SceneBuilder(parts);
-  fill(builder, scenes[shot.scene]!);
+  scene(builder);
   capture[name] = { ...shot, scene: await layoutScene(builder.scene, parts) };
 }
 mkdirSync(at("build/preview"), { recursive: true });

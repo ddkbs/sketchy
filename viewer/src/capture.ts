@@ -3,6 +3,7 @@ import { FONT_CSS } from "./fonts.js";
 import { PAPER } from "./palette.js";
 import { fitText, renderScene } from "./render.js";
 import { mountScene } from "./scene-view.js";
+import { applyStep } from "./steps.js";
 import "./styles.css";
 
 // Screenshot page for `npm run screenshots`: renders one laid-out scene from
@@ -10,6 +11,8 @@ import "./styles.css";
 type Shot = {
   scene: LaidOutScene;
   mode: "plain" | "toolbar" | "draw";
+  /** Plain drawings: the walkthrough step to show. */
+  step?: number;
   /** Drawing mode: node ids to circle, a note next to the last one, and a question. */
   circle?: string[];
   note?: string;
@@ -23,8 +26,10 @@ const ready = () => document.fonts.ready.then(() => document.body.setAttribute("
 
 if (shot.mode === "plain") {
   document.body.style.cssText = `margin:0;background:${PAPER}`;
-  const { svg } = renderScene(shot.scene, FONT_CSS);
+  const rendered = renderScene(shot.scene, FONT_CSS);
+  const { svg } = rendered;
   root.appendChild(svg);
+  if (shot.step !== undefined) applyStep(shot.scene, rendered, shot.step);
   void document.fonts.ready.then(() => fitText(svg));
   void ready();
 } else {
