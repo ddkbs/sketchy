@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- In clients without MCP Apps (OpenCode, for example), `sketch` no longer claims the user sees the drawing. It saves an interactive, offline HTML file to `~/.sketchy/exports/`, returns its path and asks the AI to explain the diagram fully in text. `SKETCHY_OPEN=1` opens the file in the browser. Clients with MCP Apps behave as before.
+
 ## [0.1.8] - 2026-11-04
 
 ### Added
