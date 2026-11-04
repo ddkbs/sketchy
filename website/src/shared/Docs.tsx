@@ -87,7 +87,7 @@ export function Docs({ header }: { header?: ReactNode }) {
         </p>
         <img
           src="/gallery/chat.png"
-          alt="A Sketchy drawing with its toolbar: Draw, SVG, PNG and Excalidraw"
+          alt="Sketchy in a chat: an answer with an interactive drawing and its toolbar"
         />
 
         <h2 id="install">Installation</h2>

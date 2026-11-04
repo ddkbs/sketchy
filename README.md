@@ -4,7 +4,7 @@ Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, in
 
 The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. The AI never computes coordinates, so drawings come out precise and consistent every time.
 
-![An interactive Sketchy drawing with its toolbar (Draw, SVG, PNG, Excalidraw): what happens when you open a web page](docs/images/chat.png)
+![Sketchy in a chat: the answer to "What happens when I open a web page?" comes with an interactive drawing and its toolbar (Draw, SVG, PNG, Excalidraw)](docs/images/chat.png)
 
 ## What it can draw
 
