@@ -49,6 +49,8 @@ if (values.http) {
     opener: systemOpener(),
     // Clients without MCP Apps get each drawing as an interactive HTML file.
     standalone: standaloneFiles(join(dataDir, "exports"), setting("SKETCHY_OPEN") === "1"),
+    // Set by the Claude Code plugin, which draws each result in the terminal.
+    terminal: setting("SKETCHY_TERMINAL") === "1",
     // "json" restores the JSON scene tools of earlier versions.
     compact: setting("SKETCHY_FORMAT") !== "json",
   }).connect(new StdioServerTransport());

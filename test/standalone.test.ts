@@ -17,6 +17,7 @@ const UI = {
 async function sketch(
   withViewer: boolean,
   dir: string,
+  terminal = false,
 ): Promise<{ text: string; saved: string[] }> {
   const saved: string[] = [];
   const save = standaloneFiles(dir);
@@ -24,6 +25,7 @@ async function sketch(
     parts: await PartIndex.load(),
     viewerHtml: () => "<html></html>",
     compact: true,
+    terminal,
     standalone: async (scene) => {
       const path = await save(scene);
       saved.push(path);
@@ -64,6 +66,13 @@ describe("clients without MCP Apps", () => {
     expect(saved).toEqual([]);
     expect(text).toContain("The user now sees the drawing");
     expect(await readdir(dir)).toEqual([]);
+  });
+
+  it("saves no file when the Claude Code plugin draws in the terminal", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "sketchy-standalone-"));
+    const { text, saved } = await sketch(false, dir, true);
+    expect(saved).toEqual([]);
+    expect(text).toContain("The user now sees the drawing in the terminal");
   });
 
   it("never lets scene text close the embedded script", () => {

@@ -54,6 +54,11 @@ export type ServerOptions = {
    */
   standalone?: StandaloneSink;
   /**
+   * The Sketchy plugin for Claude Code draws every result in the terminal, so
+   * clients without MCP Apps still show the drawing and no file is saved.
+   */
+  terminal?: boolean;
+  /**
    * One `sketch` tool taking the compact line syntax and short instructions;
    * about half the tokens of the JSON tools. Off restores every tool.
    */
@@ -118,9 +123,10 @@ export function createServer(options: ServerOptions): McpServer {
       .filter(([n]) => n > 0)
       .map(([n, what]) => `${n} ${what}${n === 1 ? "" : "s"}`)
       .join(", ");
-    const text = showsViewer()
-      ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
-      : await unseen(laidOut, summary);
+    const text =
+      showsViewer() || options.terminal
+        ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${options.terminal && !showsViewer() ? " in the terminal" : ""}${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
+        : await unseen(laidOut, summary);
     return { content: [{ type: "text", text }], ...views.attach(laidOut) };
   };
 
