@@ -1,0 +1,11 @@
+{
+  "name": "sketchy",
+  "owner": { "name": "ddkbs" },
+  "plugins": [
+    {
+      "name": "sketchy",
+      "source": "./claude-code",
+      "description": "Hand-drawn, interactive diagrams right in the Claude Code terminal."
+    }
+  ]
+}
