@@ -1,6 +1,6 @@
 # Sketchy
 
-Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Cursor, VS Code and other MCP clients.
+Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Codex, Cursor, VS Code and other MCP clients.
 
 The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. The AI never computes coordinates, so drawings come out precise and consistent every time.
 
@@ -66,10 +66,21 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 
 ## Install
 
-Where do you work? Sketchy comes two ways, and both can be installed side by side:
+Where do you work? Install the chat skill or desktop extension, or connect the MCP server to your coding agent:
 
 - **In the chat** (Claude on web, desktop and mobile): the skill. Nothing to install locally.
 - **While coding** (Claude Code in the desktop app or terminal, Cursor, VS Code): the extension, which adds photo labeling, SVG, PNG and Excalidraw export and click-to-open files.
+- **Coding agents**: connect the npm MCP server by following the steps below.
+
+### Codex
+
+With [Node.js](https://nodejs.org) 20 or newer, add Sketchy as a user-level MCP server:
+
+```bash
+codex mcp add sketchy -- npx -y @ddkbs/sketchy
+```
+
+Run `codex mcp list` to check that it is connected, then start a new Codex session and ask for a diagram. The MCP server configuration is shared by the Codex CLI and IDE extension. Sketchy uses MCP Apps to show drawings; the host must support MCP Apps to display them inline.
 
 ### Claude chat (web, desktop and mobile)
 
@@ -110,9 +121,9 @@ Run `claude mcp list` to check that it is connected. npx downloads the server on
 
 ### Cursor and VS Code
 
-Both show Sketchy's drawings inline in the agent chat. With Node.js installed, click **[Add to Cursor](https://cursor.com/en/install-mcp?name=sketchy&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkBkZGticy9za2V0Y2h5Il0sImVudiI6eyJTS0VUQ0hZX0VESVRPUiI6ImN1cnNvciJ9fQ%3D%3D)** or **[Add to VS Code](https://vscode.dev/redirect/mcp/install?name=sketchy&config=%7B%22type%22%3A%22stdio%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40ddkbs%2Fsketchy%22%5D%7D)** and confirm.
+With Node.js 20 or newer, click **[Add to Cursor](https://cursor.com/en/install-mcp?name=sketchy&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsIkBkZGticy9za2V0Y2h5Il0sImVudiI6eyJTS0VUQ0hZX0VESVRPUiI6ImN1cnNvciJ9fQ%3D%3D)** or **[Add to VS Code](https://vscode.dev/redirect/mcp/install?name=sketchy&config=%7B%22type%22%3A%22stdio%22%2C%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22%40ddkbs%2Fsketchy%22%5D%7D)** and confirm. To add it by hand, use the matching config format below.
 
-To add it by hand, put this into `~/.cursor/mcp.json` (Cursor, all projects) or your VS Code MCP settings:
+For Cursor, add this to `~/.cursor/mcp.json` (all projects) or `.cursor/mcp.json` (this project):
 
 ```json
 {
@@ -126,13 +137,44 @@ To add it by hand, put this into `~/.cursor/mcp.json` (Cursor, all projects) or 
 }
 ```
 
-`SKETCHY_EDITOR` decides which editor opens when you click a box in a drawing; leave it out for VS Code.
+For VS Code, add this to `.vscode/mcp.json` or use the **Add to VS Code** link above:
+
+```json
+{
+  "servers": {
+    "sketchy": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@ddkbs/sketchy"]
+    }
+  }
+}
+```
+
+`SKETCHY_EDITOR` controls which editor opens when you click a code box. It defaults to `vscode`; set it to `cursor`, `windsurf`, `vscode-insiders` or `zed` where needed.
 
 ### Other MCP clients
 
-Sketchy is a standard MCP server and works in any client that supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps). Start it with `npx -y @ddkbs/sketchy`, as above.
+Sketchy is a standard MCP server. Most clients can start it with this command and argument list:
 
-Clients without MCP Apps (OpenCode, for example) cannot show drawings inline. There Sketchy saves each drawing as an interactive HTML file in `~/.sketchy/exports/`, tells the AI where it is, and asks it to explain the diagram fully in text. Set `SKETCHY_OPEN=1` to open the file in your browser right away.
+```text
+command: npx
+args: -y @ddkbs/sketchy
+```
+
+Add it through the client's MCP settings or config file, then restart or reload the MCP server. Here are setup guides for other common coding agents:
+
+| Client | Setup guide |
+| ------ | ----------- |
+| Windsurf | [MCP settings](https://docs.windsurf.com/windsurf/cascade/mcp) |
+| Gemini CLI | [MCP setup](https://geminicli.com/docs/cli/tutorials/mcp-setup/) |
+| Cline | [MCP overview and setup](https://docs.cline.bot/mcp/mcp-overview) |
+| Roo Code | [Using MCP](https://docs.roocode.com/features/mcp/using-mcp-in-roo) |
+| OpenCode | [MCP servers](https://dev.opencode.ai/v2/docs/mcp-servers/) |
+| Zed | [MCP servers](https://zed.dev/docs/ai/mcp) |
+| Continue | [MCP servers](https://docs.continue.dev/customize/deep-dives/mcp) |
+
+Inline drawings depend on whether the client supports [MCP Apps](https://github.com/modelcontextprotocol/ext-apps). Clients without MCP Apps use Sketchy's standalone HTML fallback: it saves the drawing to `~/.sketchy/exports/` and asks the AI to explain it in text. Set `SKETCHY_OPEN=1` to open the file in your browser right away.
 
 The npm package leaves out the photo-labeling runtime (about 470 MB) so it starts quickly. Sketchy installs it with npm into its data folder the first time you pick a model; the desktop extension ships it.
 
