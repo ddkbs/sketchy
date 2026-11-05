@@ -33,7 +33,16 @@ export type Sketch = {
   extras: number;
 };
 /** A drawing per tool call, or the reason none could be read. */
-export type Entry = { sketch?: Sketch; problem?: string };
+export type Entry = {
+  sketch?: Sketch;
+  /** PNGs the server rendered: the whole drawing, then one per step. */
+  images?: string[];
+  /** The interactive HTML page of the drawing. */
+  page?: string;
+  problem?: string;
+};
+/** How drawings show: pictures where the terminal can, characters elsewhere. */
+export type Mode = "auto" | "image" | "text";
 
 declare module "claude-code" {
   interface PluginState {
@@ -42,6 +51,8 @@ declare module "claude-code" {
       sketches: Shaped<Record<string, Entry>>;
       /** The step each drawing shows; -1 or absent is the whole drawing. */
       steps: Record<string, number>;
+      /** Picture or character drawing, switched by the user. */
+      mode: Mode;
     };
   }
 }
