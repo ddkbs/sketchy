@@ -1,6 +1,6 @@
 # Sketchy
 
-Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Cursor, VS Code and other MCP clients.
+Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, **including the Claude app on your phone**, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Cursor, VS Code and other MCP clients.
 
 The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. The AI never computes coordinates, so drawings come out precise and consistent every time.
 
@@ -68,7 +68,7 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 
 Where do you work? Sketchy comes two ways, and both can be installed side by side:
 
-- **In the chat** (Claude on web, desktop and mobile): the skill. Nothing to install locally.
+- **In the chat** (Claude on web, desktop and the iPhone and Android apps): the skill. Nothing to install locally.
 - **While coding** (Claude Code in the desktop app or terminal, Cursor, VS Code): the extension, which adds photo labeling, SVG, PNG and Excalidraw export and click-to-open files.
 
 ### Claude chat (web, desktop and mobile)
@@ -78,6 +78,8 @@ The skill draws right in the chat, with no server:
 1. Download `sketchy-skill-<version>.zip` from the [latest release](https://github.com/ddkbs/sketchy/releases/latest).
 2. In Claude, open **Settings → Capabilities → Skills** and upload the zip.
 3. Ask for a drawing in any chat.
+
+**On your phone:** skills belong to your Claude account, so once uploaded the skill also works in the Claude app on iPhone and Android. Ask a question on the go and the drawing appears in the chat, with steps you can tap through. Nothing to install on the phone.
 
 Claude writes the scene, and the chat's inline visualization loads Sketchy's browser bundle from [jsDelivr](https://www.jsdelivr.com), which serves it from this repository's `cdn` branch. The skill follows the current minor version, so it picks up fixes without being uploaded again. To run exactly the code you reviewed, use `sketchy-skill-<version>-pinned.zip` instead: it loads the bundle from a fixed commit of the `cdn` branch and checks it with a [Subresource Integrity](https://developer.mozilla.org/docs/Web/Security/Subresource_Integrity) hash, so the browser refuses any other file. It does not pick up fixes; upload the next pinned zip to update. Photo labeling and opening files from a drawing need your computer, so they stay in the desktop extension.
 
