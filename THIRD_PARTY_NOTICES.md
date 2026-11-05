@@ -20,6 +20,8 @@ works, which keep their own licenses.
 | [ONNX Runtime](https://github.com/microsoft/onnxruntime)                     | Model inference                   | MIT                       |
 | [sharp](https://github.com/lovell/sharp) / libvips                           | Image processing                  | Apache-2.0 / LGPL-3.0     |
 | [Zod](https://github.com/colinhacks/zod)                                     | Input validation                  | MIT                       |
+| [resvg-js](https://github.com/thx/resvg-js)                                  | Terminal pictures (SVG to PNG)    | MPL-2.0                   |
+| [linkedom](https://github.com/WebReflection/linkedom)                        | Server-side rendering DOM         | ISC                       |
 
 Brand logos from Simple Icons are trademarks of their respective owners.
 

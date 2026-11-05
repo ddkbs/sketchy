@@ -25,7 +25,14 @@ async function sketch(
     parts: await PartIndex.load(),
     viewerHtml: () => "<html></html>",
     compact: true,
-    terminal,
+    terminal: terminal
+      ? async (scene) => ({
+          scene: "/tmp/x.json",
+          images: [],
+          width: scene.width,
+          height: scene.height,
+        })
+      : undefined,
     standalone: async (scene) => {
       const path = await save(scene);
       saved.push(path);

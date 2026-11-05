@@ -6,6 +6,7 @@ import { setting } from "./env.js";
 import { dialogSink } from "./exports.js";
 import { systemOpener } from "./opener.js";
 import { standaloneFiles } from "./standalone.js";
+import { terminalFiles } from "./terminal.js";
 import { serveHttp } from "./http.js";
 import { parseEditor } from "./layout/links.js";
 import { PartIndex } from "./parts/index.js";
@@ -49,8 +50,12 @@ if (values.http) {
     opener: systemOpener(),
     // Clients without MCP Apps get each drawing as an interactive HTML file.
     standalone: standaloneFiles(join(dataDir, "exports"), setting("SKETCHY_OPEN") === "1"),
-    // Set by the Claude Code plugin, which draws each result in the terminal.
-    terminal: setting("SKETCHY_TERMINAL") === "1",
+    // Set by the Claude Code plugin, which draws each result in the terminal
+    // and links the interactive page.
+    terminal:
+      setting("SKETCHY_TERMINAL") === "1"
+        ? terminalFiles(join(dataDir, "terminal"), standaloneFiles(join(dataDir, "exports")))
+        : undefined,
     // "json" restores the JSON scene tools of earlier versions.
     compact: setting("SKETCHY_FORMAT") !== "json",
   }).connect(new StdioServerTransport());

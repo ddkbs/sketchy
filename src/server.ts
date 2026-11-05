@@ -18,6 +18,7 @@ import { suggestIcons } from "./icons.js";
 import { isEditorLink, type Opener } from "./opener.js";
 import type { LaidOutScene } from "./scene/laid-out.js";
 import type { StandaloneSink } from "./standalone.js";
+import type { TerminalSink } from "./terminal.js";
 import {
   edgeShape,
   groupShape,
@@ -54,10 +55,10 @@ export type ServerOptions = {
    */
   standalone?: StandaloneSink;
   /**
-   * The Sketchy plugin for Claude Code draws every result in the terminal, so
-   * clients without MCP Apps still show the drawing and no file is saved.
+   * Set for the Sketchy plugin for Claude Code, which draws every result in
+   * the terminal from the files this writes; local servers only.
    */
-  terminal?: boolean;
+  terminal?: TerminalSink;
   /**
    * One `sketch` tool taking the compact line syntax and short instructions;
    * about half the tokens of the JSON tools. Off restores every tool.
@@ -128,11 +129,18 @@ export function createServer(options: ServerOptions): McpServer {
         ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${options.terminal && !showsViewer() ? " in the terminal" : ""}${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
         : await unseen(laidOut, summary);
     const attached = views.attach(laidOut);
+    // The plugin reads the drawing from these files; the paths are all it adds.
+    const terminal =
+      options.terminal && !showsViewer() ? await options.terminal(laidOut) : undefined;
     // Some clients hand the model only structuredContent, so it carries the reply too.
     return {
       content: [{ type: "text", text }],
       ...attached,
-      structuredContent: { ...attached.structuredContent, message: text },
+      structuredContent: {
+        ...attached.structuredContent,
+        message: text,
+        ...(terminal ? { terminal } : {}),
+      },
     };
   };
 

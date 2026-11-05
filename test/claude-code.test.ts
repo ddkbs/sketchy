@@ -1,3 +1,6 @@
+import { mkdtemp, readFile } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { beforeAll, describe, expect, it } from "vitest";
@@ -6,6 +9,7 @@ import { find, isScene, slim } from "../claude-code/hooks/scene.js";
 import type { Sketch } from "../claude-code/types/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { createServer } from "../src/server.js";
+import { terminalFiles, type TerminalFiles } from "../src/terminal.js";
 
 const SCENE = `title How Sketchy works
 dir right
@@ -27,22 +31,30 @@ step Place: Sketchy lays it out | layout, render, scene->layout`;
 
 const ACCENT_BG = 0xffe066;
 
-/** Lays the scene out with the real server and reads it the way the plugin does. */
-async function layout(scene: string): Promise<Sketch> {
+const PNG = Buffer.from([0x89, 0x50, 0x4e, 0x47]);
+
+/**
+ * Lays the scene out with the real server and reads it the way the plugin
+ * does: the files named in the result's `terminal` entry.
+ */
+async function layout(scene: string): Promise<{ sketch: Sketch; files: TerminalFiles }> {
+  const dir = await mkdtemp(join(tmpdir(), "sketchy-terminal-"));
   const server = createServer({
     parts: await PartIndex.load(),
     viewerHtml: () => "<html></html>",
     compact: true,
-    terminal: true,
+    terminal: terminalFiles(dir),
   });
   const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
   await server.connect(serverSide);
   const client = new Client({ name: "claude-code", version: "1.0.0" });
   await client.connect(clientSide);
   const result = await client.callTool({ name: "sketch", arguments: { scene } });
-  const found = find(result, isScene);
+  const files = (result.structuredContent as { terminal: TerminalFiles }).terminal;
+  expect(files.scene.startsWith(dir)).toBe(true);
+  const found = find(JSON.parse(await readFile(files.scene, "utf8")), isScene);
   expect(found).toBeDefined();
-  return slim(found as Record<string, unknown>);
+  return { sketch: slim(found as Record<string, unknown>), files };
 }
 
 function decode(cells: Cells): { text: string[]; bg: number[][] } {
@@ -67,8 +79,19 @@ function decode(cells: Cells): { text: string[]; bg: number[][] } {
 
 describe("Claude Code terminal renderer", () => {
   let sketch: Sketch;
+  let files: TerminalFiles;
   beforeAll(async () => {
-    sketch = await layout(SCENE);
+    ({ sketch, files } = await layout(SCENE));
+  });
+
+  it("renders a picture of the whole drawing and of every step", async () => {
+    expect(files.images).toHaveLength(3);
+    for (const image of files.images) {
+      const png = await readFile(image);
+      expect(png.subarray(0, 4).equals(PNG)).toBe(true);
+      // Width in the PNG header: twice the scene for high-density screens.
+      expect(png.readUInt32BE(16)).toBe(files.width * 2);
+    }
   });
 
   it("reads the laid-out scene from the tool result", () => {
