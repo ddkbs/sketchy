@@ -1,6 +1,6 @@
 # Sketchy
 
-Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, **including the Claude app on your phone**, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Cursor, VS Code and other MCP clients.
+Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, **including the Claude app on your phone**, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Codex, Cursor, VS Code and other MCP clients.
 
 The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. The AI never computes coordinates, so drawings come out precise and consistent every time.
 
@@ -69,7 +69,7 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 Where do you work? Sketchy comes two ways, and both can be installed side by side:
 
 - **In the chat** (Claude on web, desktop and the iPhone and Android apps): the skill. Nothing to install locally.
-- **While coding** (Claude Code in the desktop app or terminal, Cursor, VS Code): the extension, which adds photo labeling, SVG, PNG and Excalidraw export and click-to-open files.
+- **While coding** (Claude Code in the desktop app or terminal, Codex, Cursor, VS Code): the extension, which adds photo labeling, SVG, PNG and Excalidraw export and click-to-open files.
 
 ### Claude chat (web, desktop and mobile)
 
@@ -109,6 +109,24 @@ claude mcp add sketchy --scope user -- npx -y @ddkbs/sketchy
 ```
 
 Run `claude mcp list` to check that it is connected. npx downloads the server on first start and picks up new versions on its own.
+
+### Codex
+
+With [Node.js](https://nodejs.org) 20 or newer, register Sketchy once for the Codex CLI and IDE extension:
+
+```bash
+codex mcp add sketchy -- npx -y @ddkbs/sketchy
+```
+
+Run `codex mcp list` to check that it is enabled, then start a new session. To add it by hand, put this into `~/.codex/config.toml`:
+
+```toml
+[mcp_servers.sketchy]
+command = "npx"
+args = ["-y", "@ddkbs/sketchy"]
+```
+
+Where Codex cannot show [MCP Apps](https://github.com/modelcontextprotocol/ext-apps) inline, Sketchy saves each drawing as an interactive HTML file, as described under [Other MCP clients](#other-mcp-clients).
 
 ### Cursor and VS Code
 
