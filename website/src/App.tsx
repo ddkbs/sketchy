@@ -163,7 +163,7 @@ function Landing() {
               Live demo
             </div>
             <div className="mt-1 text-[22px] font-semibold tracking-[-0.03em]">
-              Pick a prompt. Watch it draw.
+              Pick a prompt. Click through it.
             </div>
           </div>
           <div className="hidden font-mono text-[11px] text-faint sm:block">

@@ -1,99 +1,51 @@
-import { AnimatePresence, motion, useInView } from "motion/react";
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { LogoMark } from "../Logo";
 import { SCENARIOS, summary } from "./scenarios";
-import { Stage, wait } from "./stage";
+import { Stage } from "./stage";
 
 type Phase = "idle" | "typing" | "thinking" | "answer" | "tool" | "drawing" | "steps" | "done";
 
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
- * A simulated chat around real Sketchy output: the prompt is typed, Claude answers, calls `sketch`,
- * and the actual renderer draws the laid-out scene element by element, then walks its steps.
- * Visitors pick a prompt below to run it themselves.
+ * A chat around real Sketchy output: the prompt, Claude's answer, the `sketch` call and the
+ * drawing from the actual renderer, all shown at once. Visitors pick a prompt below and click
+ * through the drawing's steps themselves.
  */
 export function ChatDemo({ className = "" }: { className?: string }) {
   const [active, setActive] = useState(0);
-  const [run, setRun] = useState(0);
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [typed, setTyped] = useState("");
-  const [words, setWords] = useState(0);
   const [step, setStep] = useState<number | undefined>();
-  const [touched, setTouched] = useState(false);
   const stageRoot = useRef<HTMLDivElement>(null);
   const stage = useRef<Stage | null>(null);
   const box = useRef<HTMLDivElement>(null);
-  const inView = useInView(box, { margin: "-80px" });
   const scenario = SCENARIOS[active];
+  // Nothing plays by itself any more: the conversation is always finished.
+  const phase = "done" as Phase;
+  const typed = "";
+  const words = scenario.intro.split(" ").length;
 
   const pick = (i: number) => {
-    setTouched(true);
     setActive(i);
-    setRun((r) => r + 1);
+    setStep(undefined);
   };
 
   useLayoutEffect(() => {
-    stage.current = new Stage(stageRoot.current!, scenario.scene);
-  }, [scenario, run]);
+    const s = new Stage(stageRoot.current!, scenario.scene);
+    s.showAll();
+    stage.current = s;
+  }, [scenario]);
 
-  useEffect(() => {
-    if (!inView) return;
-    let live = true;
-    const alive = () => live;
-    const s = stage.current!;
-    void (async () => {
-      setPhase("typing");
-      setTyped("");
-      setWords(0);
-      setStep(undefined);
-      s.hide();
-      await wait(400);
-      for (let i = 1; i <= scenario.prompt.length && live; i++) {
-        setTyped(scenario.prompt.slice(0, i));
-        await wait(22 + Math.random() * 28);
-      }
-      await wait(300);
-      if (!live) return;
-      setPhase("thinking");
-      await wait(800);
-      if (!live) return;
-      setPhase("answer");
-      const total = scenario.intro.split(" ").length;
-      for (let i = 1; i <= total && live; i++) {
-        setWords(i);
-        await wait(34);
-      }
-      if (!live) return;
-      setPhase("tool");
-      await wait(700);
-      if (!live) return;
-      setPhase("drawing");
-      await s.build(alive, 110);
-      if (!live) return;
-      if (scenario.scene.steps.length) {
-        setPhase("steps");
-        for (let i = 0; i < scenario.scene.steps.length && live; i++) {
-          setStep(i);
-          s.step(i);
-          await wait(2200);
-        }
-        if (!live) return;
-        setStep(undefined);
-        s.step(undefined);
-      }
-      setPhase("done");
-      await wait(5200);
-      if (live && !touched) {
-        setActive((a) => (a + 1) % SCENARIOS.length);
-        setRun((r) => r + 1);
-      }
-    })();
-    return () => {
-      live = false;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inView, active, run]);
+  /** Shows one step, or the whole drawing for `undefined`. */
+  const show = (index: number | undefined) => {
+    setStep(index);
+    stage.current?.step(index);
+  };
+  /** Overview, step 1, step 2, …, back to the overview. */
+  const next = () => {
+    const last = scenario.scene.steps.length - 1;
+    show(step === undefined ? 0 : step >= last ? undefined : step + 1);
+  };
 
   const sent = phase !== "idle" && phase !== "typing";
   const drawing = phase === "drawing" || phase === "steps" || phase === "done";
@@ -127,7 +79,7 @@ export function ChatDemo({ className = "" }: { className?: string }) {
         <AnimatePresence>
           {sent && (
             <motion.div
-              key={`q${run}`}
+              key={`q${active}`}
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, ease }}
@@ -178,9 +130,18 @@ export function ChatDemo({ className = "" }: { className?: string }) {
             drawing ? "opacity-100" : "opacity-0"
           }`}
         >
-          <div ref={stageRoot} className="sketch-stage min-h-0 flex-1 p-2" />
+          <div
+            ref={stageRoot}
+            onClick={steps.length > 0 ? next : undefined}
+            className={`sketch-stage min-h-0 flex-1 p-2 ${steps.length > 0 ? "cursor-pointer" : ""}`}
+          />
           {steps.length > 0 && (
-            <div className="flex h-12 items-center gap-3 border-t border-black/10 bg-black/[0.025] px-4 text-[13px] text-[#1d1d1f]">
+            <button
+              type="button"
+              onClick={next}
+              aria-label={step === undefined ? "Start the walkthrough" : "Next step"}
+              className="cursor-target flex h-12 w-full items-center gap-3 border-t border-black/10 bg-black/[0.025] px-4 text-left text-[13px] text-[#1d1d1f] transition-colors hover:bg-black/[0.05]"
+            >
               <div className="min-w-0 flex-1 truncate">
                 <AnimatePresence mode="wait">
                   <motion.span
@@ -199,7 +160,7 @@ export function ChatDemo({ className = "" }: { className?: string }) {
                         <span className="text-black/55"> — {current.text}</span>
                       </>
                     ) : (
-                      <span className="text-black/45">Walk through {steps.length} steps</span>
+                      <span className="text-black/45">Click to walk through {steps.length} steps →</span>
                     )}
                   </motion.span>
                 </AnimatePresence>
@@ -208,13 +169,19 @@ export function ChatDemo({ className = "" }: { className?: string }) {
                 {steps.map((_, i) => (
                   <span
                     key={i}
+                    role="button"
+                    aria-label={`Step ${i + 1}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      show(i === step ? undefined : i);
+                    }}
                     className={`h-1.5 rounded-full transition-all duration-300 ${
-                      i === step ? "w-4 bg-[#1d1d1f]" : "w-1.5 bg-black/20"
+                      i === step ? "w-4 bg-[#1d1d1f]" : "w-1.5 bg-black/20 hover:bg-black/40"
                     }`}
                   />
                 ))}
               </div>
-            </div>
+            </button>
           )}
         </div>
 
