@@ -141,14 +141,15 @@ export function bounds(prims: Primitive[]): { x: number; y: number; w: number; h
         const w = measure(p.text, p.size);
         const h = p.size * 1.3;
         const left = p.anchor === "middle" ? p.x - w / 2 : p.anchor === "end" ? p.x - w : p.x;
-        const top =
-          p.baseline === "middle" ? p.y - h / 2 : p.baseline === "bottom" ? p.y - h : p.y;
+        const top = p.baseline === "middle" ? p.y - h / 2 : p.baseline === "bottom" ? p.y - h : p.y;
         add(left, top);
         add(left + w, top + h);
       }
     }
   }
-  return Number.isFinite(x0) ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 } : { x: 0, y: 0, w: 0, h: 0 };
+  return Number.isFinite(x0)
+    ? { x: x0, y: y0, w: x1 - x0, h: y1 - y0 }
+    : { x: 0, y: 0, w: 0, h: 0 };
 }
 
 export const round1 = (n: number) => Math.round(n * 10) / 10;

@@ -73,7 +73,11 @@ export const OBJECTS: Record<string, string[]> = {
     "line -11,27 11,27",
     "curve -9,-8 -4,-20 0,-8 4,-20 9,-8",
   ],
-  battery: ["rect -42,-21 76 42 fill=white", "rect 34,-9 8 18 fill=black", "rect -37,-16 42 32 fill=green"],
+  battery: [
+    "rect -42,-21 76 42 fill=white",
+    "rect 34,-9 8 18 fill=black",
+    "rect -37,-16 42 32 fill=green",
+  ],
   laptop: [
     "rect -34,-32 68 48 fill=white",
     "rect -28,-26 56 36 fill=blue",
@@ -94,7 +98,10 @@ export const OBJECTS: Record<string, string[]> = {
   book: ["shape -46,-30 0,-20 0,34 -46,24 fill=white", "shape 46,-30 0,-20 0,34 46,24 fill=white"],
   heart: ["blob 0,44 -40,4 -36,-30 -12,-36 0,-18 12,-36 36,-30 40,4 fill=red"],
   drop: ["blob 0,-46 20,-10 26,18 0,42 -26,18 -20,-10 fill=blue"],
-  flame: ["blob 0,-48 20,-20 30,10 14,42 -14,42 -30,10 -12,-12 fill=orange", "blob 0,-6 12,14 6,38 -6,38 -12,14 fill=yellow"],
+  flame: [
+    "blob 0,-48 20,-20 30,10 14,42 -14,42 -30,10 -12,-12 fill=orange",
+    "blob 0,-6 12,14 6,38 -6,38 -12,14 fill=yellow",
+  ],
   mountain: ["shape -50,40 -14,-30 8,6 24,-16 50,40 fill=gray"],
   flask: [
     "shape -10,-44 10,-44 10,-12 36,40 -36,40 -10,-12 fill=white",
@@ -106,6 +113,16 @@ export const OBJECTS: Record<string, string[]> = {
     "blob 0,-48 15,-20 15,36 -15,36 -15,-20 fill=white",
     "circle 0,-10 7 fill=blue",
   ],
-  lock: ["arc 0,-6 18 0 180 width=3", "line -18,-6 -18,4 width=3", "line 18,-6 18,4 width=3", "rect -27,2 54 40 fill=yellow"],
-  key: ["circle -28,0 16", "line -12,0 44,0 width=2.5", "line 32,0 32,12 width=2.5", "line 42,0 42,10 width=2.5"],
+  lock: [
+    "arc 0,-6 18 0 180 width=3",
+    "line -18,-6 -18,4 width=3",
+    "line 18,-6 18,4 width=3",
+    "rect -27,2 54 40 fill=yellow",
+  ],
+  key: [
+    "circle -28,0 16",
+    "line -12,0 44,0 width=2.5",
+    "line 32,0 32,12 width=2.5",
+    "line 42,0 42,10 width=2.5",
+  ],
 };

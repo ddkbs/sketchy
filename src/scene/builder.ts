@@ -187,10 +187,14 @@ export class SceneBuilder {
     try {
       if (s.kind === "plot") {
         if (!s.fns.length && !s.curves.length && !s.points.length && !s.arrows.length)
-          throw new SceneError(`Plot "${input.id}" has nothing to draw. Add fn, curve, point or arrow lines.`);
+          throw new SceneError(
+            `Plot "${input.id}" has nothing to draw. Add fn, curve, point or arrow lines.`,
+          );
         for (const sl of s.sliders) {
           if (!/^[A-Za-z]\w*$/.test(sl.name) || ["x", "t", "e", "pi"].includes(sl.name))
-            throw new SceneError(`Slider name "${sl.name}" is not allowed; use a letter like a, k or w.`);
+            throw new SceneError(
+              `Slider name "${sl.name}" is not allowed; use a letter like a, k or w.`,
+            );
           if (!(sl.max > sl.min)) throw new SceneError(`Slider "${sl.name}" needs min < max.`);
         }
         validatePlot(s);
@@ -199,7 +203,9 @@ export class SceneBuilder {
         throw new SceneError(`Chart "${input.id}" has no data rows. Add lines like "Q1 12".`);
       if (s.kind === "template") {
         if (!s.items.length)
-          throw new SceneError(`The ${s.layout} "${input.id}" has no entries. Add one line per entry.`);
+          throw new SceneError(
+            `The ${s.layout} "${input.id}" has no entries. Add one line per entry.`,
+          );
         if (s.layout === "cycle" && s.items.length < 2)
           throw new SceneError(`Cycle "${input.id}" needs at least two entries.`);
         if (s.layout === "venn") {
@@ -216,8 +222,11 @@ export class SceneBuilder {
           throw new SceneError(`Drawing "${input.id}" is empty. Add lines like "circle 50,50 20".`);
         for (const slider of s.sliders) {
           if (["x", "t", "e", "pi"].includes(slider.name))
-            throw new SceneError(`Slider name "${slider.name}" is not allowed; use a letter like a, k or w.`);
-          if (!(slider.max > slider.min)) throw new SceneError(`Slider "${slider.name}" needs min < max.`);
+            throw new SceneError(
+              `Slider name "${slider.name}" is not allowed; use a letter like a, k or w.`,
+            );
+          if (!(slider.max > slider.min))
+            throw new SceneError(`Slider "${slider.name}" needs min < max.`);
         }
         for (const shape of s.shapes) {
           if (!shape.along) continue;
@@ -229,7 +238,9 @@ export class SceneBuilder {
         for (const shape of s.shapes) {
           if (!shape.name) continue;
           if (names.has(shape.name))
-            throw new SceneError(`Drawing "${input.id}" uses the shape name "${shape.name}" twice.`);
+            throw new SceneError(
+              `Drawing "${input.id}" uses the shape name "${shape.name}" twice.`,
+            );
           names.add(shape.name);
         }
       }
@@ -239,14 +250,16 @@ export class SceneBuilder {
         for (const it of s.items) {
           const ends = it.t === "msg" ? [it.from, it.to] : it.over;
           for (const e of ends)
-            if (!known.has(e)) throw new SceneError(`Sequence "${input.id}" has no participant "${e}".`);
+            if (!known.has(e))
+              throw new SceneError(`Sequence "${input.id}" has no participant "${e}".`);
         }
       }
       if (["array", "list", "stack", "queue"].includes(s.kind) && "pointers" in s) {
         for (const p of s.pointers) this.claimStateName(p.name, input.id);
       }
     } catch (error) {
-      if (error instanceof ExprError) throw new SceneError(`Figure "${input.id}": ${error.message}`);
+      if (error instanceof ExprError)
+        throw new SceneError(`Figure "${input.id}": ${error.message}`);
       throw error;
     }
     this.scene.figures.push(input);
@@ -285,14 +298,18 @@ export class SceneBuilder {
       const s = f.spec;
       if (s.kind === "template" && f.id === name) {
         if (!/^\d+$/.test(value.trim()))
-          throw new SceneError(`Step sets ${name}=${value}; use the number of entries to show, like ${name}=2.`);
+          throw new SceneError(
+            `Step sets ${name}=${value}; use the number of entries to show, like ${name}=2.`,
+          );
         return;
       }
       if (s.kind === "plot" || s.kind === "draw") {
         const slider = s.sliders.find((x) => x.name === name);
         if (!slider && s.kind === "draw" && f.id === name) {
           if (!/^\d+$/.test(value.trim()))
-            throw new SceneError(`Step sets ${name}=${value}; a drawing's stage is a whole number like ${name}=2.`);
+            throw new SceneError(
+              `Step sets ${name}=${value}; a drawing's stage is a whole number like ${name}=2.`,
+            );
           return;
         }
         if (!slider) continue;
@@ -303,7 +320,9 @@ export class SceneBuilder {
           throw new SceneError(`Step sets ${name}=${value}, but a slider value must be a number.`);
         }
         if (v < slider.min || v > slider.max)
-          throw new SceneError(`Step sets ${name}=${value}, outside the slider range ${slider.min}..${slider.max}.`);
+          throw new SceneError(
+            `Step sets ${name}=${value}, outside the slider range ${slider.min}..${slider.max}.`,
+          );
         return;
       }
       if (s.kind === "tree" && f.id === name) {
@@ -321,7 +340,9 @@ export class SceneBuilder {
         }
         if (s.pointers.some((p) => p.name === name)) {
           if (!/^-?\d+$/.test(value.trim()))
-            throw new SceneError(`Step sets pointer ${name}=${value}; use an index like ${name}=2.`);
+            throw new SceneError(
+              `Step sets pointer ${name}=${value}; use an index like ${name}=2.`,
+            );
           return;
         }
       }

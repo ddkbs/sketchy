@@ -81,7 +81,9 @@ describe("edit patches", () => {
   });
 
   it("removes a single shape", () => {
-    const base = parseCompact("draw pic\ncircle one 1,1 1\ncircle two 2,2 2\n\nstep S: t | pic[two] pic[one]");
+    const base = parseCompact(
+      "draw pic\ncircle one 1,1 1\ncircle two 2,2 2\n\nstep S: t | pic[two] pic[one]",
+    );
     const scene = applyPatch(base, "remove pic[two]");
     expect((scene.figures[0]!.spec as DrawSpec).shapes).toHaveLength(1);
     expect(scene.steps[0]!.highlight).toEqual(["pic[one]"]);
@@ -95,13 +97,18 @@ describe("edit patches", () => {
     expect(shapes).toHaveLength(3);
     expect(shapes[1]!.geo).toMatchObject({ g: "text", y: "20" });
     const removed = applyPatch(base, "remove pic[3]");
-    expect((removed.figures[0]!.spec as DrawSpec).shapes.map((s) => s.geo.g)).toEqual(["ellipse", "text"]);
+    expect((removed.figures[0]!.spec as DrawSpec).shapes.map((s) => s.geo.g)).toEqual([
+      "ellipse",
+      "text",
+    ]);
     expect(() => applyPatch(base, "remove pic[4]")).toThrow(/no shape/);
   });
 
   it("replaces other figures whole", () => {
     const base = parseCompact("cycle c\nA\nB");
     expect(applyPatch(base, "cycle c\nX\nY\nZ").figures).toHaveLength(1);
-    expect((applyPatch(base, "cycle c\nX\nY\nZ").figures[0]!.spec as { items: unknown[] }).items).toHaveLength(3);
+    expect(
+      (applyPatch(base, "cycle c\nX\nY\nZ").figures[0]!.spec as { items: unknown[] }).items,
+    ).toHaveLength(3);
   });
 });

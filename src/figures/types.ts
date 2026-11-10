@@ -212,12 +212,27 @@ export type DrawGeometry =
   | { g: "arc"; cx: string; cy: string; r: string; from: string; to: string }
   | { g: "text"; x: string; y: string; text: string }
   /** A ready-made thing from the library; x,y is its centre. */
-  | { g: "object"; type: string; x: string; y: string; size: string; rotate?: string; flip?: boolean }
+  | {
+      g: "object";
+      type: string;
+      x: string;
+      y: string;
+      size: string;
+      rotate?: string;
+      flip?: boolean;
+    }
   /**
    * Geometry helpers: angle (vertex in the middle), measure (dimension line),
    * brace, axes (origin, width, height) and grid (top left, width, height).
    */
-  | { g: "mark"; mark: MarkKind; points: [string, string][]; size?: string; step?: string; names?: [string, string] }
+  | {
+      g: "mark";
+      mark: MarkKind;
+      points: [string, string][];
+      size?: string;
+      step?: string;
+      names?: [string, string];
+    }
   /** Resolved by the layout, because the viewer has no icon sets. */
   | {
       g: "icon";
@@ -260,13 +275,7 @@ export type DrawSpec = {
 };
 
 export type TemplateKind =
-  | "timeline"
-  | "cycle"
-  | "pyramid"
-  | "funnel"
-  | "venn"
-  | "matrix"
-  | "mindmap";
+  "timeline" | "cycle" | "pyramid" | "funnel" | "venn" | "matrix" | "mindmap";
 
 export type TemplateItem = {
   label: string;
@@ -305,7 +314,13 @@ export type MapSpec = {
   region: string;
   countries: { name: string; fill?: Ink; hatch?: boolean; label?: string }[];
   places: { name?: string; lat: number; lon: number; label?: string; tone?: "accent" | "muted" }[];
-  routes: { from: [number, number]; to: [number, number]; label?: string; dashed?: boolean; name?: string }[];
+  routes: {
+    from: [number, number];
+    to: [number, number];
+    label?: string;
+    dashed?: boolean;
+    name?: string;
+  }[];
 };
 
 export type FigureSpec =

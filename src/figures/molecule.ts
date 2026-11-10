@@ -42,7 +42,8 @@ export function parseSmiles(source: string): Molecule {
   const fail = (why: string): never => {
     throw new SmilesError(`SMILES "${src}": ${why}`);
   };
-  const defaultOrder = (a: number, b: number) => (atoms[a]!.aromatic && atoms[b]!.aromatic ? 1.5 : 1);
+  const defaultOrder = (a: number, b: number) =>
+    atoms[a]!.aromatic && atoms[b]!.aromatic ? 1.5 : 1;
   const add = (atom: Atom) => {
     const index = atoms.push(atom) - 1;
     if (index >= MAX_ATOMS) fail(`at most ${MAX_ATOMS} atoms fit a drawing`);
@@ -84,7 +85,12 @@ export function parseSmiles(source: string): Molecule {
       const open = rings.get(number);
       if (open) {
         if (open.atom === prev) fail("a ring cannot close on its own atom");
-        bonds.push({ a: open.atom, b: prev, order: pending ?? open.order ?? defaultOrder(open.atom, prev), ring: true });
+        bonds.push({
+          a: open.atom,
+          b: prev,
+          order: pending ?? open.order ?? defaultOrder(open.atom, prev),
+          ring: true,
+        });
         rings.delete(number);
       } else rings.set(number, { atom: prev, order: pending });
       pending = undefined;
@@ -129,7 +135,10 @@ function hydrogens(mol: Molecule, index: number): number {
   if (atom.h !== undefined) return atom.h;
   const valences = VALENCE[atom.el];
   if (!valences) return 0;
-  const used = mol.bonds.reduce((sum, b) => sum + (b.a === index || b.b === index ? b.order : 0), 0);
+  const used = mol.bonds.reduce(
+    (sum, b) => sum + (b.a === index || b.b === index ? b.order : 0),
+    0,
+  );
   if (atom.aromatic) return Math.max(0, Math.floor(valences[0]! - used + 0.01));
   const valence = valences.find((v) => v >= used - 0.01) ?? valences[valences.length - 1]!;
   return Math.max(0, Math.round(valence - used));
@@ -152,7 +161,7 @@ function findRings(mol: Molecule, closures: Bond[]): number[][] {
     while (queue.length) {
       const u = queue.shift()!;
       if (u === closure.b) break;
-      for (const v of tree.get(u) ?? []) if (!from.has(v)) from.set(v, u), queue.push(v);
+      for (const v of tree.get(u) ?? []) if (!from.has(v)) (from.set(v, u), queue.push(v));
     }
     const path: number[] = [];
     for (let u = closure.b; u !== -1 && u !== undefined; u = from.get(u)!) path.push(u);
@@ -164,14 +173,18 @@ function findRings(mol: Molecule, closures: Bond[]): number[][] {
 }
 
 const rad = (deg: number) => (deg * Math.PI) / 180;
-const angleOf = (from: Pt, to: Pt) => (Math.atan2(to[1] - from[1], to[0] - from[0]) * 180) / Math.PI;
-const step = (p: Pt, deg: number, length = 1): Pt => [p[0] + Math.cos(rad(deg)) * length, p[1] + Math.sin(rad(deg)) * length];
+const angleOf = (from: Pt, to: Pt) =>
+  (Math.atan2(to[1] - from[1], to[0] - from[0]) * 180) / Math.PI;
+const step = (p: Pt, deg: number, length = 1): Pt => [
+  p[0] + Math.cos(rad(deg)) * length,
+  p[1] + Math.sin(rad(deg)) * length,
+];
 
 /** 2D positions with bond length 1, y up. */
 export function layoutMolecule(mol: Molecule): { pos: Pt[]; rings: number[][] } {
   const n = mol.atoms.length;
   const neighbours: number[][] = Array.from({ length: n }, () => []);
-  for (const b of mol.bonds) neighbours[b.a]!.push(b.b), neighbours[b.b]!.push(b.a);
+  for (const b of mol.bonds) (neighbours[b.a]!.push(b.b), neighbours[b.b]!.push(b.a));
   const closures = mol.bonds.filter((b) => b.ring);
   const rings = findRings(mol, closures);
   const pos: (Pt | undefined)[] = new Array(n);
@@ -180,7 +193,10 @@ export function layoutMolecule(mol: Molecule): { pos: Pt[]; rings: number[][] } 
   const placedRings = new Set<number>();
   const centre = (ring: number[]): Pt => {
     const pts = ring.map((a) => pos[a]!);
-    return [pts.reduce((s, p) => s + p[0], 0) / pts.length, pts.reduce((s, p) => s + p[1], 0) / pts.length];
+    return [
+      pts.reduce((s, p) => s + p[0], 0) / pts.length,
+      pts.reduce((s, p) => s + p[1], 0) / pts.length,
+    ];
   };
   const linear = (a: number) => {
     const orders = mol.bonds.filter((b) => b.a === a || b.b === a).map((b) => b.order);
@@ -200,9 +216,14 @@ export function layoutMolecule(mol: Molecule): { pos: Pt[]; rings: number[][] } 
       // Fused: share the edge, sit on the side away from what is drawn already.
       const [p, q] = [pos[ring[start]!]!, pos[ring[(start + 1) % k]!]!];
       const mid: Pt = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
-      const others = ring.filter((a, i) => placed[i] && a !== ring[start] && a !== ring[(start + 1) % k]);
+      const others = ring.filter(
+        (a, i) => placed[i] && a !== ring[start] && a !== ring[(start + 1) % k],
+      );
       const near = rings
-        .filter((r, ri) => placedRings.has(ri) && r.includes(ring[start]!) && r.includes(ring[(start + 1) % k]!))
+        .filter(
+          (r, ri) =>
+            placedRings.has(ri) && r.includes(ring[start]!) && r.includes(ring[(start + 1) % k]!),
+        )
         .map(centre);
       const away = near[0] ?? (others.length ? pos[others[0]!]! : [mid[0] + 1e-3, mid[1]]);
       const normal = angleOf(p, q) + 90;
@@ -214,7 +235,8 @@ export function layoutMolecule(mol: Molecule): { pos: Pt[]; rings: number[][] } 
       first = start;
     } else {
       start = placed.findIndex(Boolean);
-      const anchor = start >= 0 ? ring[start]! : seed !== undefined && ring.includes(seed) ? seed : ring[0]!;
+      const anchor =
+        start >= 0 ? ring[start]! : seed !== undefined && ring.includes(seed) ? seed : ring[0]!;
       if (start < 0) {
         pos[anchor] = [0, 0];
         start = ring.indexOf(anchor);
@@ -228,9 +250,10 @@ export function layoutMolecule(mol: Molecule): { pos: Pt[]; rings: number[][] } 
     // Walk the ring from the shared atom, in the direction that matches what is placed.
     const base = angleOf(c, pos[ring[first]!]!);
     const next = pos[ring[(first + 1) % k]!];
-    const direction = next && Math.abs(((angleOf(c, next) - base + 540) % 360) - 180) > 1e-6
-      ? Math.sign(((angleOf(c, next) - base + 540) % 360) - 180)
-      : 1;
+    const direction =
+      next && Math.abs(((angleOf(c, next) - base + 540) % 360) - 180) > 1e-6
+        ? Math.sign(((angleOf(c, next) - base + 540) % 360) - 180)
+        : 1;
     ring.forEach((atom, i) => {
       if (pos[atom] !== undefined) return;
       const offset = (i - first + k) % k;
@@ -257,14 +280,25 @@ export function layoutMolecule(mol: Molecule): { pos: Pt[]; rings: number[][] } 
       const fresh = neighbours[u]!.filter((v) => pos[v] === undefined);
       if (!fresh.length) continue;
       const here = pos[u]!;
-      const placedAround = neighbours[u]!.filter((v) => pos[v] !== undefined).map((v) => angleOf(here, pos[v]!));
+      const placedAround = neighbours[u]!.filter((v) => pos[v] !== undefined).map((v) =>
+        angleOf(here, pos[v]!),
+      );
       const inRings = rings.filter((r, ri) => placedRings.has(ri) && r.includes(u));
       let directions: number[];
       if (inRings.length) {
         // Substituents point out of the ring.
         const cs = inRings.map(centre);
-        const away = angleOf([cs.reduce((s, p) => s + p[0], 0) / cs.length, cs.reduce((s, p) => s + p[1], 0) / cs.length], here);
-        directions = fresh.length === 1 ? [away] : fresh.map((_, i) => away + (i - (fresh.length - 1) / 2) * 60);
+        const away = angleOf(
+          [
+            cs.reduce((s, p) => s + p[0], 0) / cs.length,
+            cs.reduce((s, p) => s + p[1], 0) / cs.length,
+          ],
+          here,
+        );
+        directions =
+          fresh.length === 1
+            ? [away]
+            : fresh.map((_, i) => away + (i - (fresh.length - 1) / 2) * 60);
       } else if (!placedAround.length) {
         directions = fresh.map((_, i) => 30 + (i * 360) / fresh.length);
       } else if (placedAround.length === 1) {
@@ -278,7 +312,8 @@ export function layoutMolecule(mol: Molecule): { pos: Pt[]; rings: number[][] } 
         let gapStart = sorted[sorted.length - 1]!;
         let gap = sorted[0]! + 360 - gapStart;
         for (let i = 1; i < sorted.length; i++)
-          if (sorted[i]! - sorted[i - 1]! > gap) (gap = sorted[i]! - sorted[i - 1]!), (gapStart = sorted[i - 1]!);
+          if (sorted[i]! - sorted[i - 1]! > gap)
+            ((gap = sorted[i]! - sorted[i - 1]!), (gapStart = sorted[i - 1]!));
         directions = fresh.map((_, i) => gapStart + (gap * (i + 1)) / (fresh.length + 1));
       }
       fresh.forEach((v, i) => {
@@ -319,15 +354,30 @@ const SUB = "₀₁₂₃₄₅₆₇₈₉";
 const SUP = "⁰¹²³⁴⁵⁶⁷⁸⁹";
 const digits = (n: number, set: string) => String(n).replace(/\d/g, (d) => set[Number(d)]!);
 const BOND = 44;
-const ATOM_INK: Record<string, Ink> = { O: "s2", N: "s1", S: "s5", F: "s3", Cl: "s3", Br: "s5", I: "s4", P: "s5" };
+const ATOM_INK: Record<string, Ink> = {
+  O: "s2",
+  N: "s1",
+  S: "s5",
+  F: "s3",
+  Cl: "s3",
+  Br: "s5",
+  I: "s4",
+  P: "s5",
+};
 
-export function layoutMoleculeFigure(id: string, spec: MoleculeSpec, title: string | undefined): FigureLayout {
+export function layoutMoleculeFigure(
+  id: string,
+  spec: MoleculeSpec,
+  title: string | undefined,
+): FigureLayout {
   const mol = parseSmiles(spec.smiles);
   const { pos, rings } = layoutMolecule(mol);
   // Screen coordinates run down.
   const at = pos.map(([x, y]) => [x * BOND, -y * BOND] as Pt);
   const degree = mol.atoms.map((_, i) => mol.bonds.filter((b) => b.a === i || b.b === i).length);
-  const shown = mol.atoms.map((a, i) => a.el !== "C" || spec.full || degree[i] === 0 || a.charge !== 0);
+  const shown = mol.atoms.map(
+    (a, i) => a.el !== "C" || spec.full || degree[i] === 0 || a.charge !== 0,
+  );
   const prims: Primitive[] = [];
   const size = FIG_FONT.value;
 
@@ -343,13 +393,24 @@ export function layoutMoleculeFigure(id: string, spec: MoleculeSpec, title: stri
     const segment = (offset: number, inset = 0) => {
       const [ox, oy] = [normal[0] * offset, normal[1] * offset];
       const [ix, iy] = [u[0] * inset, u[1] * inset];
-      prims.push({ t: "line", x1: p[0] + ox + ix, y1: p[1] + oy + iy, x2: q[0] + ox - ix, y2: q[1] + oy - iy, stroke: "ink", width: 1.8 });
+      prims.push({
+        t: "line",
+        x1: p[0] + ox + ix,
+        y1: p[1] + oy + iy,
+        x2: q[0] + ox - ix,
+        y2: q[1] + oy - iy,
+        stroke: "ink",
+        width: 1.8,
+      });
     };
     if (bond.order === 2) {
       const ring = rings.find((r) => r.includes(bond.a) && r.includes(bond.b));
       if (ring) {
         // In a ring the second line runs inside it.
-        const c = ring.reduce<Pt>((s, a) => [s[0] + at[a]![0] / ring.length, s[1] + at[a]![1] / ring.length], [0, 0]);
+        const c = ring.reduce<Pt>(
+          (s, a) => [s[0] + at[a]![0] / ring.length, s[1] + at[a]![1] / ring.length],
+          [0, 0],
+        );
         const mid: Pt = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
         const side = (c[0] - mid[0]) * normal[0] + (c[1] - mid[1]) * normal[1] > 0 ? 1 : -1;
         segment(0);
@@ -368,10 +429,15 @@ export function layoutMoleculeFigure(id: string, spec: MoleculeSpec, title: stri
   for (const ring of rings) {
     const aromatic = ring.every((a, i) => {
       const b = ring[(i + 1) % ring.length]!;
-      return mol.bonds.some((x) => ((x.a === a && x.b === b) || (x.a === b && x.b === a)) && x.order === 1.5);
+      return mol.bonds.some(
+        (x) => ((x.a === a && x.b === b) || (x.a === b && x.b === a)) && x.order === 1.5,
+      );
     });
     if (!aromatic) continue;
-    const c = ring.reduce<Pt>((s, a) => [s[0] + at[a]![0] / ring.length, s[1] + at[a]![1] / ring.length], [0, 0]);
+    const c = ring.reduce<Pt>(
+      (s, a) => [s[0] + at[a]![0] / ring.length, s[1] + at[a]![1] / ring.length],
+      [0, 0],
+    );
     const r = (BOND / (2 * Math.tan(Math.PI / ring.length))) * 0.62;
     prims.push({ t: "ellipse", cx: c[0], cy: c[1], rx: r, ry: r, stroke: "ink", width: 1.5 });
   }

@@ -5,7 +5,8 @@
 import { textWidth } from "../layout/text.js";
 import { texToText, typeset, type MathBox } from "./tex.js";
 
-export type LabelRun = { k: "text"; x: number; text: string } | { k: "math"; x: number; box: MathBox };
+export type LabelRun =
+  { k: "text"; x: number; text: string } | { k: "math"; x: number; box: MathBox };
 
 /** "$x^2$ grows" → [{math:"x^2"}, {text:" grows"}]. "\$" is a literal dollar. */
 export function splitMath(text: string): { math: boolean; text: string }[] {

@@ -24,7 +24,12 @@ const labelBoxes = (prims: Primitive[]) =>
 describe("draw figure syntax", () => {
   it("reads the header with size, group and title", () => {
     const fig = draw("draw pic 160x90 in g: A title\ncircle 1,2 3");
-    expect(fig).toMatchObject({ id: "pic", group: "g", title: "A title", spec: { width: 160, height: 90 } });
+    expect(fig).toMatchObject({
+      id: "pic",
+      group: "g",
+      title: "A title",
+      spec: { width: 160, height: 90 },
+    });
   });
 
   it("defaults to a 100x100 canvas", () => {
@@ -43,11 +48,24 @@ shape 0,0 9,0 9,9
 blob 0,0 9,0 9,9
 arc 5,5 4 0 90
 text 5,5 Hello, world`).map((s) => s.geo.g);
-    expect(geos).toEqual(["ellipse", "ellipse", "rect", "path", "path", "path", "path", "path", "arc", "text"]);
+    expect(geos).toEqual([
+      "ellipse",
+      "ellipse",
+      "rect",
+      "path",
+      "path",
+      "path",
+      "path",
+      "path",
+      "arc",
+      "text",
+    ]);
   });
 
   it("takes names, options and labels", () => {
-    expect(shapes("draw p\ncircle core 50,50 9 fill=accent --dashed stage=2 !muted ~ The nucleus")[0]).toMatchObject({
+    expect(
+      shapes("draw p\ncircle core 50,50 9 fill=accent --dashed stage=2 !muted ~ The nucleus")[0],
+    ).toMatchObject({
       name: "core",
       fill: "accent",
       dashed: true,
@@ -64,7 +82,12 @@ text 5,5 Hello, world`).map((s) => s.geo.g);
   it("accepts math and spaced or bracketed points", () => {
     const [a, b] = shapes("draw p\ncircle 50+10*cos(0),(1+1)*5 3\nline (1, 2) 3, 4");
     expect(a!.geo).toMatchObject({ cx: "50+10*cos(0)", cy: "(1+1)*5" });
-    expect(b!.geo).toMatchObject({ points: [["1", "2"], ["3", "4"]] });
+    expect(b!.geo).toMatchObject({
+      points: [
+        ["1", "2"],
+        ["3", "4"],
+      ],
+    });
   });
 
   it("keeps commas and words in free text", () => {
@@ -110,11 +133,15 @@ circle d 52,52 2 ~ Fourth long label`);
     const boxes = labelBoxes(layoutFigure(fig).prims);
     for (const [i, a] of boxes.entries())
       for (const b of boxes.slice(i + 1))
-        expect(a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h).toBe(false);
+        expect(a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h).toBe(
+          false,
+        );
   });
 
   it("never leaves the figure's box", () => {
-    const fig = draw("draw p: Title\ncircle 1,1 1 ~ A label far too wide for this corner of the canvas");
+    const fig = draw(
+      "draw p: Title\ncircle 1,1 1 ~ A label far too wide for this corner of the canvas",
+    );
     const layout = layoutFigure(fig);
     const box = bounds(layout.prims);
     expect(box.x).toBeGreaterThanOrEqual(0);
@@ -136,7 +163,12 @@ circle d 52,52 2 ~ Fourth long label`);
 
   it("keys a named shape and its label for highlights", () => {
     const { prims } = layoutFigure(draw("draw p\ncircle core 50,50 10 ~ Core"));
-    expect(prims.filter((p) => p.key === "p[core]").map((p) => p.t).sort()).toEqual(["ellipse", "text"]);
+    expect(
+      prims
+        .filter((p) => p.key === "p[core]")
+        .map((p) => p.t)
+        .sort(),
+    ).toEqual(["ellipse", "text"]);
   });
 
   it("carries stages through steps", () => {
@@ -148,7 +180,9 @@ circle d 52,52 2 ~ Fourth long label`);
 
 describe("draw figures in scenes", () => {
   it("connects to nodes and gets laid out", async () => {
-    const { builder, parts } = await build("draw pic\ncircle 50,50 20\n\nbox A box\nbox -> pic feeds");
+    const { builder, parts } = await build(
+      "draw pic\ncircle 50,50 20\n\nbox A box\nbox -> pic feeds",
+    );
     const laid = await layoutScene(builder.scene, parts, { editor: "vscode" });
     expect(laid.figures).toHaveLength(1);
     expect(laid.edges).toHaveLength(1);
@@ -173,7 +207,11 @@ describe("draw figure extras", () => {
     const list = shapes("draw p\nrepeat i=0..2: circle s{i+1} 10*i,5 1 ~ No {i+1}");
     expect(list.map((s) => s.name)).toEqual(["s1", "s2", "s3"]);
     expect(list.map((s) => s.label)).toEqual(["No 1", "No 2", "No 3"]);
-    expect(layoutFigure(draw("draw p\nrepeat i=0..2: circle 10*i,5 1")).prims.filter((p) => p.t === "ellipse")).toHaveLength(3);
+    expect(
+      layoutFigure(draw("draw p\nrepeat i=0..2: circle 10*i,5 1")).prims.filter(
+        (p) => p.t === "ellipse",
+      ),
+    ).toHaveLength(3);
   });
 
   it("limits repeat", () => {
@@ -193,7 +231,11 @@ describe("draw figure extras", () => {
 
   it("rotates and flips objects", () => {
     const fig = (extra: string) =>
-      JSON.stringify(layoutFigure(draw(`draw p\nobject car 50,50 40 ${extra}`)).prims.filter((p) => p.t !== "text"));
+      JSON.stringify(
+        layoutFigure(draw(`draw p\nobject car 50,50 40 ${extra}`)).prims.filter(
+          (p) => p.t !== "text",
+        ),
+      );
     expect(fig("rotate=45")).not.toEqual(fig(""));
     expect(fig("flip")).not.toEqual(fig(""));
   });
@@ -201,11 +243,13 @@ describe("draw figure extras", () => {
   it("moves shapes with sliders and keeps the figure's box", () => {
     const fig = draw("draw p\nslider a 0..50 = 0\ncircle c 20+a,50 5 ~ Dot");
     const at = (v: string) => layoutFigure(fig, { a: v });
-    const dot = (l: { prims: Primitive[] }) => l.prims.find((p) => p.t === "ellipse") as { cx: number };
+    const dot = (l: { prims: Primitive[] }) =>
+      l.prims.find((p) => p.t === "ellipse") as { cx: number };
     const scale = 5.2;
     expect(dot(at("50")).cx - dot(at("0")).cx).toBeCloseTo(50 * scale, 5);
     expect([at("50").width, at("50").height]).toEqual([at("0").width, at("0").height]);
-    const label = (l: { prims: Primitive[] }) => l.prims.find((p) => p.t === "text") as { x: number };
+    const label = (l: { prims: Primitive[] }) =>
+      l.prims.find((p) => p.t === "text") as { x: number };
     expect(label(at("50")).x - label(at("0")).x).toBeCloseTo(50 * scale, 5);
   });
 
@@ -214,16 +258,22 @@ describe("draw figure extras", () => {
   });
 
   it("moves a shape along a named path", () => {
-    const fig = draw("draw p\nslider t2 0..1 = 0\nline road 0,50 100,50\ncircle dot 0,0 2 along=road@t2");
-    const x = (v: string) => (layoutFigure(fig, { t2: v }).prims.find((p) => p.t === "ellipse") as { cx: number }).cx;
+    const fig = draw(
+      "draw p\nslider t2 0..1 = 0\nline road 0,50 100,50\ncircle dot 0,0 2 along=road@t2",
+    );
+    const x = (v: string) =>
+      (layoutFigure(fig, { t2: v }).prims.find((p) => p.t === "ellipse") as { cx: number }).cx;
     expect(x("1") - x("0")).toBeCloseTo(520, 0);
     expect(x("0.5") - x("0")).toBeCloseTo(260, 0);
   });
 
   it("shifts a shape as one rigid piece with move", () => {
-    const fig = draw("draw p\nslider m 0..1 = 0\nshape tri 10,10 40,10 10,30 move=30*m,20*m\ncircle dot 0,0 2 along=tri@0");
+    const fig = draw(
+      "draw p\nslider m 0..1 = 0\nshape tri 10,10 40,10 10,30 move=30*m,20*m\ncircle dot 0,0 2 along=tri@0",
+    );
     const at = (v: string) => layoutFigure(fig, { m: v }).prims;
-    const poly = (v: string) => (at(v).find((p) => p.t === "poly") as { points: [number, number][] }).points;
+    const poly = (v: string) =>
+      (at(v).find((p) => p.t === "poly") as { points: [number, number][] }).points;
     const scale = 5.2;
     poly("1").forEach(([x, y], i) => {
       expect(x - poly("0")[i]![0]).toBeCloseTo(30 * scale, 5);
@@ -238,7 +288,8 @@ describe("draw figure extras", () => {
     expect(text.geo).toMatchObject({ g: "text", text: "Hi there" });
     expect(text.move).toEqual({ dx: "5*m", dy: "0" });
     const moved = draw("draw p\nslider m 0..1\ntext t 10,10 Hi move=5*m,0");
-    const tx = (v: string) => (layoutFigure(moved, { m: v }).prims.find((p) => p.t === "text") as { x: number }).x;
+    const tx = (v: string) =>
+      (layoutFigure(moved, { m: v }).prims.find((p) => p.t === "text") as { x: number }).x;
     expect(tx("1") - tx("0")).toBeCloseTo(5 * 5.2, 5);
   });
 
@@ -251,16 +302,27 @@ describe("draw figure extras", () => {
 
   it("draws angles, dimension lines, braces, axes and grids", () => {
     const prims = (line: string, label = "") =>
-      layoutFigure(draw(`draw p\n${line}${label}`)).prims.filter((p) => p.t !== "text" || label === "");
+      layoutFigure(draw(`draw p\n${line}${label}`)).prims.filter(
+        (p) => p.t !== "text" || label === "",
+      );
     // A right angle gets a square corner of three points, other angles an arc.
-    const right = prims("angle 50,10 10,10 10,50").find((p) => p.t === "poly") as { points: unknown[] };
+    const right = prims("angle 50,10 10,10 10,50").find((p) => p.t === "poly") as {
+      points: unknown[];
+    };
     expect(right.points).toHaveLength(3);
-    const arc = prims("angle 50,10 10,10 40,40").find((p) => p.t === "poly") as { points: unknown[] };
+    const arc = prims("angle 50,10 10,10 40,40").find((p) => p.t === "poly") as {
+      points: unknown[];
+    };
     expect(arc.points.length).toBeGreaterThan(3);
-    expect(prims("measure 10,50 90,50 6").find((p) => p.t === "line" && p.arrow === "both")).toBeDefined();
+    expect(
+      prims("measure 10,50 90,50 6").find((p) => p.t === "line" && p.arrow === "both"),
+    ).toBeDefined();
     expect(prims("brace 10,50 90,50").some((p) => p.t === "poly")).toBe(true);
     const axes = layoutFigure(draw("draw p\naxes 10,90 80 80 ticks=20 ~ t in s | v")).prims;
-    expect(axes.filter((p) => p.t === "text").map((p) => (p as { text: string }).text)).toEqual(["t in s", "v"]);
+    expect(axes.filter((p) => p.t === "text").map((p) => (p as { text: string }).text)).toEqual([
+      "t in s",
+      "v",
+    ]);
     expect(axes.filter((p) => p.t === "line").length).toBe(2 + 3 + 3);
     expect(prims("grid 0,0 100 50 25").filter((p) => p.t === "line")).toHaveLength(5 + 3);
     expect(() => draw("draw p\nangle 1,1 2,2")).toThrow(/expected: angle/);
@@ -279,7 +341,9 @@ describe("draw figure extras", () => {
     );
     const issues = figureIssues(figures, steps);
     expect(issues).toContain('"Hello world" and "Hello again" overlap at the start');
-    expect(figureIssues(parseCompact("draw r\ncircle 200,50 5").figures, [])).toEqual(["the ellipse r[1] reaches past the 100x100 canvas at the start"]);
+    expect(figureIssues(parseCompact("draw r\ncircle 200,50 5").figures, [])).toEqual([
+      "the ellipse r[1] reaches past the 100x100 canvas at the start",
+    ]);
     expect(issues).toContain("p[dot] reaches past the 100x60 canvas in step 1");
     expect(figureIssues(parseCompact("draw q\ncircle 50,50 10 ~ Fine").figures, [])).toEqual([]);
   });

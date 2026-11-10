@@ -260,7 +260,9 @@ function richText(parent: HTMLElement, content: string, size: number): void {
     const h = Math.ceil(asc + desc + 2);
     const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, class: "inline-math" });
     svg.style.verticalAlign = `${-Math.round(desc)}px`;
-    svg.appendChild(mathLine({ x: 1, baseline: asc + 1, text: tex, size, color: INK, anchor: "start" }));
+    svg.appendChild(
+      mathLine({ x: 1, baseline: asc + 1, text: tex, size, color: INK, anchor: "start" }),
+    );
     parent.appendChild(svg);
   }
 }

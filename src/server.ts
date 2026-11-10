@@ -12,7 +12,13 @@ import { figureIssues } from "./figures/index.js";
 import { layoutScene, previousLayout, type PreviousLayout } from "./layout/index.js";
 import type { Editor } from "./layout/links.js";
 import type { PartIndex } from "./parts/index.js";
-import { COMPACT_INSTRUCTIONS, COMPACT_SYNTAX, EDIT_SYNTAX, INSTRUCTIONS, PATTERNS } from "./patterns.js";
+import {
+  COMPACT_INSTRUCTIONS,
+  COMPACT_SYNTAX,
+  EDIT_SYNTAX,
+  INSTRUCTIONS,
+  PATTERNS,
+} from "./patterns.js";
 import { applyPatch } from "./scene/patch.js";
 import { parseCompact, type CompactScene } from "./scene/compact.js";
 import { SceneBuilder, SceneError } from "./scene/builder.js";
@@ -213,7 +219,9 @@ export function createServer(options: ServerOptions): McpServer {
       },
       async ({ changes }) => {
         if (!lastScene)
-          return failFrom(new SceneError("There is no drawing to change yet. Call sketch with the whole scene."));
+          return failFrom(
+            new SceneError("There is no drawing to change yet. Call sketch with the whole scene."),
+          );
         try {
           const patched = applyPatch(lastScene, changes);
           const result = await draw(patched);

@@ -60,7 +60,9 @@ export class FigureView {
   /** The slider values the figure shows now. */
   env(): Env {
     const spec = this.fig.spec;
-    return spec.kind === "plot" || spec.kind === "draw" ? sliderEnv(spec, this.state, this.live) : {};
+    return spec.kind === "plot" || spec.kind === "draw"
+      ? sliderEnv(spec, this.state, this.live)
+      : {};
   }
 
   setState(state: FigureState, animate: boolean): void {
@@ -184,7 +186,15 @@ export function paintPrimitive(pen: Pen, p: Primitive, seed: string): SVGGElemen
         strokeLineDash: p.dashed ? [7, 6] : undefined,
       });
       if (p.hatch && p.fill)
-        g.appendChild(el("rect", { x: p.x + 2, y: p.y + 2, width: Math.max(0, p.w - 4), height: Math.max(0, p.h - 4), fill: CARD }));
+        g.appendChild(
+          el("rect", {
+            x: p.x + 2,
+            y: p.y + 2,
+            width: Math.max(0, p.w - 4),
+            height: Math.max(0, p.h - 4),
+            fill: CARD,
+          }),
+        );
       g.appendChild(pen.rc.rectangle(p.x, p.y, p.w, p.h, o));
       break;
     }
@@ -230,12 +240,20 @@ export function paintPrimitive(pen: Pen, p: Primitive, seed: string): SVGGElemen
       });
       if (p.closed) {
         if (p.hatch && p.fill)
-          g.appendChild(el("polygon", { points: p.points.map(([x, y]) => `${x},${y}`).join(" "), fill: CARD }));
+          g.appendChild(
+            el("polygon", { points: p.points.map(([x, y]) => `${x},${y}`).join(" "), fill: CARD }),
+          );
         g.appendChild(
           pen.rc.polygon(
             p.points,
             p.fill
-              ? { ...o, fill: FILL[p.fill], fillStyle: p.hatch ? "hachure" : "solid", hachureGap: 5, fillWeight: 1.4 }
+              ? {
+                  ...o,
+                  fill: FILL[p.fill],
+                  fillStyle: p.hatch ? "hachure" : "solid",
+                  hachureGap: 5,
+                  fillWeight: 1.4,
+                }
               : o,
           ),
         );
@@ -243,7 +261,9 @@ export function paintPrimitive(pen: Pen, p: Primitive, seed: string): SVGGElemen
       const head = (from: [number, number], tip: [number, number]) =>
         g.appendChild(
           pen.rc.linearPath(
-            arrowHead({ x: from[0], y: from[1] }, { x: tip[0], y: tip[1] }, 10).map((q) => [q.x, q.y] as [number, number]),
+            arrowHead({ x: from[0], y: from[1] }, { x: tip[0], y: tip[1] }, 10).map(
+              (q) => [q.x, q.y] as [number, number],
+            ),
             { ...o, roughness: 0.45, strokeLineDash: undefined },
           ),
         );
@@ -350,11 +370,27 @@ export function paintPrimitive(pen: Pen, p: Primitive, seed: string): SVGGElemen
       const color = PEN[p.color ?? "ink"];
       if (p.text.includes("$"))
         g.appendChild(
-          mathLine({ x: p.x, baseline: top + lh * 0.74, text: p.text, size: p.size, color, anchor: p.anchor ?? "start", weight: p.weight }),
+          mathLine({
+            x: p.x,
+            baseline: top + lh * 0.74,
+            text: p.text,
+            size: p.size,
+            color,
+            anchor: p.anchor ?? "start",
+            weight: p.weight,
+          }),
         );
       else
         g.appendChild(
-          text({ x: p.x, y: top, lines: [p.text], size: p.size, color, anchor: p.anchor, weight: p.weight }),
+          text({
+            x: p.x,
+            y: top,
+            lines: [p.text],
+            size: p.size,
+            color,
+            anchor: p.anchor,
+            weight: p.weight,
+          }),
         );
       break;
     }

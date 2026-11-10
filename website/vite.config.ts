@@ -10,7 +10,15 @@ const page = (path: string) => resolve(import.meta.dirname, path);
 export default defineConfig({
   plugins: [react(), tailwindcss()],
   resolve: {
-    dedupe: ["roughjs", "@fontsource/kalam", "react", "react-dom", "d3-geo", "topojson-client", "world-atlas"],
+    dedupe: [
+      "roughjs",
+      "@fontsource/kalam",
+      "react",
+      "react-dom",
+      "d3-geo",
+      "topojson-client",
+      "world-atlas",
+    ],
   },
   server: { fs: { allow: [".."] } },
   build: {

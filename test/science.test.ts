@@ -5,7 +5,8 @@ import { parseSmiles } from "../src/figures/molecule.js";
 import type { MapSpec, Primitive } from "../src/figures/types.js";
 import { parseCompact } from "../src/scene/compact.js";
 
-const texts = (prims: Primitive[]) => prims.filter((p) => p.t === "text").map((p) => (p as { text: string }).text);
+const texts = (prims: Primitive[]) =>
+  prims.filter((p) => p.t === "text").map((p) => (p as { text: string }).text);
 const figure = (source: string) => parseCompact(source).figures[0]!;
 
 describe("molecules", () => {
@@ -21,7 +22,8 @@ describe("molecules", () => {
   });
 
   it("writes hetero atoms with their hydrogens and skips plain carbons", () => {
-    const at = (smiles: string, extra = "") => texts(layoutFigure(figure(`molecule m ${smiles}${extra}`)).prims);
+    const at = (smiles: string, extra = "") =>
+      texts(layoutFigure(figure(`molecule m ${smiles}${extra}`)).prims);
     expect(at("CCO")).toEqual(["OH"]);
     expect(at("O")).toEqual(["H₂O"]);
     expect(at("C")).toEqual(["CH₄"]);
@@ -30,7 +32,8 @@ describe("molecules", () => {
   });
 
   it("draws a ring's double bonds inside it and aromatic rings with a circle", () => {
-    const lines = (smiles: string) => layoutFigure(figure(`molecule m ${smiles}`)).prims.filter((p) => p.t === "line");
+    const lines = (smiles: string) =>
+      layoutFigure(figure(`molecule m ${smiles}`)).prims.filter((p) => p.t === "line");
     expect(lines("C1=CC=CC=C1")).toHaveLength(9);
     const benzene = layoutFigure(figure("molecule m c1ccccc1")).prims;
     expect(benzene.filter((p) => p.t === "ellipse")).toHaveLength(1);
@@ -48,7 +51,9 @@ describe("maps", () => {
   it("finds countries by short, long and common names", () => {
     expect(findCountry("Germany")?.properties.name).toBe("Germany");
     expect(findCountry("USA")?.properties.name).toBe("United States of America");
-    expect(findCountry("Democratic Republic of the Congo")?.properties.name).toBe("Dem. Rep. Congo");
+    expect(findCountry("Democratic Republic of the Congo")?.properties.name).toBe(
+      "Dem. Rep. Congo",
+    );
     expect(findCountry("Bosnia and Herzegovina")?.properties.name).toBe("Bosnia and Herz.");
     expect(regionBox("europe")).toBeDefined();
     expect(regionBox("Japan")).toBeDefined();
@@ -68,11 +73,19 @@ describe("maps", () => {
     );
     const spec = fig.spec as MapSpec;
     expect(spec.countries.map((c) => c.name)).toEqual(["Germany", "United Kingdom"]);
-    expect(spec.routes[0]).toMatchObject({ from: [52.52, 13.4], to: [48.86, 2.35], dashed: true, name: "r", label: "8 h" });
+    expect(spec.routes[0]).toMatchObject({
+      from: [52.52, 13.4],
+      to: [48.86, 2.35],
+      dashed: true,
+      name: "r",
+      label: "8 h",
+    });
     const prims = layoutFigure(fig).prims;
     expect(prims.some((p) => p.key === "m[Germany]")).toBe(true);
     expect(prims.some((p) => p.key === "m[United-Kingdom]")).toBe(true);
-    expect(texts(prims)).toEqual(expect.arrayContaining(["Trains", "Start", "Berlin", "Paris", "8 h"]));
+    expect(texts(prims)).toEqual(
+      expect.arrayContaining(["Trains", "Start", "Berlin", "Paris", "8 h"]),
+    );
   });
 
   it("explains unknown countries, regions and places", () => {

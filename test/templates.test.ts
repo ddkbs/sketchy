@@ -77,8 +77,13 @@ describe("template layout", () => {
   }
 
   it("does not overlap neighbouring timeline entries on one side", () => {
-    const layout = layoutFigure(figure("timeline t\n1 | A rather long entry that wraps around\n2 | B\n3 | Another rather long entry that wraps\n4 | D"));
-    const of = (n: number) => bounds(layout.prims.filter((p) => p.key === `t[${n}]` && p.t === "text"));
+    const layout = layoutFigure(
+      figure(
+        "timeline t\n1 | A rather long entry that wraps around\n2 | B\n3 | Another rather long entry that wraps\n4 | D",
+      ),
+    );
+    const of = (n: number) =>
+      bounds(layout.prims.filter((p) => p.key === `t[${n}]` && p.t === "text"));
     expect(of(1).x + of(1).w).toBeLessThanOrEqual(of(3).x);
   });
 
@@ -106,7 +111,9 @@ describe("templates in scenes", () => {
     await expect(build("venn v\nset a A\na | x")).rejects.toThrow(/two or three/);
     await expect(build("venn v\nset a A\nset b B\nz | x")).rejects.toThrow(/no set "z"/);
     await expect(build("cycle c\nA\nB\n\nstep S: t | c[9]")).rejects.toThrow(/unknown ids/);
-    await expect(build("cycle c\nA\nB\n\nstep S: t | c[2] c=x")).rejects.toThrow(/number of entries/);
+    await expect(build("cycle c\nA\nB\n\nstep S: t | c[2] c=x")).rejects.toThrow(
+      /number of entries/,
+    );
     await expect(build("cycle c\nA\nB\n\nstep S: t | c[2] c=2")).resolves.toBeDefined();
   });
 });

@@ -257,7 +257,9 @@ class Typesetter {
     return text;
   }
 
-  private atom(size: number): { box: MathBox; kind: "ord" | "rel" | "bin"; limits?: boolean } | undefined {
+  private atom(
+    size: number,
+  ): { box: MathBox; kind: "ord" | "rel" | "bin"; limits?: boolean } | undefined {
     const t = this.toks[this.pos++]!;
     if (t.t === "{") {
       this.pos--;
@@ -276,7 +278,10 @@ class Typesetter {
     if (name in GREEK) return { box: glyph(GREEK[name]!, size), kind: "ord" };
     if (name in SYMBOLS) {
       const ch = SYMBOLS[name]!;
-      return { box: glyph(ch, size), kind: RELATIONS.has(ch) ? "rel" : BINARY.has(ch) ? "bin" : "ord" };
+      return {
+        box: glyph(ch, size),
+        kind: RELATIONS.has(ch) ? "rel" : BINARY.has(ch) ? "bin" : "ord",
+      };
     }
     if (WORDS.has(name)) return { box: hbox([glyph(name, size), space(0.12 * size)]), kind: "ord" };
     if (name in BIG) {
@@ -284,7 +289,11 @@ class Typesetter {
       const word = symbol.length > 1;
       const box = word ? glyph(symbol, size) : glyph(symbol, size * (name === "int" ? 1.45 : 1.3));
       if (!word) centerOnAxis(box, size);
-      return { box: hbox([box, space(0.1 * size)]), kind: "ord", limits: name !== "int" && name !== "iint" && name !== "oint" };
+      return {
+        box: hbox([box, space(0.1 * size)]),
+        kind: "ord",
+        limits: name !== "int" && name !== "iint" && name !== "oint",
+      };
     }
     switch (name) {
       case "frac":
@@ -453,7 +462,14 @@ function fraction(num: MathBox, den: MathBox, size: number): MathBox {
     desc: denY + den.desc,
     items: [
       ...move(num.items, (w - num.w) / 2, numY),
-      { k: "line", x1: pad * 0.4, y1: axis, x2: w - pad * 0.4, y2: axis, width: Math.max(1.2, size / 14) },
+      {
+        k: "line",
+        x1: pad * 0.4,
+        y1: axis,
+        x2: w - pad * 0.4,
+        y2: axis,
+        width: Math.max(1.2, size / 14),
+      },
       ...move(den.items, (w - den.w) / 2, denY),
     ],
   };
@@ -512,11 +528,17 @@ function accent(body: MathBox, size: number, kind: "arrow" | "bar" | "hat" | "do
       ],
       width,
     });
-  if (kind === "dot") items.push({ k: "glyph", x: x2 / 2 - 0.1 * size, y: y + 0.25 * size, text: "·", size });
+  if (kind === "dot")
+    items.push({ k: "glyph", x: x2 / 2 - 0.1 * size, y: y + 0.25 * size, text: "·", size });
   return { w: body.w, asc: body.asc + 0.26 * size, desc: body.desc, items };
 }
 
-function withLimits(base: MathBox, sup: MathBox | undefined, sub: MathBox | undefined, size: number): MathBox {
+function withLimits(
+  base: MathBox,
+  sup: MathBox | undefined,
+  sub: MathBox | undefined,
+  size: number,
+): MathBox {
   const w = Math.max(base.w, sup?.w ?? 0, sub?.w ?? 0);
   const items = move(base.items, (w - base.w) / 2, 0);
   let asc = base.asc;
@@ -649,7 +671,8 @@ export function texToText(tex: string): string {
       return `${wrap(a)}/${wrap(b)}`;
     }
     if (n === "sqrt") return `√${wrap(groupText())}`;
-    if (["text", "mathrm", "textrm", "operatorname", "mathbf", "textbf"].includes(n)) return groupText();
+    if (["text", "mathrm", "textrm", "operatorname", "mathbf", "textbf"].includes(n))
+      return groupText();
     if (["vec", "overrightarrow"].includes(n)) return `${groupText()}⃗`;
     if (["bar", "overline", "hat", "dot"].includes(n)) return groupText();
     if (n === "left" || n === "right") {

@@ -266,7 +266,11 @@ function figureHeader(line: string, fail: (why: string) => never): SceneFigure |
       spec: emptyTemplate(m[1] as TemplateKind),
     };
   }
-  m = line.match(new RegExp(`^molecule\\s+(${ID})\\s+(\\S+?)(\\s+full)?(?:\\s+in\\s+(${ID}))?\\s*(?::\\s*(.*))?$`));
+  m = line.match(
+    new RegExp(
+      `^molecule\\s+(${ID})\\s+(\\S+?)(\\s+full)?(?:\\s+in\\s+(${ID}))?\\s*(?::\\s*(.*))?$`,
+    ),
+  );
   if (m) {
     try {
       parseSmiles(m[2]!);
@@ -283,14 +287,24 @@ function figureHeader(line: string, fail: (why: string) => never): SceneFigure |
   if (m) {
     const region = m[2] ?? "world";
     if (!regionBox(region))
-      return fail(`unknown map region "${region}"; use ${Object.keys(MAP_REGIONS).join(", ")}, a country, or west,south,east,north`);
-    return { ...strip({ id: m[1]!, group: m[3], title: m[4]?.trim() || undefined }), spec: emptyMap(region) };
+      return fail(
+        `unknown map region "${region}"; use ${Object.keys(MAP_REGIONS).join(", ")}, a country, or west,south,east,north`,
+      );
+    return {
+      ...strip({ id: m[1]!, group: m[3], title: m[4]?.trim() || undefined }),
+      spec: emptyMap(region),
+    };
   }
-  m = line.match(new RegExp(`^draw\\s+(${ID})(?:\\s+(\\d+(?:\\.\\d+)?)x(\\d+(?:\\.\\d+)?))?${tail}$`));
+  m = line.match(
+    new RegExp(`^draw\\s+(${ID})(?:\\s+(\\d+(?:\\.\\d+)?)x(\\d+(?:\\.\\d+)?))?${tail}$`),
+  );
   if (m) {
     const [width, height] = [Number(m[2] ?? 100), Number(m[3] ?? 100)];
     if (!(width > 0 && height > 0)) return fail("a drawing needs a size above 0, like 100x60");
-    return { ...strip({ id: m[1]!, group: m[4], title: m[5]?.trim() || undefined }), spec: emptyDraw(width, height) };
+    return {
+      ...strip({ id: m[1]!, group: m[4], title: m[5]?.trim() || undefined }),
+      spec: emptyDraw(width, height),
+    };
   }
   m = line.match(new RegExp(`^chart\\s+(${ID})\\s+(\\w+)${tail}$`));
   if (m && CHART_TYPES.has(m[2]!)) {
@@ -298,7 +312,9 @@ function figureHeader(line: string, fail: (why: string) => never): SceneFigure |
     return { ...strip({ id: m[1]!, group: m[3], title: m[4]?.trim() || undefined }), spec };
   }
   m = line.match(
-    new RegExp(`^(array|list|stack|queue|tree)\\s+(${ID})(?:\\s+in\\s+(${ID}))?\\s*(?::\\s*([^=]*?))?\\s*=\\s*(.*)$`),
+    new RegExp(
+      `^(array|list|stack|queue|tree)\\s+(${ID})(?:\\s+in\\s+(${ID}))?\\s*(?::\\s*([^=]*?))?\\s*=\\s*(.*)$`,
+    ),
   );
   if (m) {
     const base = strip({ id: m[2]!, group: m[3], title: m[4]?.trim() || undefined });
@@ -314,7 +330,8 @@ function figureHeader(line: string, fail: (why: string) => never): SceneFigure |
   return undefined;
 }
 
-const SCENE_LINE = /^(title|subtitle|dir|group|image|part|plot|seq|chart|array|list|stack|queue|tree|draw|molecule|map|timeline|cycle|pyramid|funnel|venn|matrix|mindmap)\s/;
+const SCENE_LINE =
+  /^(title|subtitle|dir|group|image|part|plot|seq|chart|array|list|stack|queue|tree|draw|molecule|map|timeline|cycle|pyramid|funnel|venn|matrix|mindmap)\s/;
 
 /** Template entries are free text, so only unmistakable scene lines end the block. */
 function endsTemplate(line: string): boolean {
@@ -343,7 +360,10 @@ function figureLine(
   const tail = rest.join(" ");
   const toneOf = (text: string) => {
     const t = text.match(TONE);
-    return { tone: t?.[1] as "accent" | "muted" | undefined, text: t ? text.replace(TONE, " ").trim() : text };
+    return {
+      tone: t?.[1] as "accent" | "muted" | undefined,
+      text: t ? text.replace(TONE, " ").trim() : text,
+    };
   };
   if (s.kind === "plot") {
     const [main, label] = splitOnce(line, " ~ ");
@@ -366,7 +386,9 @@ function figureLine(
       case "fn": {
         const { tone, text } = toneOf(body);
         const dashed = /(?:^|\s)--dashed$/.test(text) || undefined;
-        s.fns.push(strip({ expr: text.replace(/\s--dashed$/, ""), label: label?.trim(), tone, dashed }));
+        s.fns.push(
+          strip({ expr: text.replace(/\s--dashed$/, ""), label: label?.trim(), tone, dashed }),
+        );
         return true;
       }
       case "curve": {
@@ -374,7 +396,16 @@ function figureLine(
         const tm = text.match(/\s+t\s+(\S+?)\.\.(\S+)$/);
         const exprs = splitTop(tm ? text.slice(0, tm.index) : text);
         if (exprs.length !== 2) return fail("expected: curve <x(t)>, <y(t)> [t <from>..<to>]");
-        s.curves.push(strip({ x: exprs[0]!, y: exprs[1]!, from: tm?.[1] ?? "0", to: tm?.[2] ?? "2pi", label: label?.trim(), tone }));
+        s.curves.push(
+          strip({
+            x: exprs[0]!,
+            y: exprs[1]!,
+            from: tm?.[1] ?? "0",
+            to: tm?.[2] ?? "2pi",
+            label: label?.trim(),
+            tone,
+          }),
+        );
         return true;
       }
       case "point": {
@@ -388,7 +419,8 @@ function figureLine(
         const m = body.match(/^([A-Za-z]\w*)\s+(\S+?)\.\.(\S+?)(?:\s*=\s*(\S+))?$/);
         if (!m) return fail("expected: slider <name> <min>..<max> [= <value>]");
         const num = (v: string) => {
-          const n = Number(v.replace(/pi$/, "").replace(/^$/, "1")) * (v.endsWith("pi") ? Math.PI : 1);
+          const n =
+            Number(v.replace(/pi$/, "").replace(/^$/, "1")) * (v.endsWith("pi") ? Math.PI : 1);
           if (!Number.isFinite(n)) fail(`"${v}" is not a number`);
           return n;
         };
@@ -406,7 +438,12 @@ function figureLine(
       case "vline":
       case "hline": {
         const target = head === "vline" ? s.vlines : s.hlines;
-        target.push(strip({ at: words[1] ?? "0", label: words.slice(2).join(" ") || label?.trim() || undefined }));
+        target.push(
+          strip({
+            at: words[1] ?? "0",
+            label: words.slice(2).join(" ") || label?.trim() || undefined,
+          }),
+        );
         return true;
       }
       case "arrow":
@@ -416,7 +453,16 @@ function figureLine(
         const p = a ? coords(a) : undefined;
         const q = b ? coords(b) : undefined;
         if (!p || !q) return fail("expected: arrow <x1>,<y1> -> <x2>,<y2> [label]");
-        s.arrows.push(strip({ x1: p.x, y1: p.y, x2: q.x, y2: q.y, label: q.rest || label?.trim() || undefined, tone: tone === "accent" ? ("accent" as const) : undefined }));
+        s.arrows.push(
+          strip({
+            x1: p.x,
+            y1: p.y,
+            x2: q.x,
+            y2: q.y,
+            label: q.rest || label?.trim() || undefined,
+            tone: tone === "accent" ? ("accent" as const) : undefined,
+          }),
+        );
         return true;
       }
     }
@@ -432,7 +478,10 @@ function figureLine(
   if (s.kind === "chart") {
     switch (head) {
       case "series":
-        s.series = tail.split(",").map((x) => x.trim()).filter(Boolean);
+        s.series = tail
+          .split(",")
+          .map((x) => x.trim())
+          .filter(Boolean);
         return true;
       case "x":
         s.xLabel = tail;
@@ -473,7 +522,11 @@ function figureLine(
       const m = tail.match(new RegExp(`^(${ID})(?:\\s+(.+))?$`));
       if (!m) return fail("expected: actor <id> [label] [(person)]");
       const person = /\(person\)/.test(m[2] ?? "");
-      const label = (m[2] ?? m[1]!).replace(/\(person\)/, "").replace(/@\S+/, "").trim() || m[1]!;
+      const label =
+        (m[2] ?? m[1]!)
+          .replace(/\(person\)/, "")
+          .replace(/@\S+/, "")
+          .trim() || m[1]!;
       const existing = s.actors.find((a) => a.id === m[1]);
       if (existing) Object.assign(existing, strip({ label, person: person || undefined }));
       else s.actors.push(strip({ id: m[1]!, label, person: person || undefined }));
@@ -490,13 +543,24 @@ function figureLine(
     const msg = line.match(new RegExp(`^(${ID})\\s*(-->|->)\\s*(${ID})(?:\\s*:?\\s+(.*))?$`));
     if (!msg) return false;
     // An edge between nodes of the scene closes the block instead.
-    const isNode = (id: string) => scene.nodes.some((n) => n.id === id) || scene.groups.some((g) => g.id === id);
+    const isNode = (id: string) =>
+      scene.nodes.some((n) => n.id === id) || scene.groups.some((g) => g.id === id);
     const isActor = (id: string) => s.actors.some((a) => a.id === id);
-    if ((isNode(msg[1]!) && !isActor(msg[1]!)) || (isNode(msg[3]!) && !isActor(msg[3]!))) return false;
+    if ((isNode(msg[1]!) && !isActor(msg[1]!)) || (isNode(msg[3]!) && !isActor(msg[3]!)))
+      return false;
     actor(msg[1]!);
     actor(msg[3]!);
     const { tone, text } = toneOf(msg[4] ?? "");
-    s.items.push(strip({ t: "msg" as const, from: msg[1]!, to: msg[3]!, text, dashed: msg[2] === "-->" || undefined, tone: tone === "accent" ? ("accent" as const) : undefined }));
+    s.items.push(
+      strip({
+        t: "msg" as const,
+        from: msg[1]!,
+        to: msg[3]!,
+        text,
+        dashed: msg[2] === "-->" || undefined,
+        tone: tone === "accent" ? ("accent" as const) : undefined,
+      }),
+    );
     return true;
   }
   if ("pointers" in s && (head === "ptr" || head === "pointer")) {

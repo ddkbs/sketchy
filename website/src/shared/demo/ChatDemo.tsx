@@ -160,7 +160,9 @@ export function ChatDemo({ className = "" }: { className?: string }) {
                         <span className="text-black/55"> — {current.text}</span>
                       </>
                     ) : (
-                      <span className="text-black/45">Click to walk through {steps.length} steps →</span>
+                      <span className="text-black/45">
+                        Click to walk through {steps.length} steps →
+                      </span>
                     )}
                   </motion.span>
                 </AnimatePresence>

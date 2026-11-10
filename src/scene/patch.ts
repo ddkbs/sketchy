@@ -105,7 +105,8 @@ function remove(scene: CompactScene, target: string): void {
     const count = scene.edges.length + scene.wires.length;
     scene.edges = scene.edges.filter((e) => edgeKey(e) !== key);
     scene.wires = scene.wires.filter((w) => edgeKey(w) !== key);
-    if (scene.edges.length + scene.wires.length === count) throw new SceneError(`There is no arrow "${target}" to remove.`);
+    if (scene.edges.length + scene.wires.length === count)
+      throw new SceneError(`There is no arrow "${target}" to remove.`);
     dropFromSteps(scene, (id) => id === key);
     return;
   }
@@ -118,19 +119,33 @@ function remove(scene: CompactScene, target: string): void {
     figure.spec.shapes = figure.spec.shapes.filter((s) => s.name !== shape[2]);
     // Unnamed shapes go by their place in the drawing, counted from 1.
     const index = Number(shape[2]);
-    if (figure.spec.shapes.length === before && Number.isInteger(index) && index >= 1 && index <= before)
+    if (
+      figure.spec.shapes.length === before &&
+      Number.isInteger(index) &&
+      index >= 1 &&
+      index <= before
+    )
       figure.spec.shapes.splice(index - 1, 1);
-    if (figure.spec.shapes.length === before) throw new SceneError(`Drawing "${shape[1]}" has no shape "${shape[2]}".`);
+    if (figure.spec.shapes.length === before)
+      throw new SceneError(`Drawing "${shape[1]}" has no shape "${shape[2]}".`);
     dropFromSteps(scene, (id) => id === target);
     return;
   }
-  const count = [scene.nodes, scene.groups, scene.parts, scene.figures].reduce((sum, list) => sum + list.length, 0) + scene.images.length;
+  const count =
+    [scene.nodes, scene.groups, scene.parts, scene.figures].reduce(
+      (sum, list) => sum + list.length,
+      0,
+    ) + scene.images.length;
   scene.nodes = scene.nodes.filter((n) => n.id !== target);
   scene.parts = scene.parts.filter((p) => p.id !== target);
   scene.figures = scene.figures.filter((f) => f.id !== target);
   scene.images = scene.images.filter((i) => i !== target);
   scene.groups = scene.groups.filter((g) => g.id !== target);
-  const left = [scene.nodes, scene.groups, scene.parts, scene.figures].reduce((sum, list) => sum + list.length, 0) + scene.images.length;
+  const left =
+    [scene.nodes, scene.groups, scene.parts, scene.figures].reduce(
+      (sum, list) => sum + list.length,
+      0,
+    ) + scene.images.length;
   if (left === count) throw new SceneError(`There is nothing called "${target}" to remove.`);
   // What hung on it goes too; members of a removed group simply lose the group.
   scene.edges = scene.edges.filter((e) => e.from !== target && e.to !== target);

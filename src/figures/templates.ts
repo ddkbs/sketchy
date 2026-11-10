@@ -70,7 +70,10 @@ export function parseTemplateLine(
       if (columns.length < 2) return fail("expected: <set>[,<set>] | <text>, or set <id> <label>");
       spec.items.push({
         label: columns.slice(1).join(" | "),
-        sets: columns[0]!.split(/[,&+]/).map((s) => s.trim()).filter(Boolean),
+        sets: columns[0]!
+          .split(/[,&+]/)
+          .map((s) => s.trim())
+          .filter(Boolean),
         ...base,
       });
       return true;
@@ -153,14 +156,42 @@ function timeline(spec: TemplateSpec, { prims, item }: Out): void {
     const up = i % 2 === 0;
     const mark = item(i);
     const h = blockHeight(it);
-    prims.push({ t: "line", x1: x, y1: axis, x2: x, y2: up ? axis - stem + 4 : axis + stem - 4, stroke: "soft", width: 1.2, ...mark });
-    prims.push({ t: "circle", cx: x, cy: axis, r: 6, fill: it.tone === "accent" ? "accent" : "card", ...mark });
+    prims.push({
+      t: "line",
+      x1: x,
+      y1: axis,
+      x2: x,
+      y2: up ? axis - stem + 4 : axis + stem - 4,
+      stroke: "soft",
+      width: 1.2,
+      ...mark,
+    });
+    prims.push({
+      t: "circle",
+      cx: x,
+      cy: axis,
+      r: 6,
+      fill: it.tone === "accent" ? "accent" : "card",
+      ...mark,
+    });
     let y = up ? axis - stem - h : axis + stem;
     if (it.when) {
-      prims.push({ t: "text", x, y, text: it.when, size: FIG_FONT.value, baseline: "top", anchor: "middle", weight: 700, ...mark });
+      prims.push({
+        t: "text",
+        x,
+        y,
+        text: it.when,
+        size: FIG_FONT.value,
+        baseline: "top",
+        anchor: "middle",
+        weight: 700,
+        ...mark,
+      });
       y += lineHeight(FIG_FONT.value) + 2;
     }
-    y += textBlock(prims, mark, x, y, it.label, LABEL, cardWidth, { color: it.tone === "muted" ? "muted" : undefined });
+    y += textBlock(prims, mark, x, y, it.label, LABEL, cardWidth, {
+      color: it.tone === "muted" ? "muted" : undefined,
+    });
     if (it.detail) textBlock(prims, mark, x, y + 2, it.detail, SMALL, cardWidth, { color: "soft" });
   });
 }
@@ -170,7 +201,10 @@ function cycle(spec: TemplateSpec, { prims, item }: Out): void {
   const boxWidth = 150;
   const radius = Math.max(135, (n * (boxWidth + 26)) / (2 * Math.PI));
   const sizes = spec.items.map((it) => ({
-    h: heightOf(it.label, LABEL, boxWidth - 18) + (it.detail ? heightOf(it.detail, SMALL, boxWidth - 18) + 2 : 0) + 20,
+    h:
+      heightOf(it.label, LABEL, boxWidth - 18) +
+      (it.detail ? heightOf(it.detail, SMALL, boxWidth - 18) + 2 : 0) +
+      20,
   }));
   const angle = (i: number) => (i / n) * Math.PI * 2 - Math.PI / 2;
   // How far along the circle a box reaches, so arrows start and end at its edge.
@@ -203,9 +237,22 @@ function cycle(spec: TemplateSpec, { prims, item }: Out): void {
     const cx = Math.cos(angle(i)) * radius;
     const cy = Math.sin(angle(i)) * radius;
     const h = sizes[i]!.h;
-    prims.push({ t: "rect", x: cx - boxWidth / 2, y: cy - h / 2, w: boxWidth, h, fill: it.tone === "accent" ? "accent" : "card", ...mark });
-    const used = textBlock(prims, mark, cx, cy - h / 2 + 10, it.label, LABEL, boxWidth - 18, { color: it.tone === "muted" ? "muted" : undefined });
-    if (it.detail) textBlock(prims, mark, cx, cy - h / 2 + 12 + used, it.detail, SMALL, boxWidth - 18, { color: "soft" });
+    prims.push({
+      t: "rect",
+      x: cx - boxWidth / 2,
+      y: cy - h / 2,
+      w: boxWidth,
+      h,
+      fill: it.tone === "accent" ? "accent" : "card",
+      ...mark,
+    });
+    const used = textBlock(prims, mark, cx, cy - h / 2 + 10, it.label, LABEL, boxWidth - 18, {
+      color: it.tone === "muted" ? "muted" : undefined,
+    });
+    if (it.detail)
+      textBlock(prims, mark, cx, cy - h / 2 + 12 + used, it.detail, SMALL, boxWidth - 18, {
+        color: "soft",
+      });
   });
 }
 
@@ -233,7 +280,8 @@ function stacked(spec: TemplateSpec, { prims, item }: Out, inverted: boolean): v
         [-bottom, y + rowHeight],
       ],
       closed: true,
-      fill: it.tone === "accent" ? "accent" : it.tone === "muted" ? "grid" : SERIES[i % SERIES.length],
+      fill:
+        it.tone === "accent" ? "accent" : it.tone === "muted" ? "grid" : SERIES[i % SERIES.length],
       rough: 1,
       width: 1.6,
       ...mark,
@@ -245,9 +293,21 @@ function stacked(spec: TemplateSpec, { prims, item }: Out, inverted: boolean): v
       const edge = (top + bottom) / 2;
       const textX = width / 2 + 42;
       const midY = y + rowHeight / 2;
-      prims.push({ t: "line", x1: edge + 4, y1: midY, x2: textX - 6, y2: midY, stroke: "soft", width: 1, ...mark });
+      prims.push({
+        t: "line",
+        x1: edge + 4,
+        y1: midY,
+        x2: textX - 6,
+        y2: midY,
+        stroke: "soft",
+        width: 1,
+        ...mark,
+      });
       const dh = heightOf(it.detail, SMALL, 190);
-      textBlock(prims, mark, textX, midY - dh / 2, it.detail, SMALL, 190, { anchor: "start", color: "soft" });
+      textBlock(prims, mark, textX, midY - dh / 2, it.detail, SMALL, 190, {
+        anchor: "start",
+        color: "soft",
+      });
     }
   });
 }
@@ -317,40 +377,66 @@ function venn(spec: TemplateSpec, { prims, item }: Out): void {
     const members = key.split(",").map(Number);
     const [cx, cy] = regionCenter(members);
     const room = members.length === 1 ? 112 : three && members.length === 2 ? 66 : 84;
-    const total = indexes.reduce((sum, i) => sum + heightOf(spec.items[i]!.label, SMALL, room) + 3, 0);
+    const total = indexes.reduce(
+      (sum, i) => sum + heightOf(spec.items[i]!.label, SMALL, room) + 3,
+      0,
+    );
     let y = cy - total / 2;
     for (const i of indexes) {
       const it = spec.items[i]!;
-      y += textBlock(prims, item(i), cx, y, it.label, SMALL, room, { weight: it.tone === "accent" ? 700 : undefined, color: it.tone === "muted" ? "muted" : undefined }) + 3;
+      y +=
+        textBlock(prims, item(i), cx, y, it.label, SMALL, room, {
+          weight: it.tone === "accent" ? 700 : undefined,
+          color: it.tone === "muted" ? "muted" : undefined,
+        }) + 3;
     }
   }
 }
 
 function matrix(spec: TemplateSpec, { prims, item }: Out): void {
-  const columnCount = Math.max(spec.cols.length, 1 + Math.max(0, ...spec.items.map((it) => it.cells?.length ?? 0)));
+  const columnCount = Math.max(
+    spec.cols.length,
+    1 + Math.max(0, ...spec.items.map((it) => it.cells?.length ?? 0)),
+  );
   const maxWidth = 170;
   const pad = 12;
   // A header row may leave out the corner above the row labels.
   const hasCorner = spec.cols.length === columnCount;
   const header = hasCorner ? spec.cols : ["", ...spec.cols];
   const cellsOf = (it: TemplateItem) => [it.label, ...(it.cells ?? [])];
-  const widths = Array.from({ length: columnCount }, (_, c) =>
-    Math.max(
-      70,
-      ...[...(spec.cols.length ? [header[c] ?? ""] : []), ...spec.items.map((it) => cellsOf(it)[c] ?? "")].map(
-        (text) => Math.min(maxWidth, measure(text, LABEL)),
-      ),
-    ) + pad * 2,
+  const widths = Array.from(
+    { length: columnCount },
+    (_, c) =>
+      Math.max(
+        70,
+        ...[
+          ...(spec.cols.length ? [header[c] ?? ""] : []),
+          ...spec.items.map((it) => cellsOf(it)[c] ?? ""),
+        ].map((text) => Math.min(maxWidth, measure(text, LABEL))),
+      ) +
+      pad * 2,
   );
   const xs = widths.reduce<number[]>((list, w) => [...list, list[list.length - 1]! + w], [0]);
   const total = xs[columnCount]!;
   const rowH = (cells: string[]) =>
-    Math.max(...cells.map((text, c) => heightOf(text || " ", LABEL, widths[c]! - pad * 2))) + pad * 2 - 4;
+    Math.max(...cells.map((text, c) => heightOf(text || " ", LABEL, widths[c]! - pad * 2))) +
+    pad * 2 -
+    4;
   let y = 0;
   if (spec.cols.length) {
     const h = rowH(header);
     header.forEach((text, c) => {
-      if (text) textBlock(prims, {}, xs[c]! + widths[c]! / 2, y + pad - 2, text, LABEL, widths[c]! - pad * 2, { weight: 700 });
+      if (text)
+        textBlock(
+          prims,
+          {},
+          xs[c]! + widths[c]! / 2,
+          y + pad - 2,
+          text,
+          LABEL,
+          widths[c]! - pad * 2,
+          { weight: 700 },
+        );
     });
     y += h;
   }
@@ -363,17 +449,28 @@ function matrix(spec: TemplateSpec, { prims, item }: Out): void {
       prims.push({ t: "rect", x: 0, y, w: total, h, fill: "accent", stroke: "none", ...mark });
     cells.forEach((text, c) => {
       if (c >= columnCount) return;
-      textBlock(prims, mark, xs[c]! + widths[c]! / 2, y + pad - 2, text, LABEL, widths[c]! - pad * 2, {
-        weight: c === 0 ? 700 : undefined,
-        color: it.tone === "muted" ? "muted" : undefined,
-      });
+      textBlock(
+        prims,
+        mark,
+        xs[c]! + widths[c]! / 2,
+        y + pad - 2,
+        text,
+        LABEL,
+        widths[c]! - pad * 2,
+        {
+          weight: c === 0 ? 700 : undefined,
+          color: it.tone === "muted" ? "muted" : undefined,
+        },
+      );
     });
     y += h;
     lines.push(y);
   });
   prims.push({ t: "rect", x: 0, y: 0, w: total, h: y, width: 1.8 });
-  for (const lineY of lines.slice(0, -1)) prims.push({ t: "line", x1: 0, y1: lineY, x2: total, y2: lineY, stroke: "soft", width: 1.2 });
-  for (const x of xs.slice(1, -1)) prims.push({ t: "line", x1: x, y1: 0, x2: x, y2: y, stroke: "soft", width: 1.2 });
+  for (const lineY of lines.slice(0, -1))
+    prims.push({ t: "line", x1: 0, y1: lineY, x2: total, y2: lineY, stroke: "soft", width: 1.2 });
+  for (const x of xs.slice(1, -1))
+    prims.push({ t: "line", x1: x, y1: 0, x2: x, y2: y, stroke: "soft", width: 1.2 });
 }
 
 type Branch = { index: number; item: TemplateItem; children: Branch[]; height: number };
@@ -399,7 +496,14 @@ function mindmap(spec: TemplateSpec, { prims, item }: Out): void {
   root.children.forEach(measureBranch);
   const rx = Math.max(70, measure(rootItem.label, FIG_FONT.value) / 2 + 26);
   const ry = 38;
-  const curve = (x1: number, y1: number, x2: number, y2: number, stroke: Ink, width: number): [number, number][] => {
+  const curve = (
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    stroke: Ink,
+    width: number,
+  ): [number, number][] => {
     void stroke;
     void width;
     const mid = (x1 + x2) / 2;
@@ -412,15 +516,40 @@ function mindmap(spec: TemplateSpec, { prims, item }: Out): void {
       ] as [number, number];
     });
   };
-  const place = (b: Branch, side: 1 | -1, fromX: number, fromY: number, top: number, color: Ink, depth: number) => {
+  const place = (
+    b: Branch,
+    side: 1 | -1,
+    fromX: number,
+    fromY: number,
+    top: number,
+    color: Ink,
+    depth: number,
+  ) => {
     const y = top + b.height / 2;
     const x = fromX + side * (depth === 1 ? 62 : 44);
     const mark = item(b.index);
     const width = measure(b.item.label, LABEL);
     const lineWidth = depth === 1 ? 3 : 2;
-    prims.push({ t: "poly", points: curve(fromX, fromY, x, y, color, lineWidth), stroke: color, width: lineWidth, rough: 0.5, ...mark });
+    prims.push({
+      t: "poly",
+      points: curve(fromX, fromY, x, y, color, lineWidth),
+      stroke: color,
+      width: lineWidth,
+      rough: 0.5,
+      ...mark,
+    });
     const endX = x + side * (width + 8);
-    prims.push({ t: "poly", points: [[x, y], [endX, y]], stroke: color, width: lineWidth, rough: 0.6, ...mark });
+    prims.push({
+      t: "poly",
+      points: [
+        [x, y],
+        [endX, y],
+      ],
+      stroke: color,
+      width: lineWidth,
+      rough: 0.6,
+      ...mark,
+    });
     prims.push({
       t: "text",
       x: x + side * 4,
@@ -434,7 +563,17 @@ function mindmap(spec: TemplateSpec, { prims, item }: Out): void {
       ...mark,
     });
     if (b.item.detail)
-      prims.push({ t: "text", x: x + side * 4, y: y + 2, text: b.item.detail, size: SMALL - 1, baseline: "top", anchor: side > 0 ? "start" : "end", color: "soft", ...mark });
+      prims.push({
+        t: "text",
+        x: x + side * 4,
+        y: y + 2,
+        text: b.item.detail,
+        size: SMALL - 1,
+        baseline: "top",
+        anchor: side > 0 ? "start" : "end",
+        color: "soft",
+        ...mark,
+      });
     let childTop = top + (b.height - b.children.reduce((sum, c) => sum + c.height, 0)) / 2;
     for (const child of b.children) {
       place(child, side, endX, y, childTop, color, depth + 1);
@@ -453,13 +592,40 @@ function mindmap(spec: TemplateSpec, { prims, item }: Out): void {
     const side = s === 0 ? 1 : -1;
     let top = -heights[s]! / 2;
     list.forEach((child, i) => {
-      place(child, side as 1 | -1, side * rx * 0.85, 0, top, SERIES[(i * 2 + s) % SERIES.length]!, 1);
+      place(
+        child,
+        side as 1 | -1,
+        side * rx * 0.85,
+        0,
+        top,
+        SERIES[(i * 2 + s) % SERIES.length]!,
+        1,
+      );
       top += child.height;
     });
   });
   const rootMark = item(0);
-  prims.push({ t: "ellipse", cx: 0, cy: 0, rx, ry, fill: rootItem.tone === "muted" ? "card" : "accent", width: 2, ...rootMark });
-  prims.push({ t: "text", x: 0, y: 0, text: rootItem.label, size: FIG_FONT.value, weight: 700, anchor: "middle", baseline: "middle", ...rootMark });
+  prims.push({
+    t: "ellipse",
+    cx: 0,
+    cy: 0,
+    rx,
+    ry,
+    fill: rootItem.tone === "muted" ? "card" : "accent",
+    width: 2,
+    ...rootMark,
+  });
+  prims.push({
+    t: "text",
+    x: 0,
+    y: 0,
+    text: rootItem.label,
+    size: FIG_FONT.value,
+    weight: 700,
+    anchor: "middle",
+    baseline: "middle",
+    ...rootMark,
+  });
 }
 
 export function layoutTemplate(

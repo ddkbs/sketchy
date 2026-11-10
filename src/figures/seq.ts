@@ -55,8 +55,25 @@ export function layoutSeq(spec: SeqSpec, title: string | undefined): FigureLayou
       const hi = xs[cols[cols.length - 1]!]!;
       const width = Math.max(hi - lo + 60, measure(it.text, FIG_FONT.small + 1) + NOTE_PAD * 2);
       const cx = (lo + hi) / 2;
-      rows.push({ t: "rect", x: round1(cx - width / 2), y: y - 14, w: round1(width), h: 28, fill: "accent", stroke: "ink", width: 1.2 });
-      rows.push({ t: "text", x: cx, y, text: it.text, size: FIG_FONT.small + 1, anchor: "middle", baseline: "middle" });
+      rows.push({
+        t: "rect",
+        x: round1(cx - width / 2),
+        y: y - 14,
+        w: round1(width),
+        h: 28,
+        fill: "accent",
+        stroke: "ink",
+        width: 1.2,
+      });
+      rows.push({
+        t: "text",
+        x: cx,
+        y,
+        text: it.text,
+        size: FIG_FONT.small + 1,
+        anchor: "middle",
+        baseline: "middle",
+      });
       right = Math.max(right, cx + width / 2);
       y += ROW_H - 4;
       continue;
@@ -81,12 +98,31 @@ export function layoutSeq(spec: SeqSpec, title: string | undefined): FigureLayou
         arrow: "end",
         key: `s${k}`,
       });
-      rows.push({ t: "text", x: a + SELF_W + 6, y: y + 4, text, size: FIG_FONT.label - 1, baseline: "middle", key: `s${k}` });
+      rows.push({
+        t: "text",
+        x: a + SELF_W + 6,
+        y: y + 4,
+        text,
+        size: FIG_FONT.label - 1,
+        baseline: "middle",
+        key: `s${k}`,
+      });
       right = Math.max(right, a + SELF_W + 10 + measure(text, FIG_FONT.label - 1));
       y += ROW_H + 8;
       continue;
     }
-    rows.push({ t: "line", x1: a, y1: y, x2: b + (b > a ? -2 : 2), y2: y, stroke, width: it.tone === "accent" ? 2.2 : 1.6, dashed: it.dashed, arrow: "end", key: `s${k}` });
+    rows.push({
+      t: "line",
+      x1: a,
+      y1: y,
+      x2: b + (b > a ? -2 : 2),
+      y2: y,
+      stroke,
+      width: it.tone === "accent" ? 2.2 : 1.6,
+      dashed: it.dashed,
+      arrow: "end",
+      key: `s${k}`,
+    });
     rows.push({
       t: "text",
       x: (a + b) / 2,
@@ -105,19 +141,78 @@ export function layoutSeq(spec: SeqSpec, title: string | undefined): FigureLayou
   spec.actors.forEach((actor, i) => {
     const cx = xs[i]!;
     const w = boxW[i]!;
-    prims.push({ t: "line", x1: cx, y1: top + HEAD_H, x2: cx, y2: bottom, stroke: "muted", dashed: true, width: 1.3, key: actor.id });
+    prims.push({
+      t: "line",
+      x1: cx,
+      y1: top + HEAD_H,
+      x2: cx,
+      y2: bottom,
+      stroke: "muted",
+      dashed: true,
+      width: 1.3,
+      key: actor.id,
+    });
     if (actor.person) {
       prims.push({ t: "circle", cx, cy: top + 7, r: 7, stroke: "ink" });
-      prims.push({ t: "line", x1: cx, y1: top + 14, x2: cx, y2: top + 24, stroke: "ink", width: 1.6 });
-      prims.push({ t: "line", x1: cx - 9, y1: top + 18, x2: cx + 9, y2: top + 18, stroke: "ink", width: 1.6 });
-      prims.push({ t: "text", x: cx, y: top + 26, text: actor.label, size: FIG_FONT.label, anchor: "middle", baseline: "top", weight: 700, key: actor.id });
+      prims.push({
+        t: "line",
+        x1: cx,
+        y1: top + 14,
+        x2: cx,
+        y2: top + 24,
+        stroke: "ink",
+        width: 1.6,
+      });
+      prims.push({
+        t: "line",
+        x1: cx - 9,
+        y1: top + 18,
+        x2: cx + 9,
+        y2: top + 18,
+        stroke: "ink",
+        width: 1.6,
+      });
+      prims.push({
+        t: "text",
+        x: cx,
+        y: top + 26,
+        text: actor.label,
+        size: FIG_FONT.label,
+        anchor: "middle",
+        baseline: "top",
+        weight: 700,
+        key: actor.id,
+      });
     } else {
-      prims.push({ t: "rect", x: round1(cx - w / 2), y: top, w: round1(w), h: HEAD_H - 4, fill: "card", stroke: "ink", width: 1.6, key: actor.id });
-      prims.push({ t: "text", x: cx, y: top + (HEAD_H - 4) / 2, text: actor.label, size: FIG_FONT.label, anchor: "middle", baseline: "middle", weight: 700, key: actor.id });
+      prims.push({
+        t: "rect",
+        x: round1(cx - w / 2),
+        y: top,
+        w: round1(w),
+        h: HEAD_H - 4,
+        fill: "card",
+        stroke: "ink",
+        width: 1.6,
+        key: actor.id,
+      });
+      prims.push({
+        t: "text",
+        x: cx,
+        y: top + (HEAD_H - 4) / 2,
+        text: actor.label,
+        size: FIG_FONT.label,
+        anchor: "middle",
+        baseline: "middle",
+        weight: 700,
+        key: actor.id,
+      });
     }
   });
   prims.push(...rows);
-  const leftEdge = Math.min(0, ...prims.filter((p) => p.t === "rect").map((p) => (p as { x: number }).x));
+  const leftEdge = Math.min(
+    0,
+    ...prims.filter((p) => p.t === "rect").map((p) => (p as { x: number }).x),
+  );
   const width = right - leftEdge + 6;
   const out = leftEdge < 0 ? prims.map((p) => shiftX(p, -leftEdge)) : prims;
   return { width: Math.ceil(width), height: Math.ceil(bottom + 6), prims: out };

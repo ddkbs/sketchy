@@ -164,7 +164,8 @@ export function parseDrawLine(
     const m = line.match(/^repeat\s+([A-Za-z]\w*)\s*(?:=|\s)\s*(-?\d+)\.\.(-?\d+)\s*:\s*(.+)$/);
     if (!m) return fail("expected: repeat i=0..5: <shape line>");
     const [from, to] = [Number(m[2]), Number(m[3])];
-    if (Math.abs(to - from) >= MAX_REPEAT) return fail(`a repeat can run at most ${MAX_REPEAT} times`);
+    if (Math.abs(to - from) >= MAX_REPEAT)
+      return fail(`a repeat can run at most ${MAX_REPEAT} times`);
     const direction = to >= from ? 1 : -1;
     for (let v = from; direction > 0 ? v <= to : v >= to; v += direction) {
       // The body keeps its own braces until this loop's value is known.
@@ -182,7 +183,10 @@ export function parseDrawLine(
       return fail(`"${name}" is already a slider, function or constant; pick another name`);
     const source = bindVariables(bindVariables(body, vars), letsOf(spec));
     try {
-      compile(source, spec.sliders.map((s) => s.name));
+      compile(
+        source,
+        spec.sliders.map((s) => s.name),
+      );
     } catch (error) {
       if (error instanceof ExprError) return fail(`let ${name}: ${error.message}`);
       throw error;
@@ -191,7 +195,9 @@ export function parseDrawLine(
     return true;
   }
   if (head === "slider") {
-    const m = line.match(/^slider\s+([A-Za-z]\w*)\s+(\S+?)\.\.(\S+?)(?:\s*=\s*(\S+?))?(\s+hidden)?$/);
+    const m = line.match(
+      /^slider\s+([A-Za-z]\w*)\s+(\S+?)\.\.(\S+?)(?:\s*=\s*(\S+?))?(\s+hidden)?$/,
+    );
     if (!m) return fail("expected: slider <name> <min>..<max> [= <value>] [hidden]");
     const value = (text: string) => {
       try {
@@ -221,7 +227,10 @@ export function parseDrawLine(
   const expr = (text: string, what: string): string => {
     const source = bindVariables(bindVariables(text, vars), letsOf(spec));
     try {
-      compile(source, spec.sliders.map((s) => s.name));
+      compile(
+        source,
+        spec.sliders.map((s) => s.name),
+      );
       return source;
     } catch (error) {
       if (error instanceof ExprError) return fail(`${what}: ${error.message}`);
@@ -245,7 +254,8 @@ export function parseDrawLine(
   let name: string | undefined;
   const first = rest[0]?.text;
   if (first && /^[A-Za-z_][\w-]*$/.test(first) && !OPTION.test(first) && !FLAGS.has(first)) {
-    const named = kind === "text" || kind === "icon" ? !!rest[1] && !!pointParts(rest[1].text) : true;
+    const named =
+      kind === "text" || kind === "icon" ? !!rest[1] && !!pointParts(rest[1].text) : true;
     if (named) {
       name = first;
       rest = rest.slice(1);
@@ -426,12 +436,14 @@ export function parseDrawLine(
       if (count < 0 || count > optional || geometry.slice(0, corners).some((t) => !pointParts(t)))
         return fail(`expected: ${usage}`);
       const points = geometry.slice(0, corners).map(point);
-      if (sizes) points.push([expr(geometry[corners]!, "width"), expr(geometry[corners + 1]!, "height")]);
+      if (sizes)
+        points.push([expr(geometry[corners]!, "width"), expr(geometry[corners + 1]!, "height")]);
       const extra = geometry[corners + sizes];
       const geo: DrawGeometry = { g: "mark", mark: kind, points };
       if (kind === "grid") {
         if (extra) step = expr(extra, "step");
-      } else if (extra) geo.size = expr(extra, kind === "angle" ? "radius" : kind === "brace" ? "depth" : "offset");
+      } else if (extra)
+        geo.size = expr(extra, kind === "angle" ? "radius" : kind === "brace" ? "depth" : "offset");
       if (step) geo.step = step;
       // Axes name their ends instead of carrying one placed label.
       if (kind === "axes" && shape.label) {
@@ -490,7 +502,8 @@ type Solved =
 /** A Catmull-Rom spline through the points, sampled into a dense polyline. */
 function spline(points: Pt[], closed: boolean): Pt[] {
   const n = points.length;
-  const at = (i: number) => (closed ? points[(i + n) % n]! : points[Math.max(0, Math.min(n - 1, i))]!);
+  const at = (i: number) =>
+    closed ? points[(i + n) % n]! : points[Math.max(0, Math.min(n - 1, i))]!;
   const out: Pt[] = [];
   const segments = closed ? n : n - 1;
   for (let i = 0; i < segments; i++) {
@@ -499,7 +512,10 @@ function spline(points: Pt[], closed: boolean): Pt[] {
       const t = k / 14;
       const f = (a: number, b: number, c: number, d: number) =>
         0.5 *
-        (2 * b + (c - a) * t + (2 * a - 5 * b + 4 * c - d) * t * t + (3 * b - a - 3 * c + d) * t * t * t);
+        (2 * b +
+          (c - a) * t +
+          (2 * a - 5 * b + 4 * c - d) * t * t +
+          (3 * b - a - 3 * c + d) * t * t * t);
       out.push([round1(f(p0[0], p1[0], p2[0], p3[0])), round1(f(p0[1], p1[1], p2[1], p3[1]))]);
     }
   }
@@ -616,7 +632,8 @@ function drawSolved(geo: Solved, shape: Style, scale: number): Drawn {
         rough: smooth || points.length > 16 ? 0.5 : 1,
       };
       const outline = densify(points, closed);
-      if (closed) return { prims: [prim], outline, closed, around: bounds([prim]), alternatives: [] };
+      if (closed)
+        return { prims: [prim], outline, closed, around: bounds([prim]), alternatives: [] };
       const spot = (p: Pt): Box => ({ x: p[0] - 2, y: p[1] - 2, w: 4, h: 4 });
       return {
         prims: [prim],
@@ -665,7 +682,12 @@ function solve(shape: DrawShape, env: Env): Solved | undefined {
     case "rect":
       return { g: "rect", x: n(g.x), y: n(g.y), w: n(g.w), h: n(g.h) };
     case "path":
-      return { g: "path", points: g.points.map(([x, y]) => [n(x), n(y)]), closed: g.closed, smooth: g.smooth };
+      return {
+        g: "path",
+        points: g.points.map(([x, y]) => [n(x), n(y)]),
+        closed: g.closed,
+        smooth: g.smooth,
+      };
     case "arc":
       return { g: "arc", cx: n(g.cx), cy: n(g.cy), r: n(g.r), from: n(g.from), to: n(g.to) };
     default:
@@ -674,7 +696,10 @@ function solve(shape: DrawShape, env: Env): Solved | undefined {
 }
 
 /** Moves a part of an object onto the canvas; turned parts become polylines. */
-function placePart(geo: Solved, at: { x: number; y: number; k: number; degrees: number; flip: boolean }): Solved {
+function placePart(
+  geo: Solved,
+  at: { x: number; y: number; k: number; degrees: number; flip: boolean },
+): Solved {
   const { x, y, k, degrees, flip } = at;
   if (!degrees && !flip) {
     switch (geo.g) {
@@ -696,7 +721,12 @@ function placePart(geo: Solved, at: { x: number; y: number; k: number; degrees: 
   };
   switch (geo.g) {
     case "ellipse":
-      return { g: "path", points: ellipsePoints(geo.cx, geo.cy, geo.rx, geo.ry).map(map), closed: true, smooth: false };
+      return {
+        g: "path",
+        points: ellipsePoints(geo.cx, geo.cy, geo.rx, geo.ry).map(map),
+        closed: true,
+        smooth: false,
+      };
     case "rect":
       return {
         g: "path",
@@ -712,39 +742,87 @@ function placePart(geo: Solved, at: { x: number; y: number; k: number; degrees: 
         smooth: false,
       };
     case "arc":
-      return { g: "path", points: arcPoints(geo.cx, geo.cy, geo.r, geo.from, geo.to).map(map), closed: false, smooth: false };
+      return {
+        g: "path",
+        points: arcPoints(geo.cx, geo.cy, geo.r, geo.from, geo.to).map(map),
+        closed: false,
+        smooth: false,
+      };
     case "path":
       return { ...geo, points: geo.points.map(map) };
   }
 }
 
 /** Angle arcs, dimension lines, braces, axes and grids, in canvas pixels. */
-function drawMark(g: Extract<DrawShape["geo"], { g: "mark" }>, shape: DrawShape, env: Env, scale: number): Drawn {
+function drawMark(
+  g: Extract<DrawShape["geo"], { g: "mark" }>,
+  shape: DrawShape,
+  env: Env,
+  scale: number,
+): Drawn {
   const n = (source: string) => num(source, env);
   const pts = g.points.map(([x, y]) => [n(x), n(y)] as Pt);
-  const ink: Ink = shape.stroke ?? (shape.tone === "muted" ? "muted" : shape.tone === "accent" ? "accent" : "ink");
+  const ink: Ink =
+    shape.stroke ?? (shape.tone === "muted" ? "muted" : shape.tone === "accent" ? "accent" : "ink");
   const width = shape.width ?? 1.6;
   const prims: Primitive[] = [];
   const outline: Pt[] = [];
   const px = ([x, y]: Pt): Pt => [x * scale, y * scale];
   const line = (a: Pt, b: Pt, extra: Partial<Extract<Primitive, { t: "line" }>> = {}) => {
     const [p, q] = [px(a), px(b)];
-    prims.push({ t: "line", x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: ink, width, dashed: shape.dashed || undefined, ...extra });
+    prims.push({
+      t: "line",
+      x1: p[0],
+      y1: p[1],
+      x2: q[0],
+      y2: q[1],
+      stroke: ink,
+      width,
+      dashed: shape.dashed || undefined,
+      ...extra,
+    });
     outline.push(...densify([p, q], false));
   };
   const curve = (points: Pt[], smooth: boolean) => {
     const scaled = points.map(px);
     const drawnPoints = smooth ? spline(scaled, false) : scaled;
-    prims.push({ t: "poly", points: drawnPoints, stroke: ink, width, rough: 0.5, dashed: shape.dashed || undefined });
+    prims.push({
+      t: "poly",
+      points: drawnPoints,
+      stroke: ink,
+      width,
+      rough: 0.5,
+      dashed: shape.dashed || undefined,
+    });
     outline.push(...densify(drawnPoints, false));
   };
-  const spotAt = ([x, y]: Pt, w = 4, h = 4): Box => ({ x: x * scale - w / 2, y: y * scale - h / 2, w, h });
+  const spotAt = ([x, y]: Pt, w = 4, h = 4): Box => ({
+    x: x * scale - w / 2,
+    y: y * scale - h / 2,
+    w,
+    h,
+  });
   const unit = (a: Pt, b: Pt): Pt => {
     const len = Math.hypot(b[0] - a[0], b[1] - a[1]) || 1;
     return [(b[0] - a[0]) / len, (b[1] - a[1]) / len];
   };
-  const text = (x: number, y: number, words: string, anchor: "start" | "end", baseline: "top" | "middle") =>
-    prims.push({ t: "text", x: x * scale, y: y * scale, text: words, size: LABEL_SIZE, anchor, baseline, color: ink === "accent" ? "accent" : "ink" });
+  const text = (
+    x: number,
+    y: number,
+    words: string,
+    anchor: "start" | "end",
+    baseline: "top" | "middle",
+  ) =>
+    prims.push({
+      t: "text",
+      x: x * scale,
+      y: y * scale,
+      text: words,
+      size: LABEL_SIZE,
+      anchor,
+      baseline,
+      color: ink === "accent" ? "accent" : "ink",
+    });
 
   switch (g.mark) {
     case "angle": {
@@ -769,10 +847,21 @@ function drawMark(g: Extract<DrawShape["geo"], { g: "mark" }>, shape: DrawShape,
       } else curve(arcPoints(corner[0], corner[1], r, from, from + sweep), false);
       // The label sits inside the angle, on its bisector.
       const mid = ((from + sweep / 2) * Math.PI) / 180;
-      const label = shape.label ? { w: measure(shape.label, LABEL_SIZE) + 12, h: LABEL_SIZE * 1.3 + 8 } : { w: 4, h: 4 };
+      const label = shape.label
+        ? { w: measure(shape.label, LABEL_SIZE) + 12, h: LABEL_SIZE * 1.3 + 8 }
+        : { w: 4, h: 4 };
       const reach = r * scale + Math.max(label.w, label.h) / 2;
-      const at: Pt = [corner[0] + (Math.cos(mid) * reach) / scale, corner[1] - (Math.sin(mid) * reach) / scale];
-      return { prims, outline, closed: !!shape.label, around: spotAt(at, label.w, label.h), alternatives: [] };
+      const at: Pt = [
+        corner[0] + (Math.cos(mid) * reach) / scale,
+        corner[1] - (Math.sin(mid) * reach) / scale,
+      ];
+      return {
+        prims,
+        outline,
+        closed: !!shape.label,
+        around: spotAt(at, label.w, label.h),
+        alternatives: [],
+      };
     }
     case "measure": {
       const [a, b] = pts as [Pt, Pt];
@@ -802,7 +891,17 @@ function drawMark(g: Extract<DrawShape["geo"], { g: "mark" }>, shape: DrawShape,
       // A small gap keeps the brace off the line it measures.
       const g0 = 0.35;
       curve(
-        [at(0, g0), at(0.06, g0 + 0.45), at(0.25, g0 + 0.5), at(0.44, g0 + 0.55), at(0.5, g0 + 1), at(0.56, g0 + 0.55), at(0.75, g0 + 0.5), at(0.94, g0 + 0.45), at(1, g0)],
+        [
+          at(0, g0),
+          at(0.06, g0 + 0.45),
+          at(0.25, g0 + 0.5),
+          at(0.44, g0 + 0.55),
+          at(0.5, g0 + 1),
+          at(0.56, g0 + 0.55),
+          at(0.75, g0 + 0.5),
+          at(0.94, g0 + 0.45),
+          at(1, g0),
+        ],
         true,
       );
       return { prims, outline, closed: false, around: spotAt(at(0.5, g0 + 1.6)), alternatives: [] };
@@ -821,7 +920,13 @@ function drawMark(g: Extract<DrawShape["geo"], { g: "mark" }>, shape: DrawShape,
       }
       if (g.names?.[0]) text(origin[0] + w, origin[1] + 2.5, g.names[0], "end", "top");
       if (g.names?.[1]) text(origin[0] + 3, origin[1] - h + 1, g.names[1], "start", "middle");
-      return { prims, outline, closed: false, around: spotAt([origin[0] + w / 2, origin[1]]), alternatives: [] };
+      return {
+        prims,
+        outline,
+        closed: false,
+        around: spotAt([origin[0] + w / 2, origin[1]]),
+        alternatives: [],
+      };
     }
     case "grid": {
       const [corner, [w, h]] = pts as [Pt, Pt];
@@ -829,15 +934,35 @@ function drawMark(g: Extract<DrawShape["geo"], { g: "mark" }>, shape: DrawShape,
       const lines = (count: number, at: (k: number) => [Pt, Pt]) => {
         for (let k = 0; k <= count && k <= 200; k++) {
           const [p, q] = at(k).map(px) as [Pt, Pt];
-          prims.push({ t: "line", x1: p[0], y1: p[1], x2: q[0], y2: q[1], stroke: shape.stroke ?? "grid", width: 0.8 });
+          prims.push({
+            t: "line",
+            x1: p[0],
+            y1: p[1],
+            x2: q[0],
+            y2: q[1],
+            stroke: shape.stroke ?? "grid",
+            width: 0.8,
+          });
         }
       };
       if (step > 0) {
-        lines(Math.floor(w / step + 1e-9), (k) => [[corner[0] + k * step, corner[1]], [corner[0] + k * step, corner[1] + h]]);
-        lines(Math.floor(h / step + 1e-9), (k) => [[corner[0], corner[1] + k * step], [corner[0] + w, corner[1] + k * step]]);
+        lines(Math.floor(w / step + 1e-9), (k) => [
+          [corner[0] + k * step, corner[1]],
+          [corner[0] + k * step, corner[1] + h],
+        ]);
+        lines(Math.floor(h / step + 1e-9), (k) => [
+          [corner[0], corner[1] + k * step],
+          [corner[0] + w, corner[1] + k * step],
+        ]);
       }
       // A grid is background: labels may sit on it.
-      return { prims, outline: [], closed: false, around: { ...spotAt(corner), w: w * scale, h: h * scale }, alternatives: [] };
+      return {
+        prims,
+        outline: [],
+        closed: false,
+        around: { ...spotAt(corner), w: w * scale, h: h * scale },
+        alternatives: [],
+      };
     }
   }
 }
@@ -866,7 +991,13 @@ function drawShape(shape: DrawShape, env: Env, scale: number): Drawn | undefined
       [x + size, y + size],
       [x, y + size],
     ];
-    return { prims: [prim], outline: densify(corners, true), closed: false, around: { x, y, w: size, h: size }, alternatives: [] };
+    return {
+      prims: [prim],
+      outline: densify(corners, true),
+      closed: false,
+      around: { x, y, w: size, h: size },
+      alternatives: [],
+    };
   }
   if (g.g === "object") {
     const at = {
@@ -903,7 +1034,9 @@ function drawShape(shape: DrawShape, env: Env, scale: number): Drawn | undefined
 /** The point a fraction of the way along a polyline. */
 function pointAlong(outline: Pt[], fraction: number): Pt {
   if (outline.length < 2) return outline[0] ?? [0, 0];
-  const lengths = outline.slice(1).map((p, i) => Math.hypot(p[0] - outline[i]![0], p[1] - outline[i]![1]));
+  const lengths = outline
+    .slice(1)
+    .map((p, i) => Math.hypot(p[0] - outline[i]![0], p[1] - outline[i]![1]));
   let remaining = lengths.reduce((a, b) => a + b, 0) * Math.max(0, Math.min(1, fraction));
   for (let i = 0; i < lengths.length; i++) {
     if (remaining <= lengths[i]! || i === lengths.length - 1) {
@@ -998,7 +1131,8 @@ function placeLabel(
     let total = c.rank;
     for (const other of taken) if (overlaps(box, other)) total += 1000;
     for (const [x, y] of outline)
-      if (x > box.x - 3 && x < box.x + box.w + 3 && y > box.y - 3 && y < box.y + box.h + 3) total += 6;
+      if (x > box.x - 3 && x < box.x + box.w + 3 && y > box.y - 3 && y < box.y + box.h + 3)
+        total += 6;
     // The figure can grow, so leaving the canvas is cheaper than crossing a line.
     const outside =
       Math.max(0, -box.x) +
@@ -1045,11 +1179,16 @@ export function layoutDraw(
 }
 
 /** What a reader would trip over, for the model to fix: text on text, shapes off the canvas. */
-export function drawIssues(id: string, spec: DrawSpec, states: { state: FigureState; when: string }[]): string[] {
+export function drawIssues(
+  id: string,
+  spec: DrawSpec,
+  states: { state: FigureState; when: string }[],
+): string[] {
   const issues = new Set<string>();
   const describe = (index: number) => {
     const shape = spec.shapes[index]!;
-    const kind = shape.geo.g === "mark" ? shape.geo.mark : shape.geo.g === "path" ? "line" : shape.geo.g;
+    const kind =
+      shape.geo.g === "mark" ? shape.geo.mark : shape.geo.g === "path" ? "line" : shape.geo.g;
     if (shape.name) return `${id}[${shape.name}]`;
     // Unnamed shapes go by number, which edit_sketch can remove: "remove p[3]".
     const ref = `${id}[${index + 1}]`;
@@ -1059,7 +1198,9 @@ export function drawIssues(id: string, spec: DrawSpec, states: { state: FigureSt
   for (const { state, when } of states) {
     const { placed, canvas } = composeDraw(id, spec, state);
     const stage = /^\d+$/.test(state[id] ?? "") ? Number(state[id]) : undefined;
-    const visible = placed.filter((p) => stage === undefined || (spec.shapes[p.index]!.stage ?? 0) <= stage);
+    const visible = placed.filter(
+      (p) => stage === undefined || (spec.shapes[p.index]!.stage ?? 0) <= stage,
+    );
     const texts = visible
       .filter((p) => p.prim.t === "text")
       .map((p) => ({ text: (p.prim as { text: string }).text, box: bounds([p.prim]) }));
@@ -1076,14 +1217,24 @@ export function drawIssues(id: string, spec: DrawSpec, states: { state: FigureSt
     const byShape = new Map<number, Primitive[]>();
     for (const p of visible) {
       const shape = spec.shapes[p.index]!;
-      const isLabel = p.prim.t === "text" && shape.geo.g !== "text" && (p.prim as { text: string }).text === shape.label;
-      if (isLabel || p.prim.t === "line" && p.prim.stroke === "soft") continue;
+      const isLabel =
+        p.prim.t === "text" &&
+        shape.geo.g !== "text" &&
+        (p.prim as { text: string }).text === shape.label;
+      if (isLabel || (p.prim.t === "line" && p.prim.stroke === "soft")) continue;
       byShape.set(p.index, [...(byShape.get(p.index) ?? []), p.prim]);
     }
     for (const [index, prims] of byShape) {
       const b = bounds(prims);
-      if (b.x < -slack || b.y < -slack || b.x + b.w > canvas.w + slack || b.y + b.h > canvas.h + slack)
-        issues.add(`${describe(index)} reaches past the ${spec.width}x${spec.height} canvas ${when}`);
+      if (
+        b.x < -slack ||
+        b.y < -slack ||
+        b.x + b.w > canvas.w + slack ||
+        b.y + b.h > canvas.h + slack
+      )
+        issues.add(
+          `${describe(index)} reaches past the ${spec.width}x${spec.height} canvas ${when}`,
+        );
     }
   }
   return [...issues];
@@ -1176,7 +1327,11 @@ function composeDraw(id: string, spec: DrawSpec, state: FigureState, live?: Env)
     const name = spec.shapes[index]!.name;
     return {
       index,
-      prim: { ...prim, move: `${id}-${index}`, ...(name ? { key: `${id}[${name}]` } : {}) } as Primitive,
+      prim: {
+        ...prim,
+        move: `${id}-${index}`,
+        ...(name ? { key: `${id}[${name}]` } : {}),
+      } as Primitive,
     };
   });
   return { placed, restShapes, labels, canvas };

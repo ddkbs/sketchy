@@ -4,7 +4,16 @@
  * and slider values. Everything is in figure-local pixels.
  */
 import { compile, evaluate, ExprError, type Env } from "./expr.js";
-import { FIG_FONT, SERIES, fmt, measure, niceTicks, piTicks, round1, titlePrims } from "./common.js";
+import {
+  FIG_FONT,
+  SERIES,
+  fmt,
+  measure,
+  niceTicks,
+  piTicks,
+  round1,
+  titlePrims,
+} from "./common.js";
 import type { FigureLayout, FigureState, Ink, PlotSpec, Primitive } from "./types.js";
 
 const BODY_W = 440;
@@ -188,13 +197,22 @@ export function layoutPlot(
   const inY = (y: number) => y >= ymin - (ymax - ymin) * 0.02 && y <= ymax + (ymax - ymin) * 0.02;
 
   // Grid and ticks.
-  const xt = piTicks(xmin, xmax) ?? niceTicks(xmin, xmax, 7).map((v) => ({ value: v, label: fmt(v) }));
+  const xt =
+    piTicks(xmin, xmax) ?? niceTicks(xmin, xmax, 7).map((v) => ({ value: v, label: fmt(v) }));
   const yt = niceTicks(ymin, ymax, 6).map((v) => ({ value: v, label: fmt(v) }));
   const axisY = ymin <= 0 && ymax >= 0 ? Y(0) : oy + h;
   const axisX = xmin <= 0 && xmax >= 0 ? X(0) : ox;
   for (const t of xt) {
     if (t.value < xmin || t.value > xmax) continue;
-    prims.push({ t: "line", x1: X(t.value), y1: oy, x2: X(t.value), y2: oy + h, stroke: "grid", width: 0.8 });
+    prims.push({
+      t: "line",
+      x1: X(t.value),
+      y1: oy,
+      x2: X(t.value),
+      y2: oy + h,
+      stroke: "grid",
+      width: 0.8,
+    });
     if (Math.abs(X(t.value) - axisX) > 2 || axisX === ox)
       prims.push({
         t: "text",
@@ -209,7 +227,15 @@ export function layoutPlot(
   }
   for (const t of yt) {
     if (t.value < ymin || t.value > ymax) continue;
-    prims.push({ t: "line", x1: ox, y1: Y(t.value), x2: ox + w, y2: Y(t.value), stroke: "grid", width: 0.8 });
+    prims.push({
+      t: "line",
+      x1: ox,
+      y1: Y(t.value),
+      x2: ox + w,
+      y2: Y(t.value),
+      stroke: "grid",
+      width: 0.8,
+    });
     if (Math.abs(Y(t.value) - axisY) > 2 || axisY === oy + h)
       prims.push({
         t: "text",
@@ -223,8 +249,26 @@ export function layoutPlot(
       });
   }
   // Axes with arrowheads at the positive ends.
-  prims.push({ t: "line", x1: ox, y1: axisY, x2: ox + w + 8, y2: axisY, stroke: "ink", width: 1.5, arrow: "end" });
-  prims.push({ t: "line", x1: axisX, y1: oy + h, x2: axisX, y2: oy - 8, stroke: "ink", width: 1.5, arrow: "end" });
+  prims.push({
+    t: "line",
+    x1: ox,
+    y1: axisY,
+    x2: ox + w + 8,
+    y2: axisY,
+    stroke: "ink",
+    width: 1.5,
+    arrow: "end",
+  });
+  prims.push({
+    t: "line",
+    x1: axisX,
+    y1: oy + h,
+    x2: axisX,
+    y2: oy - 8,
+    stroke: "ink",
+    width: 1.5,
+    arrow: "end",
+  });
   prims.push({
     t: "text",
     x: ox + w + 10,
@@ -280,23 +324,64 @@ export function layoutPlot(
   for (const v of spec.vlines) {
     const x = num(v.at, NaN);
     if (!(x >= xmin && x <= xmax)) continue;
-    prims.push({ t: "line", x1: X(x), y1: oy, x2: X(x), y2: oy + h, stroke: "soft", dashed: true, width: 1.3 });
+    prims.push({
+      t: "line",
+      x1: X(x),
+      y1: oy,
+      x2: X(x),
+      y2: oy + h,
+      stroke: "soft",
+      dashed: true,
+      width: 1.3,
+    });
     if (v.label)
-      prims.push({ t: "text", x: X(x) + 5, y: oy + 2, text: v.label, size: FIG_FONT.small, color: "soft", baseline: "top" });
+      prims.push({
+        t: "text",
+        x: X(x) + 5,
+        y: oy + 2,
+        text: v.label,
+        size: FIG_FONT.small,
+        color: "soft",
+        baseline: "top",
+      });
   }
   for (const l of spec.hlines) {
     const y = num(l.at, NaN);
     if (!(y >= ymin && y <= ymax)) continue;
-    prims.push({ t: "line", x1: ox, y1: Y(y), x2: ox + w, y2: Y(y), stroke: "soft", dashed: true, width: 1.3 });
+    prims.push({
+      t: "line",
+      x1: ox,
+      y1: Y(y),
+      x2: ox + w,
+      y2: Y(y),
+      stroke: "soft",
+      dashed: true,
+      width: 1.3,
+    });
     if (l.label)
-      prims.push({ t: "text", x: ox + w - 2, y: Y(y) - 3, text: l.label, size: FIG_FONT.small, color: "soft", anchor: "end", baseline: "bottom" });
+      prims.push({
+        t: "text",
+        x: ox + w - 2,
+        y: Y(y) - 3,
+        text: l.label,
+        size: FIG_FONT.small,
+        color: "soft",
+        anchor: "end",
+        baseline: "bottom",
+      });
   }
 
   // Curves: a jump larger than the view breaks the line (poles, tan).
   const labels: { x: number; y: number; text: string; color: Ink }[] = [];
   const colorFor = (i: number, tone?: string): Ink =>
     tone === "muted" ? "muted" : i === 0 ? "ink" : SERIES[(i - 1) % SERIES.length]!;
-  const pushCurve = (pts: Seg, color: Ink, tone: string | undefined, dashed: boolean | undefined, key: string) => {
+  const pushCurve = (
+    pts: Seg,
+    color: Ink,
+    tone: string | undefined,
+    dashed: boolean | undefined,
+    key: string,
+  ) => {
     let run: [number, number][] = [];
     const flush = () => {
       if (run.length > 1)

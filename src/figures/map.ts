@@ -1,4 +1,11 @@
-import { geoBounds, geoInterpolate, geoMercator, geoNaturalEarth1, geoPath, type GeoProjection } from "d3-geo";
+import {
+  geoBounds,
+  geoInterpolate,
+  geoMercator,
+  geoNaturalEarth1,
+  geoPath,
+  type GeoProjection,
+} from "d3-geo";
 import type { Feature, FeatureCollection, Geometry } from "geojson";
 import { feature } from "topojson-client";
 import type { GeometryCollection, Topology } from "topojson-specification";
@@ -102,7 +109,10 @@ export function findCountry(name: string): Feature<Geometry, { name: string }> |
 /** A few known names that start like the unknown one, for the error message. */
 export function suggestCountries(name: string): string[] {
   const start = normal(name).slice(0, 3);
-  return countries.features.map((f) => f.properties.name).filter((n) => normal(n).startsWith(start)).slice(0, 4);
+  return countries.features
+    .map((f) => f.properties.name)
+    .filter((n) => normal(n).startsWith(start))
+    .slice(0, 4);
 }
 
 /** A region name, a country, or a box "west,south,east,north". */
@@ -117,7 +127,12 @@ export function regionBox(region: string): Box | undefined {
   // Countries across the date line (Russia, Fiji) keep their main side.
   if (w > e) e = 180;
   const pad = Math.max(e - w, n - s) * 0.25 + 1;
-  return [Math.max(-180, w - pad), Math.max(-85, s - pad), Math.min(180, e + pad), Math.min(85, n + pad)];
+  return [
+    Math.max(-180, w - pad),
+    Math.max(-85, s - pad),
+    Math.min(180, e + pad),
+    Math.min(85, n + pad),
+  ];
 }
 
 /** Centre of mass of a ring in screen pixels. */
@@ -161,10 +176,12 @@ function rings(projection: GeoProjection, geometry: Geometry | Feature): Pt[][] 
 }
 
 const area = (ring: Pt[]) =>
-  Math.abs(ring.reduce((s, p, i) => {
-    const q = ring[(i + 1) % ring.length]!;
-    return s + p[0] * q[1] - q[0] * p[1];
-  }, 0)) / 2;
+  Math.abs(
+    ring.reduce((s, p, i) => {
+      const q = ring[(i + 1) % ring.length]!;
+      return s + p[0] * q[1] - q[0] * p[1];
+    }, 0),
+  ) / 2;
 
 export function layoutMap(id: string, spec: MapSpec, title: string | undefined): FigureLayout {
   const box = regionBox(spec.region) ?? MAP_REGIONS.world!;
@@ -175,7 +192,9 @@ export function layoutMap(id: string, spec: MapSpec, title: string | undefined):
       Array.from({ length: 9 }, (_, j) => [lon, s + ((n - s) * j) / 8]),
     ),
   };
-  const projection = (spec.region.toLowerCase() === "world" ? geoNaturalEarth1() : geoMercator()).fitWidth(WIDTH, frame);
+  const projection = (
+    spec.region.toLowerCase() === "world" ? geoNaturalEarth1() : geoMercator()
+  ).fitWidth(WIDTH, frame);
   const [[, top], [, bottom]] = geoPath(projection).bounds(frame);
   const height = Math.min(WIDTH * 1.2, Math.ceil(bottom - top));
   projection.clipExtent([
@@ -185,7 +204,8 @@ export function layoutMap(id: string, spec: MapSpec, title: string | undefined):
 
   const prims: Primitive[] = [];
   const chosen = new Map(spec.countries.map((c) => [findCountry(c.name)?.properties.name, c]));
-  const labels: { text: string; at: Pt; key?: string; size: number; tone?: "accent" | "muted" }[] = [];
+  const labels: { text: string; at: Pt; key?: string; size: number; tone?: "accent" | "muted" }[] =
+    [];
   for (const country of countries.features) {
     const pick = chosen.get(country.properties.name);
     const shapes = rings(projection, country).filter((r) => area(r) > (pick ? 1 : 3));
@@ -199,7 +219,7 @@ export function layoutMap(id: string, spec: MapSpec, title: string | undefined):
         closed: true,
         stroke: pick ? "ink" : "soft",
         width: pick ? 1.4 : 0.9,
-        fill: pick ? pick.fill ?? "s0" : undefined,
+        fill: pick ? (pick.fill ?? "s0") : undefined,
         hatch: pick?.hatch || undefined,
         rough: pick ? 0.6 : 0.25,
         ...(key ? { key } : {}),
@@ -218,8 +238,24 @@ export function layoutMap(id: string, spec: MapSpec, title: string | undefined):
     if (!p) continue;
     const key = place.name ? `${id}[${place.name}]` : undefined;
     const ink: Ink = place.tone === "accent" ? "accent" : place.tone === "muted" ? "muted" : "ink";
-    prims.push({ t: "ellipse", cx: p[0], cy: p[1], rx: 4.5, ry: 4.5, stroke: ink, fill: ink, ...(key ? { key } : {}) });
-    if (place.label) labels.push({ text: place.label, at: [p[0] + 8, p[1]], key, size: FIG_FONT.label, tone: place.tone });
+    prims.push({
+      t: "ellipse",
+      cx: p[0],
+      cy: p[1],
+      rx: 4.5,
+      ry: 4.5,
+      stroke: ink,
+      fill: ink,
+      ...(key ? { key } : {}),
+    });
+    if (place.label)
+      labels.push({
+        text: place.label,
+        at: [p[0] + 8, p[1]],
+        key,
+        size: FIG_FONT.label,
+        tone: place.tone,
+      });
   }
   for (const route of spec.routes) {
     const ends = [route.from, route.to] as [number, number][];
@@ -322,7 +358,13 @@ const MAP_COLORS: Record<string, Ink> = {
   white: "card",
 };
 
-export const emptyMap = (region: string): MapSpec => ({ kind: "map", region, countries: [], places: [], routes: [] });
+export const emptyMap = (region: string): MapSpec => ({
+  kind: "map",
+  region,
+  countries: [],
+  places: [],
+  routes: [],
+});
 
 const LATLON = /^(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)$/;
 
@@ -341,24 +383,38 @@ export function parseMapLine(spec: MapSpec, line: string, fail: (why: string) =>
   };
   if (words[0] === "place") {
     let rest = words.slice(1);
-    const tone = rest.find((w) => w === "!accent" || w === "!muted")?.slice(1) as "accent" | "muted" | undefined;
+    const tone = rest.find((w) => w === "!accent" || w === "!muted")?.slice(1) as
+      "accent" | "muted" | undefined;
     rest = rest.filter((w) => w !== "!accent" && w !== "!muted");
     const at = rest.findIndex((w) => latlon(w));
-    if (at < 0 || at > 1) return fail("expected: place [name] <latitude>,<longitude> [label] [!accent]");
+    if (at < 0 || at > 1)
+      return fail("expected: place [name] <latitude>,<longitude> [label] [!accent]");
     const [lat, lon] = latlon(rest[at]!)!;
     const name = at === 1 ? rest[0] : undefined;
     const text = rest.slice(at + 1).join(" ") || label;
-    spec.places.push({ ...(name ? { name } : {}), lat, lon, ...(text ? { label: text } : {}), ...(tone ? { tone } : {}) });
+    spec.places.push({
+      ...(name ? { name } : {}),
+      lat,
+      lon,
+      ...(text ? { label: text } : {}),
+      ...(tone ? { tone } : {}),
+    });
     return true;
   }
   if (words[0] === "route") {
-    const m = main.match(/^route\s+(?:([A-Za-z_][\w-]*):\s*)?(\S+)\s*->\s*(\S+)((?:\s+--dashed)?)$/);
-    if (!m) return fail("expected: route [name:] <place or lat,lon> -> <place or lat,lon> [--dashed] [~ label]");
+    const m = main.match(
+      /^route\s+(?:([A-Za-z_][\w-]*):\s*)?(\S+)\s*->\s*(\S+)((?:\s+--dashed)?)$/,
+    );
+    if (!m)
+      return fail(
+        "expected: route [name:] <place or lat,lon> -> <place or lat,lon> [--dashed] [~ label]",
+      );
     const end = (text: string): [number, number] => {
       const point = latlon(text);
       if (point) return point;
       const place = spec.places.find((p) => p.name === text);
-      if (!place) return fail(`no place "${text}"; add "place ${text} <lat>,<lon>" before the route`);
+      if (!place)
+        return fail(`no place "${text}"; add "place ${text} <lat>,<lon>" before the route`);
       return [place.lat, place.lon];
     };
     spec.routes.push({
@@ -377,7 +433,8 @@ export function parseMapLine(spec: MapSpec, line: string, fail: (why: string) =>
     const option = word.match(/^(fill|hatch)=(\w+)$/);
     if (option) {
       fill = MAP_COLORS[option[2]!];
-      if (!fill) return fail(`unknown color "${option[2]}"; use ${Object.keys(MAP_COLORS).join(", ")}`);
+      if (!fill)
+        return fail(`unknown color "${option[2]}"; use ${Object.keys(MAP_COLORS).join(", ")}`);
       hatch = option[1] === "hatch";
     } else if (word === "!accent") fill = "accent";
     else if (word === "!muted") fill = "muted";
@@ -386,8 +443,15 @@ export function parseMapLine(spec: MapSpec, line: string, fail: (why: string) =>
   const name = nameWords.join(" ");
   if (!findCountry(name)) {
     const close = suggestCountries(name);
-    return fail(`unknown country "${name}"${close.length ? `; did you mean ${close.join(", ")}?` : ""} Use English names; mark small places with "place".`);
+    return fail(
+      `unknown country "${name}"${close.length ? `; did you mean ${close.join(", ")}?` : ""} Use English names; mark small places with "place".`,
+    );
   }
-  spec.countries.push({ name, ...(fill ? { fill } : {}), ...(hatch ? { hatch } : {}), ...(label ? { label } : {}) });
+  spec.countries.push({
+    name,
+    ...(fill ? { fill } : {}),
+    ...(hatch ? { hatch } : {}),
+    ...(label ? { label } : {}),
+  });
   return true;
 }

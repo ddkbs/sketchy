@@ -113,11 +113,21 @@ describe("edit_sketch", () => {
 
   it("changes the last drawing and builds on its own edits", async () => {
     await callCompact("sketch", { scene: "title Demo\na Alpha\nb Beta\na -> b" });
-    const first = await callCompact("edit_sketch", { changes: "b Better !accent\nc Gamma\nb -> c" });
-    expect(sceneOf(first).nodes.map((n) => n.label).sort()).toEqual(["Alpha", "Better", "Gamma"]);
+    const first = await callCompact("edit_sketch", {
+      changes: "b Better !accent\nc Gamma\nb -> c",
+    });
+    expect(
+      sceneOf(first)
+        .nodes.map((n) => n.label)
+        .sort(),
+    ).toEqual(["Alpha", "Better", "Gamma"]);
     expect(sceneOf(first).title?.lines).toEqual(["Demo"]);
     const second = await callCompact("edit_sketch", { changes: "remove a" });
-    expect(sceneOf(second).nodes.map((n) => n.label).sort()).toEqual(["Better", "Gamma"]);
+    expect(
+      sceneOf(second)
+        .nodes.map((n) => n.label)
+        .sort(),
+    ).toEqual(["Better", "Gamma"]);
     expect(sceneOf(second).edges).toHaveLength(1);
   });
 
