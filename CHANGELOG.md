@@ -8,6 +8,13 @@ All notable changes to this project are documented here. The format follows
 
 ### Added
 
+- Free drawing: a `draw` block with circles, ellipses, rectangles, lines, arrows, smooth curves, closed shapes, arcs and text on its own canvas, for pictures that boxes and arrows cannot show. It sits in a scene like a node. Sketchy places its labels, and steps can highlight single shapes or build the picture up in stages. Drawings also offer ready-made objects (person, car, tree, gear and more), icons, `repeat`, and sliders that move shapes, shifted as one piece with `move=` or along a path, by hand or step by step.
+- Geometry helpers in drawings: `angle` (with the right-angle square), `measure` (dimension lines), `brace`, `axes` and `grid`, plus `let` to name a sub-expression.
+- Molecules: `molecule <id> <SMILES>` draws the structural formula, rings, double bonds and hydrogens included.
+- Maps: `map <id> <region>` with countries to colour, places by latitude and longitude, and routes between them (Natural Earth outlines).
+- After drawing, Sketchy tells the AI about overlapping text and shapes that leave their canvas, at the start and in every step, so it can fix them before the user looks.
+- Ready-made explanation shapes where the AI only names the contents: `timeline`, `cycle`, `pyramid`, `funnel`, `venn`, `matrix` and `mindmap`.
+- `edit_sketch`: follow-up changes send only what changes instead of the whole scene.
 - Setup instructions for Codex (`codex mcp add` and `config.toml`). Thanks to @lprakashv for the suggestion (#4, #5).
 
 ### Fixed
