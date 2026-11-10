@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { LogoMark } from "../Logo";
 import { SCENARIOS, summary } from "./scenarios";
+import type { LaidOutScene } from "../../../../src/scene/laid-out.js";
 import { Stage } from "./stage";
 
 type Phase = "idle" | "typing" | "thinking" | "answer" | "tool" | "drawing" | "steps" | "done";
@@ -16,6 +17,7 @@ const ease = [0.22, 1, 0.36, 1] as const;
 export function ChatDemo({ className = "" }: { className?: string }) {
   const [active, setActive] = useState(0);
   const [step, setStep] = useState<number | undefined>();
+  const [focused, setFocused] = useState<string | undefined>();
   const stageRoot = useRef<HTMLDivElement>(null);
   const stage = useRef<Stage | null>(null);
   const box = useRef<HTMLDivElement>(null);
@@ -28,29 +30,46 @@ export function ChatDemo({ className = "" }: { className?: string }) {
   const pick = (i: number) => {
     setActive(i);
     setStep(undefined);
+    setFocused(undefined);
   };
-
-  useLayoutEffect(() => {
-    const s = new Stage(stageRoot.current!, scenario.scene);
-    s.showAll();
-    stage.current = s;
-  }, [scenario]);
 
   /** Shows one step, or the whole drawing for `undefined`. */
   const show = (index: number | undefined) => {
+    setFocused(undefined);
     setStep(index);
     stage.current?.step(index);
   };
   /** Overview, step 1, step 2, …, back to the overview. */
   const next = () => {
     const last = scenario.scene.steps.length - 1;
-    show(step === undefined ? 0 : step >= last ? undefined : step + 1);
+    show(step === undefined || focused ? 0 : step >= last ? undefined : step + 1);
   };
+  /** A click on a box circles it; a second click, or one beside it, shows everything again. */
+  const focus = (id: string | undefined) => {
+    setStep(undefined);
+    setFocused(id);
+    stage.current?.focus(id);
+  };
+
+  useLayoutEffect(() => {
+    const s = new Stage(stageRoot.current!, scenario.scene);
+    s.showAll();
+    s.onPick((id) =>
+      setFocused((now) => {
+        const next = now === id ? undefined : id;
+        setStep(undefined);
+        s.focus(next);
+        return next;
+      }),
+    );
+    stage.current = s;
+  }, [scenario]);
 
   const sent = phase !== "idle" && phase !== "typing";
   const drawing = phase === "drawing" || phase === "steps" || phase === "done";
   const steps = scenario.scene.steps;
   const current = step === undefined ? undefined : steps[step];
+  const about = focused ? describe(scenario.scene, focused) : undefined;
 
   return (
     <div
@@ -132,27 +151,38 @@ export function ChatDemo({ className = "" }: { className?: string }) {
         >
           <div
             ref={stageRoot}
-            onClick={steps.length > 0 ? next : undefined}
-            className={`sketch-stage min-h-0 flex-1 p-2 ${steps.length > 0 ? "cursor-pointer" : ""}`}
+            onClick={() => focused && focus(undefined)}
+            className="sketch-stage min-h-0 flex-1 p-2"
           />
-          {steps.length > 0 && (
+          {
             <button
               type="button"
-              onClick={next}
-              aria-label={step === undefined ? "Start the walkthrough" : "Next step"}
+              onClick={() => (steps.length > 0 ? next() : focus(undefined))}
+              aria-label={
+                steps.length === 0
+                  ? "Show the whole drawing"
+                  : step === undefined
+                    ? "Start the walkthrough"
+                    : "Next step"
+              }
               className="cursor-target flex h-12 w-full items-center gap-3 border-t border-black/10 bg-black/[0.025] px-4 text-left text-[13px] text-[#1d1d1f] transition-colors hover:bg-black/[0.05]"
             >
               <div className="min-w-0 flex-1 truncate">
                 <AnimatePresence mode="wait">
                   <motion.span
-                    key={step ?? "all"}
+                    key={focused ? `f-${focused}` : (step ?? "all")}
                     initial={{ opacity: 0, y: 4 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -4 }}
                     transition={{ duration: 0.2 }}
                     className="block truncate"
                   >
-                    {current ? (
+                    {about ? (
+                      <>
+                        <span className="font-semibold text-[#e8452c]">{about.name}</span>
+                        <span className="text-black/55"> — {about.text}</span>
+                      </>
+                    ) : current ? (
                       <>
                         <span className="font-semibold text-[#e8452c]">
                           {step! + 1}/{steps.length} {current.title}
@@ -161,7 +191,9 @@ export function ChatDemo({ className = "" }: { className?: string }) {
                       </>
                     ) : (
                       <span className="text-black/45">
-                        Click to walk through {steps.length} steps →
+                        {steps.length
+                          ? `Click a box, or walk through ${steps.length} steps →`
+                          : "Click a box to see what it does"}
                       </span>
                     )}
                   </motion.span>
@@ -184,7 +216,7 @@ export function ChatDemo({ className = "" }: { className?: string }) {
                 ))}
               </div>
             </button>
-          )}
+          }
         </div>
 
         <div className="ml-[34px] min-h-[20px] text-[14px] text-foreground/90">
@@ -230,4 +262,41 @@ export function ChatDemo({ className = "" }: { className?: string }) {
       </div>
     </div>
   );
+}
+
+type Described = { name: string; text: string };
+
+/**
+ * What the bar says about a clicked element: its own description, else the step that explains
+ * it, else what it is connected to.
+ */
+function describe(scene: LaidOutScene, id: string): Described {
+  const node = scene.nodes.find((n) => n.id === id) as
+    (LaidOutScene["nodes"][number] & { description?: string }) | undefined;
+  const part = scene.parts.find((p) => p.id === id);
+  const name = node?.label ?? part?.label ?? id;
+  if (node?.description) return { name, text: node.description };
+  const at = scene.steps.findIndex((s) => s.highlight.includes(id));
+  if (at >= 0) {
+    const s = scene.steps[at]!;
+    return { name, text: `step ${at + 1}, ${s.title}: ${s.text ?? ""}`.trim() };
+  }
+  const labelOf = (other: string) =>
+    scene.nodes.find((n) => n.id === other)?.label ??
+    scene.parts.find((p) => p.id === other)?.label ??
+    other;
+  const linked = [
+    ...scene.edges.flatMap((e) => (e.from === id ? [e.to] : e.to === id ? [e.from] : [])),
+    ...scene.wires.flatMap((w) =>
+      w.from.part === id ? [w.to.part] : w.to.part === id ? [w.from.part] : [],
+    ),
+  ];
+  const unique = [...new Set(linked)].map(labelOf);
+  const kind = part?.title && part.title !== name ? `${part.title}. ` : "";
+  return {
+    name,
+    text: unique.length
+      ? `${kind}Connected to ${unique.join(", ")}.`
+      : kind || "Part of the drawing.",
+  };
 }

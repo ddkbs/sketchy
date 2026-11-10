@@ -54,6 +54,29 @@ export class Stage {
     applyStep(this.scene, this.rendered, index);
   }
 
+  /** Calls back with the id of a box, part or photo the reader clicks. */
+  onPick(pick: (id: string) => void): void {
+    for (const [id, g] of this.rendered.elements) {
+      if (!["node", "part", "image"].includes(g.dataset.kind ?? "")) continue;
+      g.style.cursor = "pointer";
+      g.addEventListener("click", (event) => {
+        event.stopPropagation();
+        pick(id);
+      });
+    }
+  }
+
+  /** Circles one element with its connections, as a step would; undefined shows everything. */
+  focus(id: string | undefined): void {
+    if (id === undefined) return this.step(undefined);
+    const touching = [
+      ...this.scene.edges.filter((e) => e.from === id || e.to === id).map((e) => e.id),
+      ...this.scene.wires.filter((w) => w.from.part === id || w.to.part === id).map((w) => w.id),
+    ];
+    const scene = { ...this.scene, steps: [{ title: "", highlight: [id, ...touching] }] };
+    applyStep(scene, this.rendered, 0);
+  }
+
   showAll(): void {
     const title = this.rendered.svg.querySelector<SVGGElement>(".title");
     if (title) title.style.opacity = "1";
