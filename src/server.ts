@@ -8,12 +8,15 @@ import {
   registerAppTool,
 } from "@modelcontextprotocol/ext-apps/server";
 import { z } from "zod";
+import { figureIssues } from "./figures/index.js";
 import { layoutScene, previousLayout, type PreviousLayout } from "./layout/index.js";
 import type { Editor } from "./layout/links.js";
 import type { PartIndex } from "./parts/index.js";
-import { COMPACT_INSTRUCTIONS, COMPACT_SYNTAX, INSTRUCTIONS, PATTERNS } from "./patterns.js";
-import { parseCompact } from "./scene/compact.js";
+import { COMPACT_INSTRUCTIONS, COMPACT_SYNTAX, EDIT_SYNTAX, INSTRUCTIONS, PATTERNS } from "./patterns.js";
+import { applyPatch } from "./scene/patch.js";
+import { parseCompact, type CompactScene } from "./scene/compact.js";
 import { SceneBuilder, SceneError } from "./scene/builder.js";
+import { fillScene, type SketchInput } from "./scene/fill.js";
 import { suggestIcons } from "./icons.js";
 import { isEditorLink, type Opener } from "./opener.js";
 import type { LaidOutScene } from "./scene/laid-out.js";
@@ -118,16 +121,21 @@ export function createServer(options: ServerOptions): McpServer {
       [s.wires.length, "wire"],
       [s.labels.length, "label"],
       [s.images.length, "image"],
+      [s.figures.length, "figure"],
       [s.steps.length, "step"],
     ] as const;
     const summary = counts
       .filter(([n]) => n > 0)
       .map(([n, what]) => `${n} ${what}${n === 1 ? "" : "s"}`)
       .join(", ");
+    const issues = figureIssues(s.figures, s.steps).slice(0, 6);
     const text =
-      showsViewer() || options.terminal
+      (showsViewer() || options.terminal
         ? `Rendered${s.title ? ` "${s.title}"` : ""}: ${summary}. The user now sees the drawing${options.terminal && !showsViewer() ? " in the terminal" : ""}${s.steps.length ? " with step navigation" : ""}; explain it briefly instead of describing it again.`
-        : await unseen(laidOut, summary);
+        : await unseen(laidOut, summary)) +
+      (issues.length
+        ? ` Sketchy noticed: ${issues.join("; ")}. If that spoils the picture, fix it with ${options.compact ? "edit_sketch" : "another sketch call"} (move or resize those shapes) before explaining.`
+        : "");
     const attached = views.attach(laidOut);
     // The plugin reads the drawing from these files; the paths are all it adds.
     const terminal =
@@ -160,34 +168,13 @@ export function createServer(options: ServerOptions): McpServer {
 
   const uiMeta = { ui: { resourceUri: VIEWER_URI } };
 
-  type SketchInput = {
-    title?: string;
-    subtitle?: string;
-    direction?: "right" | "down";
-    groups?: Parameters<SceneBuilder["addGroup"]>[0][];
-    nodes?: Parameters<SceneBuilder["addNode"]>[0][];
-    parts?: Parameters<SceneBuilder["addPart"]>[0][];
-    images?: string[];
-    edges?: Parameters<SceneBuilder["addEdge"]>[0][];
-    wires?: Parameters<SceneBuilder["connect"]>[0][];
-    labels?: Parameters<SceneBuilder["addLabel"]>[0][];
-    steps?: Parameters<SceneBuilder["addStep"]>[0][];
-  };
+  /** The last drawing in the compact form, which edit_sketch changes. */
+  let lastScene: CompactScene | undefined;
+
   const draw = async (input: SketchInput): Promise<CallToolResult> => {
     try {
-      builder.reset({ title: input.title, subtitle: input.subtitle, direction: input.direction });
-      for (const g of input.groups ?? []) builder.addGroup(g);
-      for (const n of input.nodes ?? []) builder.addNode(n);
-      for (const p of input.parts ?? []) builder.addPart(p);
-      for (const imageId of input.images ?? []) {
-        if (!options.photos)
-          throw new SceneError("Photo features are not available on this server.");
-        builder.addImage(await options.photos.sceneImage(imageId));
-      }
-      for (const e of input.edges ?? []) builder.addEdge(e);
-      for (const w of input.wires ?? []) builder.connect(w);
-      for (const l of input.labels ?? []) builder.addLabel(l);
-      for (const s of input.steps ?? []) builder.addStep(s);
+      const photos = options.photos;
+      await fillScene(builder, input, photos ? (id) => photos.sceneImage(id) : undefined);
     } catch (error) {
       return failFrom(error);
     }
@@ -206,7 +193,32 @@ export function createServer(options: ServerOptions): McpServer {
       },
       async ({ scene }) => {
         try {
-          return await draw(parseCompact(scene));
+          const parsed = parseCompact(scene);
+          const result = await draw(parsed);
+          if (!result.isError) lastScene = parsed;
+          return result;
+        } catch (error) {
+          return failFrom(error);
+        }
+      },
+    );
+    registerAppTool(
+      server,
+      "edit_sketch",
+      {
+        title: "Change the current drawing",
+        description: EDIT_SYNTAX,
+        inputSchema: { changes: z.string().describe("The changes, one per line") },
+        _meta: uiMeta,
+      },
+      async ({ changes }) => {
+        if (!lastScene)
+          return failFrom(new SceneError("There is no drawing to change yet. Call sketch with the whole scene."));
+        try {
+          const patched = applyPatch(lastScene, changes);
+          const result = await draw(patched);
+          if (!result.isError) lastScene = patched;
+          return result;
         } catch (error) {
           return failFrom(error);
         }

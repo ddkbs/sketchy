@@ -85,3 +85,57 @@ describe("server", () => {
     );
   });
 });
+
+describe("edit_sketch", () => {
+  let compact: Client;
+
+  beforeEach(async () => {
+    const server = createServer({
+      parts: await PartIndex.load(),
+      viewerHtml: () => "<html></html>",
+      compact: true,
+    });
+    const [clientSide, serverSide] = InMemoryTransport.createLinkedPair();
+    await server.connect(serverSide);
+    compact = new Client({ name: "test", version: "1.0.0" });
+    await compact.connect(clientSide);
+  });
+
+  const callCompact = (name: string, args: Record<string, unknown>) =>
+    compact.callTool({ name, arguments: args }) as Promise<CallToolResult>;
+  const sceneOf = (r: CallToolResult) => r._meta![SCENE_META_KEY] as LaidOutScene;
+
+  it("asks for a whole scene when there is nothing to change", async () => {
+    const result = await callCompact("edit_sketch", { changes: "a Alpha" });
+    expect(result.isError).toBe(true);
+    expect(textOf(result)).toMatch(/Call sketch/);
+  });
+
+  it("changes the last drawing and builds on its own edits", async () => {
+    await callCompact("sketch", { scene: "title Demo\na Alpha\nb Beta\na -> b" });
+    const first = await callCompact("edit_sketch", { changes: "b Better !accent\nc Gamma\nb -> c" });
+    expect(sceneOf(first).nodes.map((n) => n.label).sort()).toEqual(["Alpha", "Better", "Gamma"]);
+    expect(sceneOf(first).title?.lines).toEqual(["Demo"]);
+    const second = await callCompact("edit_sketch", { changes: "remove a" });
+    expect(sceneOf(second).nodes.map((n) => n.label).sort()).toEqual(["Better", "Gamma"]);
+    expect(sceneOf(second).edges).toHaveLength(1);
+  });
+
+  it("keeps the drawing when an edit fails", async () => {
+    await callCompact("sketch", { scene: "a Alpha\nb Beta" });
+    expect((await callCompact("edit_sketch", { changes: "remove nope" })).isError).toBe(true);
+    expect((await callCompact("edit_sketch", { changes: "a -> ghost" })).isError).toBe(true);
+    const ok = await callCompact("edit_sketch", { changes: "a Changed" });
+    expect(sceneOf(ok).nodes).toHaveLength(2);
+    expect(sceneOf(ok).edges).toHaveLength(0);
+  });
+
+  it("documents the drawing blocks in the tool description", async () => {
+    const { tools } = await compact.listTools();
+    const description = tools.find((t) => t.name === "sketch")!.description!;
+    expect(description).toMatch(/object <type>/);
+    expect(description).toMatch(/person, tree/);
+    expect(description).toMatch(/timeline\|cycle/);
+    expect(tools.some((t) => t.name === "edit_sketch")).toBe(true);
+  });
+});

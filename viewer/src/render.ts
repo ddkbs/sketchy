@@ -10,6 +10,7 @@ import type {
 } from "../../src/scene/laid-out.js";
 import { FONT, SPACING } from "../../src/style/metrics.js";
 import { WATERMARK } from "./excalidraw.js";
+import { FigureView } from "./figures.js";
 import {
   arrowHead,
   createPen,
@@ -40,6 +41,10 @@ export type RenderedScene = {
   elements: Map<string, SVGGElement>;
   overlay: SVGGElement;
   pen: Pen;
+  /** Figures repaint themselves for steps and sliders. */
+  figures: Map<string, FigureView>;
+  /** The step on show; undefined for the whole scene. */
+  step?: number;
 };
 
 export function renderScene(scene: LaidOutScene, fontCss: string): RenderedScene {
@@ -85,12 +90,15 @@ export function renderScene(scene: LaidOutScene, fontCss: string): RenderedScene
   for (const part of scene.parts) add(nodesLayer, part.id, "part", (g) => drawPart(g, pen, part));
   for (const image of scene.images)
     add(nodesLayer, image.id, "image", (g) => drawImage(g, pen, image));
+  const figures = new Map<string, FigureView>();
+  for (const fig of scene.figures ?? [])
+    add(nodesLayer, fig.id, "figure", (g) => figures.set(fig.id, new FigureView(fig, g, pen)));
   for (const wire of scene.wires) add(wiresLayer, wire.id, "wire", (g) => drawWire(g, pen, wire));
   for (const label of scene.labels)
     add(labelsLayer, label.id, "label", (g) => drawLabel(g, pen, label));
   drawWatermark(svg, scene);
 
-  return { svg, elements, overlay, pen };
+  return { svg, elements, overlay, pen, figures };
 }
 
 /**

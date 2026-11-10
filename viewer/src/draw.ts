@@ -3,6 +3,8 @@ import type { RoughSVG } from "roughjs/bin/svg.js";
 import type { Options } from "roughjs/bin/core.js";
 import type { Point } from "../../src/scene/laid-out.js";
 import { FONT_FAMILY } from "../../src/style/metrics.js";
+import { lineTops } from "../../src/layout/text.js";
+import { layoutLabel } from "../../src/math/inline.js";
 import { INK } from "./palette.js";
 
 export const SVG_NS = "http://www.w3.org/2000/svg";
@@ -58,26 +60,120 @@ export type TextOptions = {
   fit?: number;
 };
 
-/** Multi-line text whose first baseline sits one line below `y`. */
-export function text(o: TextOptions): SVGTextElement {
+export const FONT_STACK = `${FONT_FAMILY}, "Comic Sans MS", cursive`;
+
+/**
+ * Multi-line text whose first baseline sits one line below `y`. Lines with
+ * $math$ are typeset; the result is then a group instead of one text element.
+ */
+export function text(o: TextOptions): SVGTextElement | SVGGElement {
   const lh = Math.round(o.size * 1.3);
-  const node = el("text", {
-    x: o.x,
-    y: o.y,
-    "font-family": `${FONT_FAMILY}, "Comic Sans MS", cursive`,
-    "font-size": o.size,
-    "font-weight": o.weight,
-    fill: o.color ?? INK,
-    "text-anchor": o.anchor ?? "start",
-    "data-fit": o.fit,
-  });
-  o.lines.forEach((line, i) => {
-    const span = el("tspan", { x: o.x, y: o.y + lh * i + lh * 0.74 });
-    span.textContent = line;
-    node.appendChild(span);
-  });
-  return node;
+  const tops = lineTops(o.lines, o.size);
+  const plain = (lines: { line: string; top: number }[]) => {
+    const node = el("text", {
+      x: o.x,
+      y: o.y,
+      "font-family": FONT_STACK,
+      "font-size": o.size,
+      "font-weight": o.weight,
+      fill: o.color ?? INK,
+      "text-anchor": o.anchor ?? "start",
+      "data-fit": o.fit,
+    });
+    for (const { line, top } of lines) {
+      const span = el("tspan", { x: o.x, y: o.y + top + lh * 0.74 });
+      span.textContent = line;
+      node.appendChild(span);
+    }
+    return node;
+  };
+  const rows = o.lines.map((line, i) => ({ line, top: tops[i]! }));
+  if (!o.lines.some((l) => l.includes("$"))) return plain(rows);
+  const group = el("g", { class: "rich-text" });
+  for (const row of rows) {
+    if (!row.line.includes("$")) {
+      group.appendChild(plain([row]));
+      continue;
+    }
+    group.appendChild(
+      mathLine({
+        x: o.x,
+        baseline: o.y + row.top + lh * 0.74,
+        text: row.line,
+        size: o.size,
+        color: o.color ?? INK,
+        anchor: o.anchor ?? "start",
+        weight: o.weight,
+      }),
+    );
+  }
+  return group;
 }
+
+/** One line of text and typeset formulas, positioned by its baseline. */
+export function mathLine(o: {
+  x: number;
+  baseline: number;
+  text: string;
+  size: number;
+  color: string;
+  anchor: "start" | "middle" | "end";
+  weight?: number;
+}): SVGGElement {
+  const { runs, width } = layoutLabel(o.text, o.size);
+  const x0 = o.anchor === "middle" ? o.x - width / 2 : o.anchor === "end" ? o.x - width : o.x;
+  const g = el("g", { class: "math" });
+  const glyph = (x: number, y: number, content: string, size: number) => {
+    const t = el("text", {
+      x: round2(x),
+      y: round2(y),
+      "font-family": FONT_STACK,
+      "font-size": round2(size),
+      "font-weight": o.weight,
+      fill: o.color,
+    });
+    t.textContent = content;
+    g.appendChild(t);
+  };
+  for (const run of runs) {
+    if (run.k === "text") {
+      if (run.text.trim()) glyph(x0 + run.x, o.baseline, run.text, o.size);
+      continue;
+    }
+    for (const item of run.box.items) {
+      const bx = x0 + run.x;
+      if (item.k === "glyph") glyph(bx + item.x, o.baseline + item.y, item.text, item.size);
+      else if (item.k === "line")
+        g.appendChild(
+          el("line", {
+            x1: round2(bx + item.x1),
+            y1: round2(o.baseline + item.y1),
+            x2: round2(bx + item.x2),
+            y2: round2(o.baseline + item.y2),
+            stroke: o.color,
+            "stroke-width": item.width,
+            "stroke-linecap": "round",
+          }),
+        );
+      else
+        g.appendChild(
+          el("polyline", {
+            points: item.points
+              .map(([px, py]) => `${round2(bx + px)},${round2(o.baseline + py)}`)
+              .join(" "),
+            fill: "none",
+            stroke: o.color,
+            "stroke-width": item.width,
+            "stroke-linecap": "round",
+            "stroke-linejoin": "round",
+          }),
+        );
+    }
+  }
+  return g;
+}
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
 
 /** Orthogonal polyline with softened corners, as a path for rough.js. */
 export function roundedPath(points: Point[], radius = 10): string {

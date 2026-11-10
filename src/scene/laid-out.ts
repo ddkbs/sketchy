@@ -9,6 +9,8 @@ import type {
   SceneWire,
 } from "./types.js";
 
+import type { Primitive, SceneFigure } from "../figures/types.js";
+
 /**
  * A scene after layout: every element carries concrete geometry in
  * scene pixels. Produced by the server, consumed by the viewer.
@@ -65,6 +67,14 @@ export type LaidOutImage = SceneImage &
     attributionBox: TextBox;
   };
 
+export type LaidOutFigure = SceneFigure &
+  Rect & {
+    /** The figure as the overview shows it, for renderers that cannot lay figures out. */
+    prims: Primitive[];
+    /** Per step, when the step changes the figure: its primitives then. */
+    stepPrims?: (Primitive[] | null)[];
+  };
+
 export type LaidOutScene = {
   kind: "scene";
   /** The flow the layout used; a follow-up keeps it. */
@@ -80,5 +90,6 @@ export type LaidOutScene = {
   wires: LaidOutWire[];
   labels: LaidOutLabel[];
   images: LaidOutImage[];
+  figures: LaidOutFigure[];
   steps: SceneStep[];
 };

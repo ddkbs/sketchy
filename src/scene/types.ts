@@ -1,3 +1,5 @@
+import type { FigureState, SceneFigure } from "../figures/types.js";
+
 /**
  * A scene describes *what* to draw, never *where*.
  * Positions and sizes are computed by the layout engine, so every element
@@ -100,8 +102,10 @@ export type SceneImage = {
 export type SceneStep = {
   title: string;
   text?: string;
-  /** Ids of any scene elements to emphasize in this step. */
+  /** Ids of any scene elements to emphasize in this step; figure parts as "a[2]". */
   highlight: string[];
+  /** Slider values, data structure contents and pointer positions this step sets. */
+  set?: FigureState;
 };
 
 export type Scene = {
@@ -116,6 +120,7 @@ export type Scene = {
   wires: SceneWire[];
   labels: SceneLabel[];
   images: SceneImage[];
+  figures: SceneFigure[];
   steps: SceneStep[];
 };
 
@@ -128,6 +133,7 @@ export function emptyScene(): Scene {
     wires: [],
     labels: [],
     images: [],
+    figures: [],
     steps: [],
   };
 }

@@ -377,3 +377,34 @@ button:disabled {
 .frame.drawing[data-tool="eraser"] .layer-annotations .mark {
   pointer-events: visiblePainted;
 }
+
+/* Plot sliders: one row per parameter under the drawing. */
+.sliders {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 22px;
+  padding: 8px 14px 4px;
+  font-family: Kalam, "Comic Sans MS", cursive;
+  font-size: 17px;
+  color: #1a5fb4;
+}
+.slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.slider-name {
+  font-weight: 700;
+  min-width: 1ch;
+}
+.slider input[type="range"] {
+  width: 170px;
+  accent-color: #1a5fb4;
+}
+.slider-value {
+  min-width: 3.5ch;
+  font-variant-numeric: tabular-nums;
+}
+.inline-math {
+  overflow: visible;
+}

@@ -4,7 +4,11 @@ import { FONT_CSS } from "./fonts.js";
 import { toExcalidraw } from "./excalidraw.js";
 import { slug, toPngBase64, toSvgString } from "./export.js";
 import { fitText, renderScene, type RenderedScene } from "./render.js";
-import { applyStep } from "./steps.js";
+import { applyStep, drawHighlights } from "./steps.js";
+import { el, mathLine } from "./draw.js";
+import { layoutLabel, splitMath } from "../../src/math/inline.js";
+import { fmtValue } from "../../src/figures/plot.js";
+import { INK } from "./palette.js";
 
 /** What the view needs from its surroundings (the MCP host or a dev page). */
 export interface Host {
@@ -44,7 +48,9 @@ export function mountScene(root: HTMLElement, scene: LaidOutScene, host: Host): 
   const annotator = createAnnotator(rendered.svg, frame);
   frame.append(toolbar(scene, rendered, host, annotator, frame), canvas);
   frame.appendChild(drawbar(scene, rendered, host, annotator, frame));
-  if (scene.steps.length) frame.appendChild(stepper(scene, rendered));
+  const sliders = sliderPanel(scene, rendered);
+  if (sliders) frame.appendChild(sliders.panel);
+  if (scene.steps.length) frame.appendChild(stepper(scene, rendered, () => sliders?.sync()));
   frame.appendChild(tooltip);
   root.appendChild(frame);
 
@@ -194,7 +200,76 @@ function drawbar(
   return bar;
 }
 
-function stepper(scene: LaidOutScene, rendered: RenderedScene): HTMLElement {
+/**
+ * Range inputs for every plot slider. Dragging redraws the plot live; a step
+ * that sets a slider moves the input with it.
+ */
+function sliderPanel(
+  scene: LaidOutScene,
+  rendered: RenderedScene,
+): { panel: HTMLElement; sync: () => void } | undefined {
+  const rows: { sync: () => void; el: HTMLElement }[] = [];
+  for (const view of rendered.figures.values()) {
+    const spec = view.fig.spec;
+    if (spec.kind !== "plot" && spec.kind !== "draw") continue;
+    for (const s of spec.sliders) {
+      if (s.hidden) continue;
+      const row = div("slider");
+      const name = document.createElement("span");
+      name.className = "slider-name";
+      name.textContent = s.name;
+      const input = document.createElement("input");
+      input.type = "range";
+      input.min = String(s.min);
+      input.max = String(s.max);
+      input.step = String(s.step ?? (s.max - s.min) / 200);
+      const value = document.createElement("span");
+      value.className = "slider-value";
+      const sync = () => {
+        const v = view.env()[s.name] ?? s.value;
+        input.value = String(v);
+        value.textContent = fmtValue(v);
+      };
+      input.oninput = () => {
+        view.setLive(s.name, Number(input.value));
+        // The red circles follow what the slider moves.
+        if (rendered.step !== undefined) drawHighlights(scene, rendered, rendered.step);
+        value.textContent = fmtValue(Number(input.value));
+      };
+      sync();
+      row.append(name, input, value);
+      rows.push({ sync, el: row });
+    }
+  }
+  if (!rows.length) return undefined;
+  const panel = div("sliders");
+  panel.append(...rows.map((r) => r.el));
+  return { panel, sync: () => rows.forEach((r) => r.sync()) };
+}
+
+/** Text with $math$ as HTML: formulas become small inline SVGs. */
+function richText(parent: HTMLElement, content: string, size: number): void {
+  for (const part of splitMath(content)) {
+    if (!part.math) {
+      parent.append(part.text);
+      continue;
+    }
+    const tex = `$${part.text}$`;
+    const { width, asc, desc } = layoutLabel(tex, size);
+    const w = Math.ceil(width + 2);
+    const h = Math.ceil(asc + desc + 2);
+    const svg = el("svg", { width: w, height: h, viewBox: `0 0 ${w} ${h}`, class: "inline-math" });
+    svg.style.verticalAlign = `${-Math.round(desc)}px`;
+    svg.appendChild(mathLine({ x: 1, baseline: asc + 1, text: tex, size, color: INK, anchor: "start" }));
+    parent.appendChild(svg);
+  }
+}
+
+function stepper(
+  scene: LaidOutScene,
+  rendered: RenderedScene,
+  onChange: () => void = () => {},
+): HTMLElement {
   const panel = div("stepper");
   const prev = button("‹", "Previous step", () => go(-1));
   const next = button("›", "Next step", () => go(1));
@@ -204,8 +279,11 @@ function stepper(scene: LaidOutScene, rendered: RenderedScene): HTMLElement {
   panel.appendChild(dots);
   let index: number | undefined;
 
+  let first = true;
   const show = () => {
-    applyStep(scene, rendered, index);
+    applyStep(scene, rendered, index, !first);
+    first = false;
+    onChange();
     prev.disabled = index === undefined;
     next.disabled = index === scene.steps.length - 1;
     body.replaceChildren();
@@ -220,11 +298,11 @@ function stepper(scene: LaidOutScene, rendered: RenderedScene): HTMLElement {
       const head = document.createElement("div");
       head.className = "step-title";
       head.innerHTML = `<span class="step-count">${index + 1}/${scene.steps.length}</span>`;
-      head.append(step.title);
+      richText(head, step.title, 16);
       body.appendChild(head);
       if (step.text) {
         const p = document.createElement("p");
-        p.textContent = step.text;
+        richText(p, step.text, 15);
         body.appendChild(p);
       }
     }

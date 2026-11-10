@@ -17,6 +17,8 @@ import type {
 } from "../scene/laid-out.js";
 import type { Scene, SceneNode } from "../scene/types.js";
 import { FONT, SPACING } from "../style/metrics.js";
+import { layoutFigure, stateAt, stateNames } from "../figures/index.js";
+import type { FigureLayout } from "../figures/types.js";
 import { planCallouts, type CalloutPlan } from "./callouts.js";
 import { editorLink, type Editor } from "./links.js";
 import { lineHeight, measureText } from "./text.js";
@@ -71,6 +73,7 @@ export async function layoutScene(
 ): Promise<LaidOutScene> {
   const frames = new Map<string, Frame>();
   const nodeSizes = new Map<string, { width: number; height: number; lines: string[] }>();
+  const figures = layoutFigures(scene);
 
   for (const node of scene.nodes) {
     const measured = measureNode(node);
@@ -152,7 +155,7 @@ export async function layoutScene(
   const sameFlow = !scene.direction || scene.direction === options.previous?.direction;
   const hints = options.previous && sameFlow ? followUpHints(scene, options.previous) : undefined;
   const run = async (direction: "right" | "down") => {
-    const graph = buildGraph(scene, parts, frames, nodeSizes, direction, hints);
+    const graph = buildGraph(scene, parts, frames, nodeSizes, direction, hints, figures);
     Object.assign(graph.layoutOptions!, options.elk);
     return elk.layout(graph);
   };
@@ -168,7 +171,48 @@ export async function layoutScene(
     result = readability(down) > readability(right) * 1.15 ? down : right;
   }
 
-  return collect(scene, parts, result, frames, nodeSizes, options);
+  return collect(scene, parts, result, frames, nodeSizes, options, figures);
+}
+
+type FigureFit = {
+  width: number;
+  height: number;
+  base: FigureLayout;
+  steps?: (FigureLayout | null)[];
+};
+
+/**
+ * Lays out every figure in each state the steps put it in; the box fits the
+ * largest, so stepping through never moves the rest of the drawing.
+ */
+function layoutFigures(scene: Scene): Map<string, FigureFit> {
+  const out = new Map<string, FigureFit>();
+  for (const fig of scene.figures) {
+    if (fig.spec.kind === "draw") {
+      // Resolved here so the laid-out scene carries them to the viewer.
+      for (const shape of fig.spec.shapes) {
+        if (shape.geo.g === "icon") shape.geo.data ??= resolveIcon(shape.geo.icon);
+      }
+    }
+    const base = layoutFigure(fig, {});
+    const names = new Set(stateNames(fig));
+    const touched = scene.steps.some((s) => Object.keys(s.set ?? {}).some((k) => names.has(k)));
+    let width = base.width;
+    let height = base.height;
+    let steps: (FigureLayout | null)[] | undefined;
+    if (touched) {
+      steps = scene.steps.map((_, i) => {
+        const state = stateAt(scene.steps, i);
+        if (!Object.keys(state).some((k) => names.has(k))) return null;
+        const l = layoutFigure(fig, state);
+        width = Math.max(width, l.width);
+        height = Math.max(height, l.height);
+        return l;
+      });
+    }
+    out.set(fig.id, { width, height, base, ...(steps ? { steps } : {}) });
+  }
+  return out;
 }
 
 /** Elements shared with the previous drawing must make up at least this share. */
@@ -180,7 +224,11 @@ const FOLLOW_UP_SHARE = 0.5;
  * Undefined when the scene is a different drawing rather than a follow-up.
  */
 function followUpHints(scene: Scene, previous: PreviousLayout): Map<string, Point> | undefined {
-  const ids = [...scene.nodes.map((n) => n.id), ...scene.parts.map((p) => p.id)];
+  const ids = [
+    ...scene.nodes.map((n) => n.id),
+    ...scene.parts.map((p) => p.id),
+    ...scene.figures.map((f) => f.id),
+  ];
   const known = ids.filter((id) => previous.positions[id]);
   if (!ids.length || known.length / ids.length < FOLLOW_UP_SHARE) return undefined;
   const hints = new Map<string, Point>(known.map((id) => [id, previous.positions[id]!]));
@@ -239,6 +287,7 @@ export function previousLayout(laidOut: LaidOutScene): PreviousLayout {
   for (const n of laidOut.nodes) positions[n.id] = { x: n.x, y: n.y };
   for (const p of laidOut.parts) positions[p.id] = { x: p.x, y: p.y };
   for (const g of laidOut.groups) positions[g.id] = { x: g.x, y: g.y };
+  for (const f of laidOut.figures ?? []) positions[f.id] = { x: f.x, y: f.y };
   return { direction: laidOut.direction ?? "right", positions };
 }
 
@@ -304,6 +353,7 @@ function buildGraph(
   nodeSizes: Map<string, { width: number; height: number }>,
   direction: "right" | "down",
   hints?: Map<string, Point>,
+  figures: Map<string, FigureFit> = new Map(),
 ): ElkNode {
   const containers = new Map<string, ElkNode>();
   const root: ElkNode = {
@@ -405,6 +455,15 @@ function buildGraph(
     const f = frames.get(image.id)!;
     root.children!.push({ id: image.id, width: f.outerWidth, height: f.outerHeight });
   }
+  for (const fig of scene.figures) {
+    const size = figures.get(fig.id)!;
+    container(fig.group).children!.push({
+      id: fig.id,
+      width: size.width,
+      height: size.height,
+      ...at(fig.id, fig.group),
+    });
+  }
   if (hints) {
     sortByHints(containers.values(), hints, direction);
     // Each group lays out its own children; it needs the strategies too.
@@ -494,6 +553,7 @@ function collect(
   frames: Map<string, Frame>,
   nodeSizes: Map<string, { width: number; height: number; lines: string[] }>,
   options: LayoutOptions,
+  figureFits: Map<string, FigureFit> = new Map(),
 ): LaidOutScene {
   const boxes = new Map<string, { x: number; y: number; width: number; height: number }>();
   const visit = (n: ElkNode) => {
@@ -689,6 +749,18 @@ function collect(
     wires,
     labels,
     images,
+    figures: scene.figures.map((fig) => {
+      const b = boxes.get(fig.id)!;
+      const fit = figureFits.get(fig.id)!;
+      return {
+        ...fig,
+        ...at(b),
+        width: round(b.width),
+        height: round(b.height),
+        prims: fit.base.prims,
+        ...(fit.steps ? { stepPrims: fit.steps.map((l) => l?.prims ?? null) } : {}),
+      };
+    }),
     steps: scene.steps,
   };
 }

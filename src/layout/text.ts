@@ -5,6 +5,8 @@
  * boxes err on the roomy side; the viewer shrinks text that still overflows.
  */
 
+import { extraHeight, labelWidth } from "../math/inline.js";
+
 const NARROW = new Set([..."il.,:;'|!`()[]{}/\\ "]);
 const WIDE = new Set([..."mwMW@%&"]);
 
@@ -23,19 +25,45 @@ export function textWidth(text: string, fontSize: number): number {
   return em * fontSize;
 }
 
+/** Width of a line that may contain $math$. */
+export function richWidth(text: string, fontSize: number): number {
+  return text.includes("$") ? labelWidth(text, fontSize) : textWidth(text, fontSize);
+}
+
+/** Words of a paragraph; a $formula$ stays one word, spaces and all. */
+function words(paragraph: string): string[] {
+  const out: string[] = [];
+  let word = "";
+  let math = false;
+  for (const c of paragraph) {
+    if (c === "$") math = !math;
+    if (/\s/.test(c) && !math) {
+      if (word) out.push(word);
+      word = "";
+    } else word += c;
+  }
+  if (word) out.push(word);
+  return out;
+}
+
 /** Greedy word wrap; words longer than the limit are broken by character. */
 export function wrapText(text: string, fontSize: number, maxWidth: number): string[] {
   const lines: string[] = [];
   for (const paragraph of text.split(/\r?\n/)) {
     let line = "";
-    for (const word of paragraph.split(/\s+/).filter(Boolean)) {
+    for (const word of words(paragraph)) {
       const candidate = line ? `${line} ${word}` : word;
-      if (textWidth(candidate, fontSize) <= maxWidth) {
+      if (richWidth(candidate, fontSize) <= maxWidth) {
         line = candidate;
         continue;
       }
       if (line) lines.push(line);
       line = "";
+      // Formulas are never broken; one too wide simply overflows.
+      if (word.includes("$")) {
+        line = word;
+        continue;
+      }
       let rest = word;
       while (textWidth(rest, fontSize) > maxWidth) {
         let cut = 1;
@@ -58,8 +86,24 @@ export function lineHeight(fontSize: number): number {
 
 export type MeasuredText = { lines: string[]; width: number; height: number };
 
+/** Top offsets of each line in a block, taller where formulas need room. */
+export function lineTops(lines: string[], fontSize: number): number[] {
+  const tops: number[] = [];
+  let y = 0;
+  for (const line of lines) {
+    const extra = extraHeight(line, fontSize);
+    tops.push(y + extra / 2);
+    y += lineHeight(fontSize) + extra;
+  }
+  return tops;
+}
+
+export function blockHeight(lines: string[], fontSize: number): number {
+  return lines.reduce((h, l) => h + lineHeight(fontSize) + extraHeight(l, fontSize), 0);
+}
+
 export function measureText(text: string, fontSize: number, maxWidth: number): MeasuredText {
   const lines = wrapText(text, fontSize, maxWidth);
-  const width = Math.max(0, ...lines.map((l) => textWidth(l, fontSize)));
-  return { lines, width: Math.ceil(width), height: lines.length * lineHeight(fontSize) };
+  const width = Math.max(0, ...lines.map((l) => richWidth(l, fontSize)));
+  return { lines, width: Math.ceil(width), height: blockHeight(lines, fontSize) };
 }
