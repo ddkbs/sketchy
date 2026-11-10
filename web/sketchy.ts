@@ -3,6 +3,7 @@ import { layoutScene } from "../src/layout/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { SceneBuilder } from "../src/scene/builder.js";
 import { parseCompact } from "../src/scene/compact.js";
+import { fillScene, type SketchInput } from "../src/scene/fill.js";
 import { sketchShape } from "../src/tools/schemas.js";
 import { FONT_CSS } from "../viewer/src/fonts.js";
 import { mountScene } from "../viewer/src/scene-view.js";
@@ -80,24 +81,26 @@ export async function draw(target: HTMLElement | string, scene: unknown): Promis
   injectStyles();
   root.classList.add("sketchy");
   try {
-    const input = z
-      .object(sketchShape)
-      .parse(typeof scene === "string" ? parseCompact(scene) : scene);
-    const icons = (input.nodes ?? []).flatMap((n) => (n.icon ? [n.icon] : []));
+    // The line syntax is checked by its parser and carries what the JSON schema
+    // leaves out (figures, the values steps assign), so only JSON goes through zod.
+    const input: SketchInput =
+      typeof scene === "string" ? parseCompact(scene) : z.object(sketchShape).parse(scene);
+    const figures = input.figures ?? [];
+    const icons = [
+      ...(input.nodes ?? []).flatMap((n) => (n.icon ? [n.icon] : [])),
+      ...figures.flatMap((f) =>
+        f.spec.kind === "draw"
+          ? f.spec.shapes.flatMap((s) => (s.geo.g === "icon" ? [s.geo.icon] : []))
+          : [],
+      ),
+    ];
     // Parts need the catalog and SQLite; plain diagrams skip both.
     const [parts] = await Promise.all([
       input.parts?.length ? loadParts() : Promise.resolve(undefined as unknown as PartIndex),
       loadIcons(icons),
     ]);
     const builder = new SceneBuilder(parts);
-    builder.reset({ title: input.title, subtitle: input.subtitle, direction: input.direction });
-    for (const g of input.groups ?? []) builder.addGroup(g);
-    for (const n of input.nodes ?? []) builder.addNode(n);
-    for (const p of input.parts ?? []) builder.addPart(p);
-    for (const e of input.edges ?? []) builder.addEdge(e);
-    for (const w of input.wires ?? []) builder.connect(w);
-    for (const l of input.labels ?? []) builder.addLabel(l);
-    for (const s of input.steps ?? []) builder.addStep(s);
+    await fillScene(builder, input);
     const laidOut = await layoutScene(builder.scene, parts);
     mountScene(root, laidOut, {
       openLink(url) {

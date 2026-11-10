@@ -4,6 +4,7 @@ import { layoutScene } from "../src/layout/index.js";
 import { PartIndex } from "../src/parts/index.js";
 import { SceneBuilder } from "../src/scene/builder.js";
 import { parseCompact } from "../src/scene/compact.js";
+import { fillScene, type SketchInput } from "../src/scene/fill.js";
 import { embedScene } from "../src/standalone.js";
 import { sketchShape } from "../src/tools/schemas.js";
 
@@ -28,19 +29,14 @@ if (!scenePath || !outPath) {
 try {
   // A .json file holds the JSON form; anything else is the compact line syntax.
   const source = readFileSync(scenePath, "utf8");
-  const input = z
-    .object(sketchShape)
-    .parse(scenePath.endsWith(".json") ? JSON.parse(source) : parseCompact(source));
-  const builder = new SceneBuilder(parts);
-  builder.reset({ title: input.title, subtitle: input.subtitle, direction: input.direction });
-  for (const g of input.groups ?? []) builder.addGroup(g);
-  for (const n of input.nodes ?? []) builder.addNode(n);
-  for (const p of input.parts ?? []) builder.addPart(p);
+  // The line syntax is checked by its parser and carries what the JSON schema
+  // leaves out (figures, the values steps assign), so only JSON goes through zod.
+  const input: SketchInput = scenePath.endsWith(".json")
+    ? z.object(sketchShape).parse(JSON.parse(source))
+    : parseCompact(source);
   if (input.images?.length) throw new Error("Photos are not available in the skill.");
-  for (const e of input.edges ?? []) builder.addEdge(e);
-  for (const w of input.wires ?? []) builder.connect(w);
-  for (const l of input.labels ?? []) builder.addLabel(l);
-  for (const s of input.steps ?? []) builder.addStep(s);
+  const builder = new SceneBuilder(parts);
+  await fillScene(builder, input);
 
   const laidOut = await layoutScene(builder.scene, parts);
   const template = readFileSync(new URL("./viewer.html", import.meta.url), "utf8");
