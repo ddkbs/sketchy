@@ -9,7 +9,9 @@ const page = (path: string) => resolve(import.meta.dirname, path);
 // this package so the site builds without installing the server.
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  resolve: { dedupe: ["roughjs", "@fontsource/kalam", "react", "react-dom"] },
+  resolve: {
+    dedupe: ["roughjs", "@fontsource/kalam", "react", "react-dom", "d3-geo", "topojson-client", "world-atlas"],
+  },
   server: { fs: { allow: [".."] } },
   build: {
     rollupOptions: {

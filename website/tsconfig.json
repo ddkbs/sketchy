@@ -1,7 +1,11 @@
 {
   "compilerOptions": {
     "target": "ES2022",
-    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
@@ -9,11 +13,35 @@
     "noEmit": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "types": ["vite/client"],
+    "types": [
+      "vite/client"
+    ],
     "paths": {
-      "roughjs": ["./node_modules/roughjs"],
-      "roughjs/*": ["./node_modules/roughjs/*"]
+      "roughjs": [
+        "./node_modules/roughjs"
+      ],
+      "roughjs/*": [
+        "./node_modules/roughjs/*"
+      ],
+      "d3-geo": [
+        "./node_modules/@types/d3-geo"
+      ],
+      "geojson": [
+        "./node_modules/@types/geojson"
+      ],
+      "topojson-client": [
+        "./node_modules/@types/topojson-client"
+      ],
+      "topojson-specification": [
+        "./node_modules/@types/topojson-specification"
+      ],
+      "world-atlas/*": [
+        "./node_modules/world-atlas/*"
+      ]
     }
   },
-  "include": ["src", "vite.config.ts"]
+  "include": [
+    "src",
+    "vite.config.ts"
+  ]
 }
