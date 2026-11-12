@@ -82,7 +82,8 @@ describe("Claude Code terminal renderer", () => {
   let files: TerminalFiles;
   beforeAll(async () => {
     ({ sketch, files } = await layout(SCENE));
-  });
+    // Rendering PNGs takes over 10 s on the Windows CI runner.
+  }, 60_000);
 
   it("renders a picture of the whole drawing and of every step", async () => {
     expect(files.images).toHaveLength(3);
