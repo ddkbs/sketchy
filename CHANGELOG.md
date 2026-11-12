@@ -17,7 +17,7 @@ All notable changes to this project are documented here. The format follows
 - After drawing, Sketchy tells the AI about overlapping text and shapes that leave their canvas, at the start and in every step, so it can fix them before the user looks.
 - Ready-made explanation shapes where the AI only names the contents: `timeline`, `cycle`, `pyramid`, `funnel`, `venn`, `matrix` and `mindmap`.
 - `edit_sketch`: follow-up changes send only what changes instead of the whole scene.
-- Setup instructions for Codex (`codex mcp add` and `config.toml`). Thanks to @lprakashv for the suggestion (#4, #5).
+- Setup instructions for Codex (`codex mcp add` and `config.toml`).
 
 ### Fixed
 
