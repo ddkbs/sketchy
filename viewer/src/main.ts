@@ -7,7 +7,7 @@ import "./styles.css";
 
 const SCENE_META_KEY = "sketchy/scene";
 const root = document.getElementById("app")!;
-const app = new App({ name: "Sketchy", version: "0.1.8" }, {}, { autoResize: true });
+const app = new App({ name: "Sketchy", version: "0.2.0" }, {}, { autoResize: true });
 
 const host: Host = {
   openLink(url) {

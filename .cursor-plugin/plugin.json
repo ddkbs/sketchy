@@ -1,7 +1,7 @@
 {
   "name": "sketchy",
   "displayName": "Sketchy",
-  "version": "0.1.8",
+  "version": "0.2.0",
   "description": "Explains things visually: hand-drawn, interactive diagrams of your code, step-by-step walkthroughs, Arduino circuits and labeled photos, right in the agent chat.",
   "author": {
     "name": "ddkbs"

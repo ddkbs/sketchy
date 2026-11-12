@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-12
+
 ### Added
 
 - Free drawing: a `draw` block with circles, ellipses, rectangles, lines, arrows, smooth curves, closed shapes, arcs and text on its own canvas, for pictures that boxes and arrows cannot show. It sits in a scene like a node. Sketchy places its labels, and steps can highlight single shapes or build the picture up in stages. Drawings also offer ready-made objects (person, car, tree, gear and more), icons, `repeat`, and sliders that move shapes, shifted as one piece with `move=` or along a path, by hand or step by step.
@@ -135,7 +137,8 @@ All notable changes to this project are documented here. The format follows
 - Drawings appear in Claude Code sessions of the Claude desktop app. The regular Claude chat does not display views from local extensions yet; support is planned.
 - Photo labeling is not available on Intel Macs (no ONNX Runtime build for macOS x64).
 
-[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.1.8...HEAD
+[Unreleased]: https://github.com/ddkbs/sketchy/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/ddkbs/sketchy/compare/v0.1.8...v0.2.0
 [0.1.8]: https://github.com/ddkbs/sketchy/compare/v0.1.7...v0.1.8
 [0.1.7]: https://github.com/ddkbs/sketchy/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/ddkbs/sketchy/compare/v0.1.5...v0.1.6
