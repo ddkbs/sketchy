@@ -1,8 +1,8 @@
 # Sketchy
 
-Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams rendered right next to the answer. It works in the Claude chat as a skill, **including the Claude app on your phone**, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Codex, Cursor, VS Code and other MCP clients.
+Sketchy lets your AI assistant **draw while it explains**: clean, hand-drawn, interactive diagrams, pictures, molecules and maps rendered right next to the answer. It works in the Claude chat as a skill, **including the Claude app on your phone**, and as an [MCP](https://modelcontextprotocol.io) server in Claude Code, Codex, Cursor, VS Code and other MCP clients.
 
-The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points and automatic layout. The AI never computes coordinates, so drawings come out precise and consistent every time.
+The AI decides **what** to draw and label. Sketchy decides **where**: a part library with named anchor points, automatic layout and ready-made shapes. The AI never computes coordinates (except on the small canvas of a free-hand picture), so drawings come out precise and consistent every time.
 
 ![Sketchy in a chat: the answer to "What happens when I open a web page?" comes with an interactive drawing and its toolbar (Draw, SVG, PNG, Excalidraw)](docs/images/chat.png)
 
@@ -21,6 +21,38 @@ Ask _"What happens when I open a web page?"_ and the AI draws the whole path, th
 Sketchy is not limited to hardware. Structure, flow, comparison and metaphor patterns cover any topic, from transformers to TCP.
 
 ![How an LLM picks the next word: tokenizer, embeddings, a transformer block with self-attention and MLP, and sampling](docs/images/transformer.png)
+
+### Pictures that move
+
+When boxes and arrows would hide the idea, the AI draws the thing itself: atoms, forces, orbits, a wing, the water cycle. A `draw` block has its own small canvas with circles, curves, shapes, arcs and text, ready-made objects (person, car, tree, cloud, sun, gear, drop and more) and icons. **Sliders** move shapes, as one piece or along a path, by hand or step by step, so a packet travels through the network and a droplet goes round the water cycle.
+
+![A droplet travels the water cycle: up from the sea, through the cloud, as rain onto the mountain and down the river back to the sea](docs/images/droplet.gif)
+
+Geometry and physics get helpers that would be fiddly by hand: `angle` with the right-angle square, `measure` for dimension lines, `brace`, `axes` and `grid`.
+
+<table>
+  <tr>
+    <td width="50%"><img alt="A right triangle with a right-angle mark and dimension lines: a = 3, b = 4, c = 5" src="docs/images/geometry.png"></td>
+    <td width="50%"><img alt="The water cycle as a ready-made cycle: evaporation, condensation, precipitation, collection" src="docs/images/cycle.png"></td>
+  </tr>
+</table>
+
+### Ready-made shapes
+
+For the classic explanation shapes the AI only names the contents and Sketchy draws the rest: `timeline`, `cycle`, `pyramid`, `funnel`, `venn`, `matrix` and `mindmap`.
+
+![The web in five moments: a timeline from 1989 to 2007](docs/images/timeline.png)
+
+### Molecules and maps
+
+Chemistry gets structural formulas from a SMILES string, rings, double bonds and hydrogens included. Geography and history get maps of any region, with countries to colour, places by latitude and longitude, and routes between them ([Natural Earth](https://www.naturalearthdata.com) outlines).
+
+<table>
+  <tr>
+    <td width="38%"><img alt="Structural formula of caffeine" src="docs/images/molecule.png"></td>
+    <td width="62%"><img alt="Map of western Europe: a dashed night-train route from Berlin to Paris, Germany and France coloured" src="docs/images/map.png"></td>
+  </tr>
+</table>
 
 ### Your own code
 
@@ -57,6 +89,7 @@ The AI finds a freely licensed photo (Wikimedia Commons, Openverse), and a visio
 ### Interactive, exportable
 
 - **Hover** any box, pin or wire for details.
+- **Step** through walkthroughs with the buttons or arrow keys; drag the **sliders** of a picture to move it yourself.
 - **Draw** on the sketch with a red pen, a highlighter and notes, then **Send to AI** with a question: the AI gets the marked-up drawing and which parts you marked.
 - **Click** a code node to open the file, or a photo credit to open its source.
 - **Export** as **SVG** or **PNG**, fonts included, or as an **Excalidraw** file to keep editing on [excalidraw.com](https://excalidraw.com): your system's save dialog asks where to put the file.
@@ -166,6 +199,11 @@ The npm package leaves out the photo-labeling runtime (about 470 MB) so it start
 - _"Compare TCP and UDP."_
 - _"Explain CPU caches with an everyday metaphor."_
 
+- _"Why can a plane fly?"_
+- _"Show me the structure of caffeine."_
+- _"Draw the route of the Silk Road on a map."_
+- _"Prove the Pythagorean theorem with a picture."_
+
 The same patterns are available as prompts: `explain-structure`, `explain-flow`, `compare`, `metaphor`, `explain-repo` and `explain-circuit`.
 
 ## How it works
@@ -174,7 +212,8 @@ The same patterns are available as prompts: `explain-structure`, `explain-flow`,
 The AI describes the scene (extension: tools like sketch, place_part, label;
                             skill: the same scene as JSON in an inline widget)
           ↓
-Scene: nodes, groups, parts, wires, labels, photos, steps — no coordinates
+Scene: nodes, groups, parts, wires, labels, photos, figures, steps
+       (coordinates only inside free-hand pictures)
           ↓
 Layout engine (elkjs): positions, orthogonal routing, collision-free callouts
           ↓
@@ -189,16 +228,19 @@ Every feature fills the same scene, and a single viewer renders it. The visual s
 | Tool                                   | Purpose                                                    |
 | -------------------------------------- | ---------------------------------------------------------- |
 | `sketch`                               | Draw a whole scene in one call, in the compact line syntax |
+| `edit_sketch`                          | Change the last drawing by sending only what changes       |
 | `search_parts`                         | Electronic part types and their pins                       |
 | `find_image`, `locate`, `choose_model` | Photo search, local grounding, model setup                 |
 
-A scene is a few short lines: `browser Browser @globe`, `browser -> server HTTPS`, `step Request: The browser asks | browser browser->server`. Setting `SKETCHY_FORMAT=json` restores the JSON `sketch` tool and the incremental tools of earlier versions (`add_node`, `add_edge`, `place_part`, `label`, `render`, …).
+A scene is a few short lines: `browser Browser @globe`, `browser -> server HTTPS`, `step Request: The browser asks | browser browser->server`. Pictures, templates, molecules and maps are blocks inside the same scene (`draw atom 100x100`, `cycle c`, `molecule caf <SMILES>`, `map eu <region>`). Setting `SKETCHY_FORMAT=json` restores the JSON `sketch` tool and the incremental tools of earlier versions (`add_node`, `add_edge`, `place_part`, `label`, `render`, …).
 
 </details>
 
 ### Follow-ups
 
-Ask the AI to change a drawing ("add the cache and the call back to the router") and it sends the scene again with the same ids. Sketchy keeps the order and places of everything the earlier drawing already showed and fits the new parts in around them, so before and after stay comparable, also when a back-edge closes a cycle.
+Ask the AI to change a drawing ("add the cache and the call back to the router") and it sends only the changes with `edit_sketch`, or the whole scene again with the same ids. Sketchy keeps the order and places of everything the earlier drawing already showed and fits the new parts in around them, so before and after stay comparable, also when a back-edge closes a cycle.
+
+After every drawing Sketchy checks what a reader would see: text that overlaps, shapes that leave their canvas, at the start and in every step. It tells the AI, which fixes those spots before you look.
 
 ## Token usage
 
@@ -244,6 +286,7 @@ npm install
 npm run build      # part catalog, server and viewer
 npm test
 npm run preview    # viewer with sample scenes at http://localhost:5173/preview.html
+npm run screenshots  # retake the README images (add names to retake only those)
 npm run pack       # .mcpb bundle for the current platform
 npm run build:skill  # chat skill zip
 npm run build:web    # browser bundle that the skill loads
