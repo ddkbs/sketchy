@@ -93,3 +93,54 @@ main -> render
 main -> steps
 main -> annotate
 main -> excalidraw`;
+
+export const DROPLET = `title The journey of one droplet
+subtitle Evaporation, condensation, rain and rivers, over and over
+draw cycle 200x110
+slider k 0..1 = 0 hidden
+shape sea 112,90 200,90 200,110 112,110 fill=blue hatch=blue
+object mountain 36,80 60
+object sun 182,14 20
+object cloud 98,22 36
+repeat i=0..3: line 54+8*i,36 50+8*i,46 color=blue
+curve loop 166,94 174,64 156,36 120,24 84,24 60,32 42,44 30,56 48,74 76,88 112,98 140,99 166,94 color=gray
+object drop 0,0 13 along=loop@k
+text 160,74 Evaporation size=11
+text 80,4 Condensation size=11
+text 4,30 Rain size=11
+text 84,80 River size=11`;
+
+export const PYTHAGORAS = `title a² + b² = c²
+subtitle The squares on the two short sides fill the square on the long side
+draw p 130x110
+shape tri 20,90 100,90 100,30 hatch=yellow
+angle r 20,90 100,90 100,30
+measure a 20,90 100,90 10 ~ b = 4
+measure b 100,90 100,30 10 ~ a = 3
+text 46,56 c = 5 size=12 !accent`;
+
+export const CAFFEINE = `title Caffeine
+molecule caf CN1C=NC2=C1C(=O)N(C(=O)N2C)C : C8H10N4O2`;
+
+export const NIGHT_TRAIN = `title Berlin to Paris by night train
+map eu -6,41,18,56 : 11 hours, one bed
+Germany hatch=yellow
+France hatch=blue
+place berlin 52.52,13.40 Berlin
+place paris 48.86,2.35 Paris
+route r: berlin -> paris --dashed ~ 11 h`;
+
+export const WATER_CYCLE = `title The water cycle
+cycle c
+Evaporation ~ Sun heats the sea
+Condensation ~ Clouds form
+Precipitation !accent ~ Rain and snow
+Collection ~ Rivers run to the sea`;
+
+export const WEB_TIMELINE = `title The web in five moments
+timeline t: Key dates
+1989 | Web proposed ~ At CERN
+1993 | Mosaic browser
+1998 | Google search
+2004 | Social web
+2007 | iPhone ~ The web in your pocket`;

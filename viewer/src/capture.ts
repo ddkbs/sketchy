@@ -35,6 +35,9 @@ if (shot.mode === "plain") {
   const { svg } = rendered;
   root.appendChild(svg);
   if (shot.step !== undefined) applyStep(shot.scene, rendered, shot.step);
+  // Frames of an animation: slider values from the address.
+  const state = new URLSearchParams(location.search).get("state");
+  if (state) rendered.figures.forEach((view) => view.setState(JSON.parse(state), false));
   void document.fonts.ready.then(() => fitText(svg));
   void ready();
 } else {
