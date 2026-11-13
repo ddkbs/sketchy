@@ -90,21 +90,6 @@ body {
   animation: var(--animate-shimmer);
 }
 
-/* The demo canvas: the real viewer SVG, scaled to fit. */
-.sketch-stage svg.sketch {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-.sketch-stage .element,
-.sketch-stage .title,
-.sketch-stage .layer-overlay {
-  transition: opacity 0.3s ease;
-}
-.sketch-stage .element.dim {
-  opacity: 0.14;
-}
-
 /* Long-form docs typography. */
 .prose-docs h2 {
   margin: 3rem 0 0.75rem;

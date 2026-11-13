@@ -38,6 +38,19 @@ const spring = (state: Spring, goal: number, stiffness: number, damping: number,
   }
 };
 
+/** What the cursor locks onto inside a same-origin iframe, which has no `.cursor-target`s. */
+const FRAME_TARGETS = "button, a[href], input, select, textarea, [role='button'], .cursor-target";
+
+/** An element's box in this page's coordinates, also for elements inside an iframe. */
+const rectOf = (element: Element): DOMRect => {
+  const box = element.getBoundingClientRect();
+  const frame =
+    element.ownerDocument === document ? null : element.ownerDocument.defaultView?.frameElement;
+  if (!frame) return box;
+  const outer = frame.getBoundingClientRect();
+  return new DOMRect(box.left + outer.left, box.top + outer.top, box.width, box.height);
+};
+
 const resolveElement = (value: TargetCursorProps["container"]): HTMLElement | null =>
   (value && "current" in value ? value.current : value) || null;
 
@@ -156,7 +169,8 @@ const TargetCursor = ({
       if (target) {
         const angle = turn.x;
         quarter = Math.round(angle / QUARTER);
-        const corner = parseFloat(getComputedStyle(target).borderTopLeftRadius) || 0;
+        const view = target.ownerDocument.defaultView ?? window;
+        const corner = parseFloat(view.getComputedStyle(target).borderTopLeftRadius) || 0;
         targetRadius = corner;
         spinSpeed = 0;
       }
@@ -169,7 +183,7 @@ const TargetCursor = ({
       last = now;
 
       if (target && !target.isConnected) lockOn(null);
-      const rect = target ? target.getBoundingClientRect() : null;
+      const rect = target ? rectOf(target) : null;
       const locked = !!rect && pointer.inside;
       const snapW = 4.6 / s.hoverDuration;
       const snapK = snapW * snapW;
@@ -349,6 +363,67 @@ const TargetCursor = ({
       wake();
     };
 
+    // An iframe swallows the pointer events. A same-origin frame (the live demo) reports them
+    // itself, so the cursor follows into it and locks onto its buttons; any other frame hides
+    // the cursor instead of leaving it stuck at the edge.
+    const frames = new WeakSet<HTMLIFrameElement>();
+    const docs = new WeakSet<Document>();
+    const follow = (frame: HTMLIFrameElement): boolean => {
+      let doc: Document | null = null;
+      try {
+        doc = frame.contentDocument;
+      } catch {
+        return false;
+      }
+      if (!frames.has(frame)) {
+        frames.add(frame);
+        frame.addEventListener("load", () => follow(frame));
+      }
+      if (!doc?.head || doc.location.href === "about:blank") return false;
+      if (docs.has(doc)) return true;
+      docs.add(doc);
+      const view = doc.defaultView!;
+      const hide = doc.createElement("style");
+      if (settingsRef.current.hideDefaultCursor)
+        hide.textContent = "html, html * { cursor: none !important; }";
+      doc.head.appendChild(hide);
+      view.addEventListener(
+        "pointermove",
+        (event) => {
+          if (event.pointerType && event.pointerType !== "mouse") return;
+          const outer = frame.getBoundingClientRect();
+          pointer.x = outer.left + event.clientX;
+          pointer.y = outer.top + event.clientY;
+          if (!pointer.inside) {
+            pointer.inside = true;
+            hideCursor();
+          }
+          const hit = event.target as Element | null;
+          lockOn(hit?.closest?.(FRAME_TARGETS) ?? null);
+          wake();
+        },
+        { passive: true },
+      );
+      view.addEventListener("pointerdown", onPointerDown, { passive: true });
+      view.addEventListener("pointerup", onPointerUp, { passive: true });
+      doc.documentElement.addEventListener("pointerleave", (event) => {
+        // Back on the page, its own pointermove takes over.
+        if (!event.relatedTarget) onLeave();
+      });
+      return true;
+    };
+
+    const onOver = (event: PointerEvent) => {
+      if (event.target instanceof HTMLIFrameElement && !follow(event.target)) onLeave();
+    };
+
+    // Clicking into a followed frame moves the focus there; the pointer is still on the page.
+    const onBlur = () => {
+      const active = document.activeElement;
+      if (active instanceof HTMLIFrameElement && frames.has(active)) return;
+      onLeave();
+    };
+
     const onScroll = () => {
       if (!pointer.inside) return;
       lockOn(findTarget(pointer.x, pointer.y));
@@ -360,7 +435,8 @@ const TargetCursor = ({
     window.addEventListener("pointerup", onPointerUp, { passive: true });
     window.addEventListener("scroll", onScroll, { passive: true, capture: true });
     document.documentElement.addEventListener("pointerleave", onLeave);
-    window.addEventListener("blur", onLeave);
+    document.addEventListener("pointerover", onOver);
+    window.addEventListener("blur", onBlur);
 
     return () => {
       cancelAnimationFrame(raf);
@@ -370,7 +446,8 @@ const TargetCursor = ({
       window.removeEventListener("pointerup", onPointerUp);
       window.removeEventListener("scroll", onScroll, { capture: true });
       document.documentElement.removeEventListener("pointerleave", onLeave);
-      window.removeEventListener("blur", onLeave);
+      document.removeEventListener("pointerover", onOver);
+      window.removeEventListener("blur", onBlur);
       lastScope?.removeAttribute("data-target-cursor-scope");
       style.remove();
     };

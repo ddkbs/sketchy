@@ -1,8 +1,8 @@
 import { Analytics } from "@vercel/analytics/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
-import { CAPABILITIES, TAGLINE } from "./shared/content";
-import { ChatDemo } from "./shared/demo/ChatDemo";
+import { TAGLINE } from "./shared/content";
+import { Conversation, Exchange } from "./shared/demo/Conversation";
 import { Docs } from "./shared/Docs";
 import {
   CLAUDE_CODE_INSTALL,
@@ -103,12 +103,12 @@ function Landing() {
   const { version } = useDownload();
   return (
     <>
-      <section className="relative isolate min-h-[100svh] overflow-hidden">
+      <section className="relative isolate min-h-[calc(100svh-150px)] overflow-hidden">
         <Topography color="#ef5444" className="!absolute inset-0 -z-10" />
         <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(ellipse_60%_45%_at_50%_42%,rgb(6_6_7/0.82),transparent_75%)]" />
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-56 bg-gradient-to-b from-transparent to-background" />
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 -z-10 h-32 bg-gradient-to-b from-transparent to-background" />
 
-        <div className="mx-auto flex min-h-[100svh] max-w-[1180px] flex-col items-center justify-center px-5 pb-24 pt-28 text-center">
+        <div className="mx-auto flex min-h-[calc(100svh-150px)] max-w-[1180px] flex-col items-center justify-center px-5 pb-20 pt-24 text-center">
           <motion.a
             {...up(0)}
             href={DOCS}
@@ -156,80 +156,13 @@ function Landing() {
         </div>
       </section>
 
-      <section className="relative mx-auto -mt-16 max-w-[1000px] px-4">
-        <div className="mb-4 flex items-end justify-between px-1">
-          <div>
-            <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
-              Live demo
-            </div>
-            <div className="mt-1 text-[22px] font-semibold tracking-[-0.03em]">
-              Pick a prompt. Click through it.
-            </div>
-          </div>
-          <div className="hidden font-mono text-[11px] text-faint sm:block">
-            real Sketchy output, replayed
-          </div>
-        </div>
-        <ChatDemo />
-      </section>
-
-      <PhotoLabeling />
-
-      <section className="mx-auto mt-24 max-w-[1000px] px-4">
-        <div className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border md:grid-cols-4">
-          {CAPABILITIES.map((c) => (
-            <div
-              key={c.title}
-              className="cursor-target group bg-background p-5 transition-colors hover:bg-white/[0.02]"
-            >
-              <div className="mb-4 grid size-9 place-items-center rounded-lg border border-border-strong text-muted-foreground transition-colors group-hover:border-accent/50 group-hover:text-accent">
-                {c.icon}
-              </div>
-              <div className="text-[15px] font-medium">{c.title}</div>
-              <div className="mt-1 text-[13.5px] leading-snug text-muted-foreground">{c.body}</div>
-            </div>
-          ))}
-        </div>
+      <section className="relative mx-auto -mt-8 max-w-[1000px] px-5">
+        <Conversation />
       </section>
 
       <Install />
       <Footer />
     </>
-  );
-}
-
-/** Core feature: real photos, labeled by a vision model on the user's computer. */
-function PhotoLabeling() {
-  return (
-    <section className="mx-auto mt-24 max-w-[1000px] px-4">
-      <div className="mb-6 grid gap-6 px-1 md:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)] md:items-end">
-        <div>
-          <div className="font-mono text-[11px] uppercase tracking-[0.18em] text-accent">
-            Labeled photos
-          </div>
-          <h2 className="mt-1 text-[clamp(26px,3.4vw,36px)] font-semibold leading-tight tracking-[-0.035em]">
-            Point at the real thing.
-          </h2>
-        </div>
-        <p className="text-[15px] leading-relaxed text-muted-foreground">
-          Ask <span className="text-foreground">“Show me an Arduino Uno and label the pins.”</span>{" "}
-          The AI finds an openly licensed photo, a vision model running on your computer
-          (Florence-2) locates the parts and printed text, and Sketchy draws the callouts. Your
-          images never leave your machine, and the credit is always shown.
-        </p>
-      </div>
-      <figure className="overflow-hidden rounded-2xl border border-border bg-[#fffdf7]">
-        <img
-          src="/gallery/photo.jpg"
-          alt="Photo of an Arduino Uno with hand-drawn labels for the reset button, digital pins, power pins and analog inputs"
-          className="block w-full"
-          loading="lazy"
-        />
-      </figure>
-      <p className="mt-3 px-1 font-mono text-[11.5px] text-faint">
-        real Sketchy output · comes with the extension for Claude Code, Cursor and VS Code
-      </p>
-    </section>
   );
 }
 
@@ -268,7 +201,7 @@ function ModePicker({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
     <div
       role="group"
       aria-label="Where you use Sketchy"
-      className="mx-auto mt-7 grid max-w-[520px] grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 sm:gap-3"
+      className="mt-5 grid max-w-[520px] grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-white/[0.03] p-1.5 sm:gap-3"
     >
       {MODES.map((m) => {
         const active = mode === m.id;
@@ -330,79 +263,76 @@ function ModePicker({ mode, onChange }: { mode: Mode; onChange: (m: Mode) => voi
   );
 }
 
-/** Two ways in: the skill for the chat, the extension for coding. */
+/** Installing is one more turn of the chat: the answer holds the two ways in. */
 function Install() {
   const { href, label, skillHref } = useDownload();
   const [mode, setMode] = useState<Mode>("chat");
   return (
-    <section id="install" className="mx-auto mt-24 max-w-[1000px] scroll-mt-24 px-4 pb-10">
-      <div className="relative overflow-hidden rounded-2xl border border-border bg-gradient-to-b from-white/[0.04] to-transparent px-6 py-14 text-center">
-        <div className="pointer-events-none absolute left-1/2 top-0 h-px w-2/3 -translate-x-1/2 bg-gradient-to-r from-transparent via-accent to-transparent" />
-        <h2 className="text-[clamp(28px,4vw,44px)] font-semibold tracking-[-0.04em]">
-          Ready in a minute.
-        </h2>
-        <p className="mx-auto mt-3 max-w-[46ch] text-muted-foreground">Where do you work?</p>
-        <ModePicker mode={mode} onChange={setMode} />
-
-        <AnimatePresence mode="wait" initial={false}>
-          {mode === "chat" ? (
-            <motion.div key="chat" {...swap} className="mx-auto mt-8 max-w-[520px]">
-              <ol className="space-y-2 text-left text-[15px] text-muted-foreground">
-                <li>
-                  <span className="mr-2 font-mono text-accent">1</span>Download the Sketchy skill.
-                </li>
-                <li>
-                  <span className="mr-2 font-mono text-accent">2</span>In Claude, open{" "}
-                  <span className="text-foreground">Settings → Capabilities → Skills</span> and
-                  upload it.
-                </li>
-                <li>
-                  <span className="mr-2 font-mono text-accent">3</span>Ask Claude to explain
-                  something. The drawing appears right in the chat.
-                </li>
-              </ol>
-              <div className="mt-8 flex justify-center">
-                <DownloadButton href={skillHref}>Download the skill</DownloadButton>
-              </div>
-              <p className="mt-4 font-mono text-[11.5px] text-faint">
-                Web, desktop and mobile · no server · updates itself
-              </p>
-            </motion.div>
-          ) : (
-            <motion.div key="code" {...swap} className="mx-auto mt-8 max-w-[620px]">
-              <p className="text-[15px] text-muted-foreground">
-                The extension runs on your computer and adds photo labeling, SVG, PNG and Excalidraw
-                export and click-to-open files.
-              </p>
-              <p className="mt-8 text-[13.5px] text-muted-foreground">
-                Claude desktop app, then start a session in the{" "}
-                <span className="text-foreground">Code</span> tab:
-              </p>
-              <div className="mt-3 flex flex-wrap justify-center gap-3">
-                <DownloadButton href={href}>Download for {label}</DownloadButton>
-              </div>
-              <p className="mt-8 text-[13.5px] text-muted-foreground">
-                Cursor or VS Code, one click (needs Node.js):
-              </p>
-              <div className="mt-3 flex flex-wrap justify-center gap-3">
-                <EditorButton href={CURSOR_INSTALL_URL}>Add to Cursor</EditorButton>
-                <EditorButton href={VSCODE_INSTALL_URL}>Add to VS Code</EditorButton>
-              </div>
-              <p className="mt-8 text-[13.5px] text-muted-foreground">
-                Claude Code in the terminal:
-              </p>
-              <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-black/40 p-4 text-left font-mono text-[12.5px] leading-relaxed text-muted-foreground">
-                {CLAUDE_CODE_INSTALL}
-              </pre>
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <a
-          href={DOCS}
-          className="cursor-target mt-8 inline-block text-[14px] text-muted-foreground transition-colors hover:text-foreground"
-        >
-          Read the docs →
-        </a>
+    <section id="install" className="mx-auto mt-28 max-w-[1000px] scroll-mt-24 px-5 pb-16 sm:mt-36">
+      <div className="mx-auto max-w-[760px]">
+        <Exchange prompt="How do I get this?">
+          <p>Two minutes. Where do you work?</p>
+          <ModePicker mode={mode} onChange={setMode} />
+          <AnimatePresence mode="wait" initial={false}>
+            {mode === "chat" ? (
+              <motion.div key="chat" {...swap} className="mt-6">
+                <ol className="space-y-2 text-[15px] text-muted-foreground">
+                  <li>
+                    <span className="mr-2 font-mono text-accent">1</span>Download the Sketchy skill.
+                  </li>
+                  <li>
+                    <span className="mr-2 font-mono text-accent">2</span>In Claude, open{" "}
+                    <span className="text-foreground">Settings → Capabilities → Skills</span> and
+                    upload it.
+                  </li>
+                  <li>
+                    <span className="mr-2 font-mono text-accent">3</span>Ask Claude to explain
+                    something. The drawing appears right in the chat.
+                  </li>
+                </ol>
+                <div className="mt-6">
+                  <DownloadButton href={skillHref}>Download the skill</DownloadButton>
+                </div>
+                <p className="mt-4 font-mono text-[11.5px] text-faint">
+                  Web, desktop and mobile · no server · updates itself
+                </p>
+              </motion.div>
+            ) : (
+              <motion.div key="code" {...swap} className="mt-6">
+                <p className="text-[15px] text-muted-foreground">
+                  The extension runs on your computer and adds photo labeling, SVG, PNG and
+                  Excalidraw export and click-to-open files.
+                </p>
+                <p className="mt-6 text-[13.5px] text-muted-foreground">
+                  Claude desktop app, then start a session in the{" "}
+                  <span className="text-foreground">Code</span> tab:
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <DownloadButton href={href}>Download for {label}</DownloadButton>
+                </div>
+                <p className="mt-6 text-[13.5px] text-muted-foreground">
+                  Cursor or VS Code, one click (needs Node.js):
+                </p>
+                <div className="mt-3 flex flex-wrap gap-3">
+                  <EditorButton href={CURSOR_INSTALL_URL}>Add to Cursor</EditorButton>
+                  <EditorButton href={VSCODE_INSTALL_URL}>Add to VS Code</EditorButton>
+                </div>
+                <p className="mt-6 text-[13.5px] text-muted-foreground">
+                  Claude Code in the terminal:
+                </p>
+                <pre className="mt-2 overflow-x-auto rounded-lg border border-border bg-black/40 p-4 text-left font-mono text-[12.5px] leading-relaxed text-muted-foreground">
+                  {CLAUDE_CODE_INSTALL}
+                </pre>
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <a
+            href={DOCS}
+            className="cursor-target mt-6 inline-block text-[14px] text-muted-foreground transition-colors hover:text-foreground"
+          >
+            Read the docs →
+          </a>
+        </Exchange>
       </div>
     </section>
   );
@@ -414,7 +344,7 @@ function Footer() {
       <span className="flex items-center gap-2">
         <LogoMark className="size-4 text-muted-foreground" /> Sketchy · MIT License
       </span>
-      <span className="flex gap-5">
+      <span className="flex flex-wrap justify-center gap-x-5 gap-y-2">
         <a href={DOCS} className="cursor-target hover:text-foreground">
           Docs
         </a>
