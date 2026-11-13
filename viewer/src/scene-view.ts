@@ -41,9 +41,16 @@ export function mountScene(root: HTMLElement, scene: LaidOutScene, host: Host): 
   const tooltip = div("tooltip");
   tooltip.hidden = true;
   const rendered = renderScene(scene, FONT_CSS);
-  // Large scenes scroll sideways rather than shrinking text into illegibility.
-  rendered.svg.style.minWidth = `${Math.round(scene.width * 0.62)}px`;
   rendered.svg.style.maxWidth = `${scene.width}px`;
+  // Wide screens: large scenes scroll sideways rather than shrinking text into illegibility.
+  // Phones: fit the whole drawing to the width; a tap opens it fullscreen, where it can be panned.
+  const fit = () => {
+    const fullscreen = document.documentElement.classList.contains("fullscreen");
+    const narrow = window.innerWidth < 600;
+    const factor = narrow ? (fullscreen ? 0.75 : 0) : 0.62;
+    rendered.svg.style.minWidth = factor ? `${Math.round(scene.width * factor)}px` : "0";
+    frame.classList.toggle("tap-zoom", narrow && !fullscreen && Boolean(host.toggleFullscreen));
+  };
   canvas.appendChild(rendered.svg);
   const annotator = createAnnotator(rendered.svg, frame);
   frame.append(toolbar(scene, rendered, host, annotator, frame), canvas);
@@ -54,6 +61,9 @@ export function mountScene(root: HTMLElement, scene: LaidOutScene, host: Host): 
   frame.appendChild(tooltip);
   root.appendChild(frame);
 
+  fit();
+  window.addEventListener("resize", fit);
+  window.addEventListener("sketchy-context", fit);
   void document.fonts.ready.then(() => fitText(rendered.svg));
   wireInteractions(scene, rendered, host, tooltip, frame);
 }
@@ -405,6 +415,8 @@ function wireInteractions(
     if (credit) return host.openLink(credit.getAttribute("data-href") ?? "");
     const id = target.closest(".element")?.getAttribute("data-id");
     const node = id ? nodes.get(id) : undefined;
+    if (frame.classList.contains("tap-zoom") && !node?.link && !node?.file)
+      return host.toggleFullscreen?.();
     if (node?.file && host.openFile)
       return host.openFile({ path: node.file, line: node.line, link: node.link });
     if (node?.link) host.openLink(node.link);

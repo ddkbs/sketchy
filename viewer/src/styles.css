@@ -408,3 +408,8 @@ button:disabled {
 .inline-math {
   overflow: visible;
 }
+
+/* Phones: the drawing is fitted to the width; a tap opens it fullscreen. */
+.frame.tap-zoom .canvas > svg {
+  cursor: zoom-in;
+}

@@ -149,6 +149,8 @@ function applyContext(): void {
   const ctx = app.getHostContext();
   const dims = ctx?.containerDimensions as { maxHeight?: number } | undefined;
   const fullscreen = ctx?.displayMode === "fullscreen";
+  document.documentElement.classList.toggle("fullscreen", fullscreen);
+  window.dispatchEvent(new Event("sketchy-context"));
   document.documentElement.style.setProperty(
     "--max-height",
     fullscreen ? "calc(100vh - 120px)" : dims?.maxHeight ? `${dims.maxHeight - 90}px` : "none",
